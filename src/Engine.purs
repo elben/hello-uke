@@ -2,7 +2,8 @@ module Engine where
 
 import Prelude
 
-import Data.List (List(..), (:), index)
+import Data.List (List(..), (:))
+import Data.List as L
 import Data.Maybe
 import Data.Traversable
 import Data.String
@@ -89,22 +90,38 @@ dom7 = ChordStructure "7" (0 : 4 : 7 : 10 : Nil)
 major7 :: ChordStructure
 major7 = ChordStructure "7" (0 : 4 : 7 : 11 : Nil)
 
-step :: Ord -> Int -> Ord
+-- Step `ord` up by `count` half-steps, looping back to Ord 0 as necessary.
+step :: Ord -> Ord -> Ord
 step ord count =
   mod (ord + count) 12
 
+-- Is the given note flat?
 isFlat :: Note -> Boolean
 isFlat (Note name ord) = length name == 2 && charAt 1 name == Just 'b'
 
+-- Is the given note sharp?
 isSharp :: Note -> Boolean
 isSharp (Note name ord) = length name == 2 && charAt 1 name == Just '#'
 
-steps :: Ord -> List Ord -> List Ord
-steps ord ords =
-  map (step ord) ords
+-- Is the given note natural?
+isNat :: Note -> Boolean
+isNat (Note name ord) = length name == 1
+
+-- Given the root note and the steps above the root note, choose and return the
+-- note at the given step. Intelligently decides whether the sharp or flat
+-- version of the returned note based off the root note.
+choose :: Note -> Ord -> Maybe Note
+choose root@(Note _ ord) count = do
+  choices <- L.index notes (step ord count)
+  let idx = if L.length choices == 1
+            then 0 -- Only one choice
+            else
+              if isNat root || isFlat root
+              then 1 -- Choose the flat version
+              else 0 -- Choose the sharp version
+  L.index choices idx
 
 -- findChord :: Note -> ChordStructure -> Maybe (List Note)
-findChord (Note nname ord) (ChordStructure cname ords) =
-  let foundOrds = steps ord ords
-  in sequence (map (index notes) foundOrds)
+findChord root@(Note nname ord) (ChordStructure cname ords) = do
+  sequence (map (choose root) ords)
 
