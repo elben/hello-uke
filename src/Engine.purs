@@ -8,15 +8,20 @@ import Data.Maybe
 import Data.Traversable
 import Data.String
 
-type Ord = Int
+-- Note position. C is position 0, C# and Db are position 1, and so on.
+type Pos = Int
+
+-- Represents a certain number of half-step.
+type Step = Int
+
 type Octave = Int
 
-data Note = Note String Ord
+data Note = Note String Pos
 
 derive instance eqNote :: Eq Note
 
 instance showNote :: Show Note where
-  show (Note name ord) = "Note " <> name <> " " <> show ord
+  show (Note name pos) = "Note " <> name <> " " <> show pos
 
 -- Pitch is a note plus an octave. "Middle C" on the piano is C4, or the fourth
 -- octave.
@@ -75,7 +80,7 @@ notes = (
 
 -- ChordStructure explains how a specific chord can be built. The list of
 -- numbers represent the half-steps required to build the chord.
-data ChordStructure = ChordStructure String (List Ord)
+data ChordStructure = ChordStructure String (List Pos)
 
 majorTriad :: ChordStructure
 majorTriad = ChordStructure "Major" (0 : 4 : 7 : Nil)
@@ -90,29 +95,29 @@ dom7 = ChordStructure "7" (0 : 4 : 7 : 10 : Nil)
 major7 :: ChordStructure
 major7 = ChordStructure "7" (0 : 4 : 7 : 11 : Nil)
 
--- Step `ord` up by `count` half-steps, looping back to Ord 0 as necessary.
-step :: Ord -> Ord -> Ord
-step ord count =
-  mod (ord + count) 12
+-- Step `pos` up by `count` half-steps, looping back to Pos 0 as necessary.
+step :: Pos -> Step -> Pos
+step pos count =
+  mod (pos + count) 12
 
 -- Is the given note flat?
 isFlat :: Note -> Boolean
-isFlat (Note name ord) = length name == 2 && charAt 1 name == Just 'b'
+isFlat (Note name pos) = length name == 2 && charAt 1 name == Just 'b'
 
 -- Is the given note sharp?
 isSharp :: Note -> Boolean
-isSharp (Note name ord) = length name == 2 && charAt 1 name == Just '#'
+isSharp (Note name pos) = length name == 2 && charAt 1 name == Just '#'
 
 -- Is the given note natural?
 isNat :: Note -> Boolean
-isNat (Note name ord) = length name == 1
+isNat (Note name pos) = length name == 1
 
 -- Given the root note and the steps above the root note, choose and return the
 -- note at the given step. Intelligently decides whether the sharp or flat
 -- version of the returned note based off the root note.
-choose :: Note -> Ord -> Maybe Note
-choose root@(Note _ ord) count = do
-  choices <- L.index notes (step ord count)
+choose :: Note -> Step -> Maybe Note
+choose root@(Note _ pos) count = do
+  choices <- L.index notes (step pos count)
   let idx = if L.length choices == 1
             then 0 -- Only one choice
             else
@@ -122,6 +127,6 @@ choose root@(Note _ ord) count = do
   L.index choices idx
 
 -- findChord :: Note -> ChordStructure -> Maybe (List Note)
-findChord root@(Note nname ord) (ChordStructure cname ords) = do
+findChord root@(Note nname pos) (ChordStructure cname ords) = do
   sequence (map (choose root) ords)
 
