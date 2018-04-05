@@ -19,6 +19,8 @@ type Step = Int
 
 type Octave = Int
 
+-- Consider this a "named note". We don't want to use this until the very end of
+-- our computation, when we finally need to name notes for display.
 data Note = Note String Pos
 
 derive instance eqNote :: Eq Note
@@ -26,9 +28,9 @@ derive instance eqNote :: Eq Note
 instance showNote :: Show Note where
   show (Note name pos) = "Note " <> name <> " " <> show pos
 
--- Pitch is a note plus an octave. "Middle C" on the piano is C4, or the fourth
--- octave.
-data Pitch = Pitch Note Octave
+-- Pitch is a position plus an octave. "Middle C" on the piano is C4, or the
+-- fourth octave.
+data Pitch = Pitch Pos Octave
 
 c  :: Note
 c  = Note "C"  0
@@ -129,9 +131,11 @@ chooseFlatSharp root@(Note _ pos) count = do
               else 0 -- Choose the sharp version
   L.index choices idx
 
-findChord :: Note -> ChordStructure -> Maybe (List Note)
-findChord root@(Note nname pos) (ChordStructure cname ords) = do
-  sequence (map (chooseFlatSharp root) ords)
+-- Find the chord positions for the given chord structure and a starting
+-- position (the root note).
+findChord :: Pos -> ChordStructure -> List Pos
+findChord pos (ChordStructure cname poses) =
+  map (step pos) poses
 
 -- Fretboard consists of:
 -- * number of frets
@@ -139,7 +143,7 @@ findChord root@(Note nname pos) (ChordStructure cname ords) = do
 data Fretboard = Fretboard Int (List Pitch)
 
 ukulele :: Fretboard
-ukulele = Fretboard 7 (Pitch g 4 : Pitch c 4 : Pitch e 4 : Pitch a 4 : Nil)
+ukulele = Fretboard 7 (Pitch 7 4 : Pitch 0 4 : Pitch 4 4 : Pitch 9 4 : Nil)
 
 -- Fret position
 type Fret = Int
@@ -159,16 +163,11 @@ dist p1 p2 =
   then p2 - p1
   else (p2 + 12) - p1
 
--- Return the distance (the number of frets) required to play the given Note on
+-- Return the distance (the number of frets) required to play the given Pos on
 -- the Pitch (which represents an open string on the fretboard).
-distance :: Pitch -> Note -> Pos
-distance (Pitch (Note name1 pos1) octave) (Note name2 pos2) =
+distance :: Pitch -> Pos -> Pos
+distance (Pitch pos1 octave) pos2 =
   dist pos1 pos2
-
-distances :: Note -> List Pitch -> List Pos
-distances note Nil = Nil
-distances note (p : Nil) = distance p note : Nil
-distances note (p : rest) = distance p note : distances note rest
 
 -- -- Take a pitch and tune it up `steps` up. Return the new pitch.
 -- tuneUp :: Pitch -> Step -> Pitch
@@ -182,26 +181,26 @@ distances note (p : rest) = distance p note : distances note rest
 -- play (Note name pos) (Pitch (Note n p) octave) =
 --   let d = dist p pos
 
--- Given a note, choose which string to play the note on.
+-- Given a Pos, choose which string to play the note on.
 -- This uses a solver that minimizes distance from the given pitches of the
 -- fretboard, and the availability of each string.
-choose :: Note ->
+choose :: Pos ->
           -- The note we want to play.
           List (Tuple Pitch Boolean) ->
           -- List of open strings and their availability.
           Tuple Int Pitch
           -- Returns the string index and the pitch that string is to be played.
-choose note options =
-  -- Find the cost of getting each string to hit `note`. `costMap` is a List of
+choose pos options =
+  -- Find the cost of getting each string to hit `pos`. `costMap` is a List of
   -- Maybe Ints, where Nothing means the string isn't available (infinite cost).
   let costMap = map
                   (\(Tuple pitch avail) ->
                     if not avail
                       then Nothing
-                      else Just (distance pitch note))
+                      else Just (distance pitch pos))
                   options
 
-   -- Find the cheapest string to play `note` on.
+   -- Find the cheapest string to play `pos` on.
       Tuple cost idx =
         foldlWithIndex
           (\i (Tuple curCost curIdx) mc ->
@@ -210,9 +209,9 @@ choose note options =
                  Just cost -> if cost > curCost
                                 then Tuple cost i
                                 else Tuple curCost curIdx)
-          (Tuple Nothing 0)
+          (Tuple (Just 9999) 0)
           Nil
-  in idx
+  in Tuple idx (Pitch 0 0)
 
 -- solve :: Fretboard -> List Note -> Fingers
 -- solve (Fretboard maxFrets pitches) notes = do
