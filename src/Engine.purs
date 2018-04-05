@@ -10,6 +10,7 @@ import Data.Foldable (foldl)
 import Data.FoldableWithIndex (foldlWithIndex)
 import Data.String
 import Data.Tuple
+import Debug.Trace
 
 -- Note position. C is position 0, C# and Db are position 1, and so on.
 type Pos = Int
@@ -31,6 +32,11 @@ instance showNote :: Show Note where
 -- Pitch is a position plus an octave. "Middle C" on the piano is C4, or the
 -- fourth octave.
 data Pitch = Pitch Pos Octave
+
+derive instance eqPitch :: Eq Pitch
+
+instance showPitch :: Show Pitch where
+  show (Pitch pos oct) = "Pitch " <> show pos <> " " <> show oct
 
 c  :: Note
 c  = Note "C"  0
@@ -157,61 +163,65 @@ data Fingers = Fingers (List Fret)
 -- C (pos 0) and a E (pos 4) are four positions away.
 -- Bb (pos 10) and D (pos 2) are also four positions away.
 --
-dist :: Pos -> Pos -> Pos
-dist p1 p2 =
+distance :: Pos -> Pos -> Pos
+distance p1 p2 =
   if p2 >= p1
   then p2 - p1
   else (p2 + 12) - p1
 
--- Return the distance (the number of frets) required to play the given Pos on
--- the Pitch (which represents an open string on the fretboard).
-distance :: Pitch -> Pos -> Pos
-distance (Pitch pos1 octave) pos2 =
-  dist pos1 pos2
-
--- -- Take a pitch and tune it up `steps` up. Return the new pitch.
--- tuneUp :: Pitch -> Step -> Pitch
--- tuneUp (Pitch (Note _ origPos) octave) steps =
---   let total = (origPos * octave) + incr
---   in Pitch ()
---
--- -- Play note on the open string pitch. Returns the pitch of the note to be
--- -- played.
--- play :: Note -> Pitch -> Pitch
--- play (Note name pos) (Pitch (Note n p) octave) =
---   let d = dist p pos
+-- Take a pitch and tune it up `steps` up. Return the new pitch.
+tuneUp :: Pitch -> Step -> Pitch
+tuneUp (Pitch ppos octave) steps =
+  let total = (ppos + (12 * octave)) + steps
+  in Pitch (mod total 12) (total / 12)
 
 -- Given a Pos, choose which string to play the note on.
 -- This uses a solver that minimizes distance from the given pitches of the
 -- fretboard, and the availability of each string.
+--
+-- pos = 0
+-- options = (Tuple (Pitch 7 4) true : Tuple (Pitch 0 4) true : Tuple (Pitch 4 4) true : Tuple (Pitch 9 4) true : Nil)
+--
+-- choose 0 (Tuple (Pitch 7 4) true : Tuple (Pitch 0 4) true : Tuple (Pitch 4 4) true : Tuple (Pitch 9 4) true : Nil)
 choose :: Pos ->
           -- The note we want to play.
           List (Tuple Pitch Boolean) ->
           -- List of open strings and their availability.
-          Tuple Int Pitch
+          Maybe (List (Tuple Pitch Boolean))
           -- Returns the string index and the pitch that string is to be played.
-choose pos options =
+          -- Maybe because there may not be any available strings, and because
+          -- we have to query an index of the strings.
+choose pos options = do
   -- Find the cost of getting each string to hit `pos`. `costMap` is a List of
-  -- Maybe Ints, where Nothing means the string isn't available (infinite cost).
+  -- (distance, available).
   let costMap = map
-                  (\(Tuple pitch avail) ->
-                    if not avail
-                      then Nothing
-                      else Just (distance pitch pos))
+                  (\(Tuple (Pitch p _) avail) ->
+                    Tuple (distance p pos) avail)
                   options
 
-   -- Find the cheapest string to play `pos` on.
-      Tuple cost idx =
-        foldlWithIndex
-          (\i (Tuple curCost curIdx) mc ->
-            case mc of
-                 Nothing -> Tuple curCost curIdx
-                 Just cost -> if cost > curCost
-                                then Tuple cost i
-                                else Tuple curCost curIdx)
-          (Tuple (Just 9999) 0)
-          Nil
-  in Tuple idx (Pitch 0 0)
+  -- Find the cheapest string to play `pos` on.
+  Tuple incr idx <-
+    foldlWithIndex
+      (\i maybeMinFound (Tuple cost avail) ->
+        if avail
+        then
+          case maybeMinFound of
+               Nothing -> Just (Tuple cost i)
+               Just (Tuple minCost minIdx) ->
+                 if cost < minCost && avail
+                   then Just (Tuple cost i)
+                   else maybeMinFound
+        else maybeMinFound)
+      Nothing
+      costMap
+
+  -- The open string pitch we've chosen
+  Tuple pitch _ <- L.index options idx
+
+  -- Once we have chosen the string we want to modify, modify that string by
+  -- moving the pitch up to where we want it. The number of steps is equivalent
+  -- to the cost.
+  L.updateAt idx (Tuple (tuneUp pitch incr) false) options
 
 -- solve :: Fretboard -> List Note -> Fingers
 -- solve (Fretboard maxFrets pitches) notes = do

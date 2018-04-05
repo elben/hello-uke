@@ -13,7 +13,7 @@
     "purescript-maybe": "^3.0.0",
     "purescript-strings": "^3.5.0",
     "purescript-foldable-traversable": "^3.7.1",
-    "purescript-tuple": "^4.1.1"
+    "purescript-debug": "^3.0.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^3.0.0"
