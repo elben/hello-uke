@@ -1,0 +1,73 @@
+
+.fretboard {
+  position: relative;
+  margin: 4em;
+}
+
+.chord-info {
+  width: 200px;
+  height: 40px;
+  line-height: 40px;
+  background: #eee;
+  color: #333;
+  text-align: center;
+  transform: translate3d(-11%, 0, 0);
+  border-radius: 15px;
+  border: 2px solid #333;
+}
+
+.string {
+  width: 50px;
+  float: left;
+}
+
+.fret {
+  width: 48px;
+  height: 45px;
+  display: block;
+  border-bottom: 5px solid #333;
+  border-left: 2px solid #333;
+}
+
+/* Open strings */
+.fret:first-child {
+  background-color: #999;
+  height: 38px;
+  border-bottom: 12px solid #333;
+}
+
+.string:last-child .fret:first-child {
+  background-color: inherit;
+}
+
+/* Open strings */
+.string .fret:first-child .circle {
+  background-color: #eee;
+  border: 2px solid #333;
+  color: #333;
+  transform: translate3d(-50%, 7%, 0);
+}
+
+.string:last-child .fret {
+  border-bottom: none;
+  height: 50px;
+}
+
+.circle {
+  border-radius: 100%;
+  background-color: #333;
+  color: #ffffff;
+  width: 30px;
+  height: 30px;
+  display: block;
+  position: absolute;
+  transform: translate3d(-50%, 25%, 0);
+}
+
+.circle-info {
+  width: 30px;
+  height: 30px;
+  display: block;
+  transform: translate3d(0%, 21%, 0);
+  text-align: center;
+}
