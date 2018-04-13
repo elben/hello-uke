@@ -160,8 +160,6 @@ ukulele = Fretboard 13 (Pitch 7 4 : Pitch 0 4 : Pitch 4 4 : Pitch 9 4 : Nil)
 -- Fret position
 type Fret = Int
 
-data Fingers = Fingers (List Fret)
-
 -- Number of steps between the first position to the position, going up the
 -- scale.
 --
@@ -233,10 +231,19 @@ chooseChord (Fretboard maxFrets opens) pos struct =
           opens
   in Fretboard maxFrets (L.reverse chosenPitches)
 
--- solve :: Fretboard -> List Note -> Fingers
--- solve (Fretboard maxFrets pitches) notes = do
---   foldl (\n p) (Tuple pitches (Fingers Nil)) notes
+
+-- Calculates how many frets you have to play up.
+difference :: Pitch -- Open string
+           -> Pitch -- Pitch to aim for
+           -> Fret  -- Number of frets required
+difference (Pitch pos1 octv1) (Pitch pos2 octv2) =
+  ((octv2 * 12) + pos2) - ((octv1 * 12) + pos1)
+
+-- Takes the open fretboard, the pitches on the fretboard you want to hit, and
+-- returns the list of Frets.
 --
--- -- fretChord :: Fretboard -> Note -> ChordStructure -> List Fingers
--- fretChord (Fretboard maxFrets pitches) root chord = do
---   notes <- findChord root chord
+-- F major chord:
+-- fretted ukulele (chooseChord ukulele 5 majorTriad)
+fretted :: Fretboard -> Fretboard -> List Fret
+fretted (Fretboard m opens) (Fretboard _ pitches) =
+  map (\(Tuple o p) -> difference o p) (L.zip opens pitches)
