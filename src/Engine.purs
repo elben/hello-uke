@@ -93,6 +93,9 @@ notes = (
 -- numbers represent the half-steps required to build the chord.
 data ChordStructure = ChordStructure String (List Pos)
 
+instance showChordStructure :: Show ChordStructure where
+  show (ChordStructure name positions) = "ChordStructure " <> name <> " " <> show positions
+
 majorTriad :: ChordStructure
 majorTriad = ChordStructure "Major" (0 : 4 : 7 : Nil)
 
@@ -148,8 +151,11 @@ findChord pos (ChordStructure cname poses) =
 -- * the strings and their open tunings
 data Fretboard = Fretboard Int (List Pitch)
 
+instance showFretboard :: Show Fretboard where
+  show (Fretboard maxFrets pitches) = "Fretboard " <> show maxFrets <> " " <> show pitches
+
 ukulele :: Fretboard
-ukulele = Fretboard 7 (Pitch 7 4 : Pitch 0 4 : Pitch 4 4 : Pitch 9 4 : Nil)
+ukulele = Fretboard 13 (Pitch 7 4 : Pitch 0 4 : Pitch 4 4 : Pitch 9 4 : Nil)
 
 -- Fret position
 type Fret = Int
@@ -175,53 +181,57 @@ tuneUp (Pitch ppos octave) steps =
   let total = (ppos + (12 * octave)) + steps
   in Pitch (mod total 12) (total / 12)
 
+-- TODO this is the wrong way. We need to go strings to notes, not notes to
+-- strings.
+
 -- Given a Pos, choose which string to play the note on.
 -- This uses a solver that minimizes distance from the given pitches of the
 -- fretboard, and the availability of each string.
 --
--- pos = 0
--- options = (Tuple (Pitch 7 4) true : Tuple (Pitch 0 4) true : Tuple (Pitch 4 4) true : Tuple (Pitch 9 4) true : Nil)
---
--- choose 0 (Tuple (Pitch 7 4) true : Tuple (Pitch 0 4) true : Tuple (Pitch 4 4) true : Tuple (Pitch 9 4) true : Nil)
-choose :: Pos ->
-          -- The note we want to play.
-          List (Tuple Pitch Boolean) ->
-          -- List of open strings and their availability.
-          Maybe (List (Tuple Pitch Boolean))
-          -- Returns the string index and the pitch that string is to be played.
-          -- Maybe because there may not be any available strings, and because
-          -- we have to query an index of the strings.
-choose pos options = do
+-- chooseNoteForString (Pitch 7 4) (Tuple 0 0 : Tuple 4 0 : Tuple 7 0 : Nil)
+chooseNoteForString :: Pitch ->
+          -- The open string we want to find note for
+          List (Tuple Pos Int) ->
+          -- List of notes in chord and their usage.
+          Tuple Pitch Int
+          -- Returns the pitch chosen and the index of the given positions
+          -- chosen.
+chooseNoteForString pitch@(Pitch pos octv) options =
   -- Find the cost of getting each string to hit `pos`. `costMap` is a List of
-  -- (distance, available).
+  -- (distance, usage).
   let costMap = map
-                  (\(Tuple (Pitch p _) avail) ->
-                    Tuple (distance p pos) avail)
+                  (\(Tuple p usage) ->
+                    Tuple (distance pos p) usage)
                   options
 
-  -- Find the cheapest string to play `pos` on.
-  Tuple incr idx <-
-    foldlWithIndex
-      (\i maybeMinFound (Tuple cost avail) ->
-        if avail
-        then
-          case maybeMinFound of
-               Nothing -> Just (Tuple cost i)
-               Just (Tuple minCost minIdx) ->
-                 if cost < minCost && avail
-                   then Just (Tuple cost i)
-                   else maybeMinFound
-        else maybeMinFound)
-      Nothing
-      costMap
+  -- Find the note that would play "easiest" on the given string.
+  -- `incr` is number of steps needed to play the chosen note on the given
+  -- string. `idx` is the index of the chosen note from the list of `options`.
+      Tuple incr idx = foldlWithIndex
+         (\i (Tuple minCost minIdx) (Tuple cost usage) ->
+           -- Ignore `usage` right now in the calculations, as I expect that
+           -- the fretboard open string positions will be a pretty good cost
+           -- metric to bias the string towards the right note in the chord
+           -- structure.
+           if cost < minCost
+             then Tuple cost i
+             else Tuple minCost minIdx)
+         (Tuple 999999 (-1))
+         costMap
+   in Tuple (tuneUp pitch incr) idx
 
-  -- The open string pitch we've chosen
-  Tuple pitch _ <- L.index options idx
-
-  -- Once we have chosen the string we want to modify, modify that string by
-  -- moving the pitch up to where we want it. The number of steps is equivalent
-  -- to the cost.
-  L.updateAt idx (Tuple (tuneUp pitch incr) false) options
+chooseChord :: Fretboard -> Pos -> ChordStructure -> Fretboard
+chooseChord (Fretboard maxFrets opens) pos struct =
+  let notes = findChord pos struct
+      options = map (\n -> Tuple n 0) notes
+      chosenPitches =
+        foldl
+          (\pitches open ->
+            let Tuple pitch idx = chooseNoteForString open options
+            in pitch : pitches)
+          Nil
+          opens
+  in Fretboard maxFrets (L.reverse chosenPitches)
 
 -- solve :: Fretboard -> List Note -> Fingers
 -- solve (Fretboard maxFrets pitches) notes = do
