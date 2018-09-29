@@ -115,32 +115,6 @@ step :: Pos -> Step -> Pos
 step pos count =
   mod (pos + count) 12
 
--- Is the given note flat?
-isFlat :: Note -> Boolean
-isFlat (Note name pos) = length name == 2 && charAt 1 name == Just 'b'
-
--- Is the given note sharp?
-isSharp :: Note -> Boolean
-isSharp (Note name pos) = length name == 2 && charAt 1 name == Just '#'
-
--- Is the given note natural?
-isNat :: Note -> Boolean
-isNat (Note name pos) = length name == 1
-
--- Given the root note and the steps above the root note, choose and return the
--- note at the given step. Intelligently decides whether the sharp or flat
--- version of the returned note based off the root note.
-chooseFlatSharp :: Note -> Step -> Maybe Note
-chooseFlatSharp root@(Note _ pos) count = do
-  choices <- L.index notes (step pos count)
-  let idx = if L.length choices == 1
-            then 0 -- Only one choice
-            else
-              if isNat root || isFlat root
-              then 1 -- Choose the flat version
-              else 0 -- Choose the sharp version
-  L.index choices idx
-
 -- Find the chord positions for the given chord structure and a starting
 -- position (the root note).
 findChord :: Pos -> ChordStructure -> List Pos
