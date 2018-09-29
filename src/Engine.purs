@@ -108,7 +108,7 @@ dom7 :: ChordStructure
 dom7 = ChordStructure "7" (0 : 4 : 7 : 10 : Nil)
 
 major7 :: ChordStructure
-major7 = ChordStructure "7" (0 : 4 : 7 : 11 : Nil)
+major7 = ChordStructure "M7" (0 : 4 : 7 : 11 : Nil)
 
 -- Step `pos` up by `count` half-steps, looping back to Pos 0 as necessary.
 step :: Pos -> Step -> Pos

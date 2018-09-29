@@ -12,5 +12,6 @@ pulp run
 
 # To refresh deps
 rm -rf bower_components/
+rm -rf output/
 bower install
 ```
