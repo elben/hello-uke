@@ -9,6 +9,7 @@ import Data.Traversable
 import Data.Foldable (foldl)
 import Data.FoldableWithIndex (foldlWithIndex)
 import Data.String
+import Data.String.CodeUnits (charAt)
 import Data.Tuple
 import Debug.Trace
 
