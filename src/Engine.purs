@@ -185,23 +185,30 @@ tuneUp (Pitch ppos octave) steps =
 -- chord that would be *easiest* to play on the open A. In this case, the method
 -- would return Bb (pos 10) because it's a half-step away from A.
 --
--- > chooseNoteForString (Pitch 7 4) (Tuple 0 0 : Tuple 4 0 : Tuple 7 0 : Nil)
+-- This simple algorithm of choosing the closest note works pretty well, and
+-- from my findings we don't have to actually track how many times each notes in
+-- the chord has been selected for play. The reason for this, I suspect, is that
+-- the open strings of an instrument were careful selected with regards to their
+-- distances among each other.
+--
+-- Ignoring the "usage" of notes also allows the algorithm flexibility in
+-- playing notes more than once, or none at all, which is acceptable on an
+-- instrument like the ukulele, which only has 4 open strings.
+--
+-- > chooseNoteForString (Pitch 7 4) (0 : 4 : 7 : Nil)
 -- (Tuple Pitch 7 4 2)
 --
 chooseNoteForString :: Pitch ->
           -- The open string we want to find a note to play on
-          List (Tuple Pos Int) ->
-          -- List of notes in chord and its "usage" (the number of times the
-          -- note has been selected to be played on an open string).
+          List Pos ->
+          -- List of notes in chord
           Tuple Pitch Int
           -- Returns the pitch chosen and the index of the given positions
           -- chosen.
 chooseNoteForString pitch@(Pitch pos octv) options =
   -- Find the cost of getting the open string to hit the supplied notes. costMap
-  -- is a List of (distance, usage).
-  let costMap = map
-                  (\(Tuple p usage) -> Tuple (distance pos p) usage)
-                  options
+  -- is a List of distances.
+  let costMap = map (distance pos) options
 
   -- Find the note that would play "easiest" on the given string, where easiest
   -- is defined by the lowest number of frets from the nut.
@@ -210,11 +217,7 @@ chooseNoteForString pitch@(Pitch pos octv) options =
   -- note on the given string. `idx` is the index of the chosen note in
   -- `options`.
       Tuple incr idx = foldlWithIndex
-         (\i (Tuple minCost minIdx) (Tuple cost usage) ->
-           -- Ignore `usage` right now in the calculations, as I expect that
-           -- the fretboard open string positions will be a pretty good cost
-           -- metric to bias the string towards the right note in the chord
-           -- structure.
+         (\i (Tuple minCost minIdx) cost ->
            if cost < minCost
              then Tuple cost i
              else Tuple minCost minIdx)
@@ -225,11 +228,10 @@ chooseNoteForString pitch@(Pitch pos octv) options =
 chooseChord :: Fretboard -> Pos -> ChordStructure -> Fretboard
 chooseChord (Fretboard maxFrets opens) pos struct =
   let notes = findChord pos struct
-      options = map (\n -> Tuple n 0) notes
       chosenPitches =
         foldl
           (\pitches open ->
-            let Tuple pitch idx = chooseNoteForString open options
+            let Tuple pitch idx = chooseNoteForString open notes
             in pitch : pitches)
           Nil
           opens
