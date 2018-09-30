@@ -111,12 +111,26 @@ major7 :: ChordStructure
 major7 = ChordStructure "M7" (0 : 4 : 7 : 11 : Nil)
 
 -- Step `pos` up by `count` half-steps, looping back to Pos 0 as necessary.
+--
+-- > step 1 3
+-- 4
+--
+-- > step 11 3
+-- 2
+--
 step :: Pos -> Step -> Pos
 step pos count =
   mod (pos + count) 12
 
 -- Find the chord positions for the given chord structure and a starting
 -- position (the root note).
+--
+-- > findChord 0 majorTriad
+-- (0 : 4 : 7 : Nil)
+--
+-- > findChord 5 major7
+-- (5 : 9 : 0 : 4 : Nil)
+--
 findChord :: Pos -> ChordStructure -> List Pos
 findChord pos (ChordStructure cname poses) =
   map (step pos) poses
@@ -135,12 +149,18 @@ ukulele = Fretboard 13 (Pitch 7 4 : Pitch 0 4 : Pitch 4 4 : Pitch 9 4 : Nil)
 -- Fret position
 type Fret = Int
 
--- Number of steps between the first position to the position, going up the
--- scale.
+-- Calculate the number of steps between the first position to the position,
+-- going up the scale.
 --
 -- For example:
--- C (pos 0) and a E (pos 4) are four positions away.
--- Bb (pos 10) and D (pos 2) are also four positions away.
+-- * C (pos 0) and a E (pos 4) are four positions away.
+-- * Bb (pos 10) and D (pos 2) are also four positions away.
+--
+-- > distance 0 4
+-- 4
+--
+-- > distance 10 2
+-- 4
 --
 distance :: Pos -> Pos -> Pos
 distance p1 p2 =
@@ -148,38 +168,47 @@ distance p1 p2 =
   then p2 - p1
   else (p2 + 12) - p1
 
--- Take a pitch and tune it up `steps` up. Return the new pitch.
+-- Take a pitch and tune it `steps` up.
 tuneUp :: Pitch -> Step -> Pitch
 tuneUp (Pitch ppos octave) steps =
   let total = (ppos + (12 * octave)) + steps
   in Pitch (mod total 12) (total / 12)
 
--- TODO this is the wrong way. We need to go strings to notes, not notes to
--- strings.
-
--- Given a Pos, choose which string to play the note on.
+-- Given an open string, choose which note to play on that string.
+--
 -- This uses a solver that minimizes distance from the given pitches of the
 -- fretboard, and the availability of each string.
 --
--- chooseNoteForString (Pitch 7 4) (Tuple 0 0 : Tuple 4 0 : Tuple 7 0 : Nil)
+-- As an example, say we are on a Ukulele, which has a default open tuning of
+-- GCEA. Now we want to play the C7 chord, which has positions {0, 4, 7, 10}.
+-- This method will take a string (say A), and find the note in the C major
+-- chord that would be *easiest* to play on the open A. In this case, the method
+-- would return Bb (pos 10) because it's a half-step away from A.
+--
+-- > chooseNoteForString (Pitch 7 4) (Tuple 0 0 : Tuple 4 0 : Tuple 7 0 : Nil)
+-- (Tuple Pitch 7 4 2)
+--
 chooseNoteForString :: Pitch ->
-          -- The open string we want to find note for
+          -- The open string we want to find a note to play on
           List (Tuple Pos Int) ->
-          -- List of notes in chord and their usage.
+          -- List of notes in chord and its "usage" (the number of times the
+          -- note has been selected to be played on an open string).
           Tuple Pitch Int
           -- Returns the pitch chosen and the index of the given positions
           -- chosen.
 chooseNoteForString pitch@(Pitch pos octv) options =
-  -- Find the cost of getting each string to hit `pos`. `costMap` is a List of
-  -- (distance, usage).
+  -- Find the cost of getting the open string to hit the supplied notes. costMap
+  -- is a List of (distance, usage).
   let costMap = map
-                  (\(Tuple p usage) ->
-                    Tuple (distance pos p) usage)
+                  (\(Tuple p usage) -> Tuple (distance pos p) usage)
                   options
 
-  -- Find the note that would play "easiest" on the given string.
-  -- `incr` is number of steps needed to play the chosen note on the given
-  -- string. `idx` is the index of the chosen note from the list of `options`.
+  -- Find the note that would play "easiest" on the given string, where easiest
+  -- is defined by the lowest number of frets from the nut.
+  --
+  -- `incr` is number of steps from the open string needed to play the chosen
+  -- note on the given string. `idx` is the index of the chosen note in
+  -- `options`.
       Tuple incr idx = foldlWithIndex
          (\i (Tuple minCost minIdx) (Tuple cost usage) ->
            -- Ignore `usage` right now in the calculations, as I expect that
