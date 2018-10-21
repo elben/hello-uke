@@ -1,17 +1,20 @@
 module Engine where
 
-import Prelude
-
-import Data.List (List(..), (:))
-import Data.List as L
 import Data.Maybe
-import Data.Traversable
-import Data.Foldable (foldl)
-import Data.FoldableWithIndex (foldlWithIndex)
 import Data.String
-import Data.String.CodeUnits (charAt)
+import Data.Traversable
 import Data.Tuple
 import Debug.Trace
+import Prelude
+
+import Data.Foldable (foldl)
+import Data.FoldableWithIndex (foldlWithIndex)
+import Data.List (List(..), (:))
+import Data.List as L
+import Data.List.Lazy (replicate)
+import Data.Semigroup ((<>))
+import Data.String.CodeUnits (charAt)
+import Effect.Console (log)
 
 -- Note position. C is position 0, C# and Db are position 1, and so on.
 type Pos = Int
@@ -24,6 +27,9 @@ type Octave = Int
 -- Consider this a "named note". We don't want to use this until the very end of
 -- our computation, when we finally need to name notes for display.
 data Note = Note String Pos
+
+getNoteName :: Note -> String
+getNoteName (Note name _) = name
 
 derive instance eqNote :: Eq Note
 
@@ -90,6 +96,11 @@ notes = (
   : (b : Nil)
   : Nil)
 
+posToNote :: Pos -> Note
+posToNote pos =
+  let choices = fromMaybe Nil (L.index notes pos)
+  in fromMaybe (Note "?" pos) (L.index choices 0)
+
 -- ChordStructure explains how a specific chord can be built. The list of
 -- numbers represent the half-steps required to build the chord.
 data ChordStructure = ChordStructure String (List Pos)
@@ -146,9 +157,6 @@ instance showFretboard :: Show Fretboard where
 ukulele :: Fretboard
 ukulele = Fretboard 13 (Pitch 7 4 : Pitch 0 4 : Pitch 4 4 : Pitch 9 4 : Nil)
 
--- Fret position
-type Fret = Int
-
 -- Calculate the number of steps between the first position to the position,
 -- going up the scale.
 --
@@ -195,17 +203,17 @@ tuneUp (Pitch ppos octave) steps =
 -- playing notes more than once, or none at all, which is acceptable on an
 -- instrument like the ukulele, which only has 4 open strings.
 --
--- > chooseNoteForString (Pitch 7 4) (0 : 4 : 7 : Nil)
+-- > chooseNote (Pitch 7 4) (0 : 4 : 7 : Nil)
 -- (Tuple Pitch 7 4 2)
 --
-chooseNoteForString :: Pitch ->
-          -- The open string we want to find a note to play on
-          List Pos ->
-          -- List of notes in chord
-          Tuple Pitch Int
-          -- Returns the pitch chosen and the index of the given positions
-          -- chosen.
-chooseNoteForString pitch@(Pitch pos octv) options =
+chooseNote :: Pitch ->
+              -- The open string we want to find a note to play on
+              List Pos ->
+              -- List of notes in chord
+              Tuple Pitch Int
+              -- Returns the pitch chosen and the index of the given positions
+              -- chosen.
+chooseNote pitch@(Pitch pos octv) options =
   -- Find the cost of getting the open string to hit the supplied notes. costMap
   -- is a List of distances.
   let costMap = map (distance pos) options
@@ -225,18 +233,92 @@ chooseNoteForString pitch@(Pitch pos octv) options =
          costMap
    in Tuple (tuneUp pitch incr) idx
 
-chooseChord :: Fretboard -> Pos -> ChordStructure -> Fretboard
+-- Choose how to play a chord on the given fretboard.
+--
+-- Goes through each open string on the instrument and chooses the best note to
+-- play on each string.
+--
+-- Examples:
+--
+-- Play a D7 on the ukulele:
+-- > chooseChord ukulele 2 dom7
+-- (Pitch 9 4 : Pitch 0 4 : Pitch 6 4 : Pitch 9 4 : Nil)
+--
+chooseChord :: Fretboard
+            -- The fretboard to play on.
+            -> Pos
+            -- The root note position.
+            -> ChordStructure
+            -- The chord structure we want to play.
+            -> List Pitch
 chooseChord (Fretboard maxFrets opens) pos struct =
   let notes = findChord pos struct
+      -- Find the best note for each string.
       chosenPitches =
         foldl
           (\pitches open ->
-            let Tuple pitch idx = chooseNoteForString open notes
+            let Tuple pitch idx = chooseNote open notes
             in pitch : pitches)
           Nil
           opens
-  in Fretboard maxFrets (L.reverse chosenPitches)
+  in -- Reverse it because we were appending to the head.
+     L.reverse chosenPitches
 
+
+-- Utility to repeat a string n times.
+repeatString :: String -> Int -> String
+repeatString s n =
+  foldl (\sum _ -> sum <> s) "" (replicate n 0)
+
+-- Draw the fretboard of the given starting note and chord.
+--
+-- > log (draw ukulele 5 majorTriad)
+draw :: Fretboard -> Pos -> ChordStructure -> String
+draw fretboard pos struct =
+  (drawFrets fretboard (fretted fretboard (chooseChord fretboard pos struct)))
+
+-- Draw the fretboard of the given list of fret positions.
+--
+--
+-- > log (drawFrets ukulele (fretted ukulele (chooseChord ukulele 5 majorTriad)))
+--
+-- G C E A
+-- =======
+-- | | ● |
+-- +—+—+—+
+-- ● | | |
+-- +—+—+—+
+-- | | | |
+-- +—+—+—+
+-- .......
+--
+drawFrets :: Fretboard -> List Fret -> String
+drawFrets (Fretboard numFrets opens) frets =
+  let -- Draw a nut line. Example: "+—+—+—+". Decr 1 because the last string
+      -- should close with a single "+" instead of "+-"
+      drawNut = (repeatString "+—" (L.length frets - 1)) <> "+"
+      -- Draw the nth fret, showing if a note should be pressed or not.
+      drawFret n =
+        (foldl (\sum fret -> if fret == n then sum <> "● " else sum <> "| ") "" frets)
+        <> "\n"
+        <> drawNut
+      -- Draw the top of the instrument, which prints out the notes, and then
+      -- the starting nut. Example:
+      --
+      -- G C E A
+      -- =======
+      header =
+        (foldl (\s (Pitch pos oct) -> s <> getNoteName (posToNote pos) <> " ") "" opens)
+        <> "\n"
+        -- Decr 1 so we don't have a hanging "=".
+        <> repeatString "==" (L.length frets - 1) <> "="
+  in header
+     <> "\n"
+     -- Incr 1 because we don't want to draw fret 0, which are the open strings.
+     <> (foldlWithIndex (\i s _ -> s <> drawFret (i + 1) <> "\n") "" (replicate numFrets 0))
+
+-- Fret position
+type Fret = Int
 
 -- Calculates how many frets you have to play up.
 difference :: Pitch -- Open string
@@ -249,7 +331,7 @@ difference (Pitch pos1 octv1) (Pitch pos2 octv2) =
 -- returns the list of Frets.
 --
 -- F major chord:
--- fretted ukulele (chooseChord ukulele 5 majorTriad)
-fretted :: Fretboard -> Fretboard -> List Fret
-fretted (Fretboard m opens) (Fretboard _ pitches) =
+-- > fretted ukulele (chooseChord ukulele 5 majorTriad)
+fretted :: Fretboard -> List Pitch -> List Fret
+fretted (Fretboard m opens) pitches =
   map (\(Tuple o p) -> difference o p) (L.zip opens pitches)
