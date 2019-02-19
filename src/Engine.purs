@@ -244,6 +244,31 @@ chooseNote pitch@(Pitch pos octv) options =
 -- > chooseChord ukulele 2 dom7
 -- (Pitch 9 4 : Pitch 0 4 : Pitch 6 4 : Pitch 9 4 : Nil)
 --
+-- TOOD we need to make this smarter:
+-- - Don't duplicate notes of the same octave, if possible.
+--   Right now, for Em (log (draw ukulele 4 minorTriad))
+--   the algo chooses to play:
+--
+--   G C E A
+--   =======
+--   | | | |
+--   +—+—+—+
+--   | | | ●
+--   +—+—+—+
+--   | | | |
+--   +—+—+—+
+--   | ● | |
+--
+--   Which is technically correct, but duplicates the E note of the same octave
+--   twice. It would be better to play that open E string as a G, so that we get
+--   both the bottom and top G.
+--
+-- - log (draw ukulele 5 dom7) <- this is also wrong
+--   Because our algo is too simple. We can't just choose the "easiset" thing to
+--   play, because sometimes we NEED to make it harder in order to hit some of
+--   the other notes in the chord. In this F7 example, the algo skipped playing
+--   Eb because no open strings were close to it. We need to manually add that.
+--
 chooseChord :: Fretboard
             -- The fretboard to play on.
             -> Pos

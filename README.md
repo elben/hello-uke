@@ -1,4 +1,19 @@
-# Ukulele Chordify
+# Chordify
+
+Find chords for stringed instruments.
+
+Draw F major:
+
+```
+> log (draw ukulele 5 majorTriad)
+
+G C E A
+=======
+| | ● |
++—+—+—+
+● | | |
++—+—+—+
+```
 
 ## Development
 
