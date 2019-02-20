@@ -16,34 +16,7 @@ import Data.Semigroup ((<>))
 import Data.String.CodeUnits (charAt)
 import Effect.Console (log)
 
--- Note position. C is position 0, C# and Db are position 1, and so on.
-type Pos = Int
-
--- Represents a certain number of half-step.
-type Step = Int
-
-type Octave = Int
-
--- Consider this a "named note". We don't want to use this until the very end of
--- our computation, when we finally need to name notes for display.
-data Note = Note String Pos
-
-getNoteName :: Note -> String
-getNoteName (Note name _) = name
-
-derive instance eqNote :: Eq Note
-
-instance showNote :: Show Note where
-  show (Note name pos) = "Note " <> name <> " " <> show pos
-
--- Pitch is a position plus an octave. "Middle C" on the piano is C4, or the
--- fourth octave.
-data Pitch = Pitch Pos Octave
-
-derive instance eqPitch :: Eq Pitch
-
-instance showPitch :: Show Pitch where
-  show (Pitch pos oct) = "Pitch " <> show pos <> " " <> show oct
+import Chords
 
 c  :: Note
 c  = Note "C"  0
