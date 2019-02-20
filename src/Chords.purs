@@ -52,10 +52,10 @@ data ChordQuality =
   | Minor
   | Dom7
   | Maj7
-  | Sus2
-  | Sus4
---   | Augmented
---   | Diminished
+  -- | Sus2
+  -- | Sus4
+  -- | Augmented
+  -- | Diminished
 
 derive instance chordQualityEq :: Eq ChordQuality
 derive instance chordQualityOrd :: Ord ChordQuality
@@ -74,26 +74,29 @@ derive instance fingerOrd :: Ord Finger
 -- The fingering from left-most string when looking at the fretboard.
 type Fingering = List Finger
 
+-- Easier way of defining tuples. Precedence is *lower* than List's (:), so that we can create
+-- tuples in lists like this:
+--
+-- 1 ==> 10 : 2 ==> 20 : Nil
+--
+infix 7 Tuple as ==>
+
 -- Mapping of Note, ChordQuality to the fingering.
 ukeChords :: Map Pos (Map ChordQuality Fingering)
 ukeChords = M.fromFoldable $
     -- C
-      (Tuple 0
-          (M.fromFoldable (
-            Tuple Major (Finger 0 : Finger 0 : Finger 0 : Finger 3 : Nil)
-          : Tuple Minor (Finger 0 : Finger 3 : Finger 3 : Finger 3 : Nil)
-          : Nil
-          ))
-      )
+      0 ==>
+        M.fromFoldable (
+          Major ==> (Finger 0 : Finger 0 : Finger 0 : Finger 3 : Nil)
+        : Minor ==> (Finger 0 : Finger 3 : Finger 3 : Finger 3 : Nil)
+        : Nil)
 
     -- G
-    : (Tuple 7
-          (M.fromFoldable (
-            Tuple Major (Finger 0 : Finger 2 : Finger 3 : Finger 2 : Nil)
-          : Tuple Minor (Finger 0 : Finger 2 : Finger 3 : Finger 1 : Nil)
-          : Nil
-          ))
-      )
+    : 7 ==>
+        M.fromFoldable (
+          Major ==> (Finger 0 : Finger 2 : Finger 3 : Finger 2 : Nil)
+        : Minor ==> (Finger 0 : Finger 2 : Finger 3 : Finger 1 : Nil)
+        : Nil)
     : Nil
 
 findUkeChord :: Pos -> ChordQuality -> (Maybe Fingering)
