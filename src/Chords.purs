@@ -50,24 +50,34 @@ instance showPitch :: Show Pitch where
 data ChordQuality =
     Major
   | Minor
-  | Dom7
-  | Maj7
-  -- | Sus2
-  -- | Sus4
-  -- | Augmented
-  -- | Diminished
+  | Suspended
+  | Augmented
+  | Diminished
 
 derive instance chordQualityEq :: Eq ChordQuality
 derive instance chordQualityOrd :: Ord ChordQuality
 
+data ChordInterval =
+    Triad
+  -- Seventh
+  | Dom7
+  | Maj7
+  -- Addition
+  -- Second and Fourth also works with Suspended quality to make sus2 and sus4.
+  | Second
+  | Fourth
+
+derive instance chordIntervalEq :: Eq ChordInterval
+derive instance chordIntervalOrd :: Ord ChordInterval
+
 -- Represents a fingering on a string. Finger 0 is equivalent to the open string. NoPlay means don't
 -- play that string.
 data Finger = Finger Int
-            | None
+            | X
 
 instance fingerShow :: Show Finger where
   show (Finger pos) = show pos
-  show None = "x"
+  show X = "X"
 derive instance fingerEq :: Eq Finger
 derive instance fingerOrd :: Ord Finger
 
@@ -82,22 +92,30 @@ type Fingering = List Finger
 infix 7 Tuple as ==>
 
 -- Mapping of Note, ChordQuality to the fingering.
-ukeChords :: Map Pos (Map ChordQuality Fingering)
+ukeChords :: Map Pos (Map (Tuple ChordQuality ChordInterval) Fingering)
 ukeChords = M.fromFoldable $
     -- C
-      0 ==>
-        M.fromFoldable (
-          Major ==> (Finger 0 : Finger 0 : Finger 0 : Finger 3 : Nil)
-        : Minor ==> (Finger 0 : Finger 3 : Finger 3 : Finger 3 : Nil)
+      0 ==> M.fromFoldable
+        ( ukeChord Major Triad 0 0 0 3
+        : ukeChord Minor Triad 0 3 3 3
+        : ukeChord Major Dom7  0 0 0 1
         : Nil)
 
     -- G
-    : 7 ==>
-        M.fromFoldable (
-          Major ==> (Finger 0 : Finger 2 : Finger 3 : Finger 2 : Nil)
-        : Minor ==> (Finger 0 : Finger 2 : Finger 3 : Finger 1 : Nil)
+    : 7 ==> M.fromFoldable
+        ( ukeChord Major Triad 0 2 3 2
+        : ukeChord Minor Triad 0 2 3 1
         : Nil)
     : Nil
 
-findUkeChord :: Pos -> ChordQuality -> (Maybe Fingering)
-findUkeChord p q = M.lookup p ukeChords >>= M.lookup q
+ukeChord :: ChordQuality
+         -> ChordInterval
+         -> Int -> Int -> Int -> Int
+         -> Tuple (Tuple ChordQuality ChordInterval) Fingering
+ukeChord q i a b c d = (q ==> i) ==> (intToFinger a : intToFinger b : intToFinger c : intToFinger d : Nil)
+
+intToFinger :: Int -> Finger
+intToFinger n = if n < 0 then X else Finger n
+
+findUkeChord :: Pos -> ChordQuality -> ChordInterval -> Maybe Fingering
+findUkeChord p q i = M.lookup p ukeChords >>= M.lookup (Tuple q i)
