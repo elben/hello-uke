@@ -2,9 +2,12 @@ module Chords where
 
 import Prelude
 
-import Data.List (List)
+import Data.Maybe
+import Data.List (List(..), (:))
+import Data.List as L
 import Data.Map (Map)
 import Data.Map as M
+import Data.Tuple (Tuple(..))
 
 -- Note position. C is position 0, C# and Db are position 1, and so on.
 type Pos = Int
@@ -54,10 +57,44 @@ data ChordQuality =
 --   | Augmented
 --   | Diminished
 
--- Chord for a standard-tuned ukulele.
--- The list of positions represents the
-data UkeChord = Chord Note ChordQuality (List Pos)
+derive instance chordQualityEq :: Eq ChordQuality
+derive instance chordQualityOrd :: Ord ChordQuality
 
--- Mapping of Note -> ChordQuality -> UkeChord.
-ukeChords :: Map Pos (Map ChordQuality UkeChord)
-ukeChords = M.empty
+-- Represents a fingering on a string. Finger 0 is equivalent to the open string. NoPlay means don't
+-- play that string.
+data Finger = Finger Int
+            | None
+
+instance fingerShow :: Show Finger where
+  show (Finger pos) = show pos
+  show None = "x"
+derive instance fingerEq :: Eq Finger
+derive instance fingerOrd :: Ord Finger
+
+-- The fingering from left-most string when looking at the fretboard.
+type Fingering = List Finger
+
+-- Mapping of Note, ChordQuality to the fingering.
+ukeChords :: Map Pos (Map ChordQuality Fingering)
+ukeChords = M.fromFoldable $
+    -- C
+      (Tuple 0
+          (M.fromFoldable (
+            Tuple Major (Finger 0 : Finger 0 : Finger 0 : Finger 3 : Nil)
+          : Tuple Minor (Finger 0 : Finger 3 : Finger 3 : Finger 3 : Nil)
+          : Nil
+          ))
+      )
+
+    -- G
+    : (Tuple 7
+          (M.fromFoldable (
+            Tuple Major (Finger 0 : Finger 2 : Finger 3 : Finger 2 : Nil)
+          : Tuple Minor (Finger 0 : Finger 2 : Finger 3 : Finger 1 : Nil)
+          : Nil
+          ))
+      )
+    : Nil
+
+findUkeChord :: Pos -> ChordQuality -> (Maybe Fingering)
+findUkeChord p q = M.lookup p ukeChords >>= M.lookup q
