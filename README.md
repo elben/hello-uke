@@ -29,4 +29,7 @@ pulp run
 rm -rf bower_components/
 rm -rf output/
 bower install
+
+pulp build --to dist/example.js
+open dist/index.html
 ```

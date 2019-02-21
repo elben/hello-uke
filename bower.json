@@ -11,6 +11,7 @@
     "purescript-debug": "^4.0.0",
     "purescript-effect": "^2.0.1",
     "purescript-foldable-traversable": "^4.1.1",
+    "purescript-halogen": "^4.0.0",
     "purescript-lists": "^5.4.0",
     "purescript-maybe": "^4.0.1",
     "purescript-ordered-collections": "^1.6.0",
