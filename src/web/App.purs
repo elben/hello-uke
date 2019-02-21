@@ -37,23 +37,77 @@ myButton =
     let
       label = if state then "On" else "Off"
     in
-      HH.span
+      HH.div
         [ HP.classes [ClassName "fretboard"] ]
         [ HH.div
             [ HP.classes [ClassName "chord-info"] ]
             [ HH.text "C Minor" ]
         , HH.span
             [ HP.classes [ClassName "string"] ]
-            [ HH.text "x" ]
+            [ HH.span
+                [ HP.classes [ClassName "fret"] ]
+                [ HH.span
+                  [ HP.classes [ClassName "circle"] ]
+                  [ HH.span
+                      [ HP.classes [ClassName "circle-info"] ]
+                      [ HH.text "G" ]
+                  ]
+                ]
+            , HH.span
+                [ HP.classes [ClassName "fret"] ]
+                []
+            , HH.span
+                [ HP.classes [ClassName "fret"] ]
+                []
+            , HH.span
+                [ HP.classes [ClassName "fret"] ]
+                []
+            ]
         , HH.span
             [ HP.classes [ClassName "string"] ]
-            [ HH.text "x" ]
+            [ HH.span
+                [ HP.classes [ClassName "fret"] ]
+                []
+            , HH.span
+                [ HP.classes [ClassName "fret"] ]
+                []
+            , HH.span
+                [ HP.classes [ClassName "fret"] ]
+                []
+            , HH.span
+                [ HP.classes [ClassName "fret"] ]
+                []
+            ]
         , HH.span
             [ HP.classes [ClassName "string"] ]
-            [ HH.text "x" ]
+            [ HH.span
+                [ HP.classes [ClassName "fret"] ]
+                []
+            , HH.span
+                [ HP.classes [ClassName "fret"] ]
+                []
+            , HH.span
+                [ HP.classes [ClassName "fret"] ]
+                []
+            , HH.span
+                [ HP.classes [ClassName "fret"] ]
+                []
+            ]
         , HH.span
             [ HP.classes [ClassName "string"] ]
-            [ HH.text "x" ]
+            [ HH.span
+                [ HP.classes [ClassName "fret"] ]
+                []
+            , HH.span
+                [ HP.classes [ClassName "fret"] ]
+                []
+            , HH.span
+                [ HP.classes [ClassName "fret"] ]
+                []
+            , HH.span
+                [ HP.classes [ClassName "fret"] ]
+                []
+            ]
         ]
       -- HH.button
       --   [ HP.title label

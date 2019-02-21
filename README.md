@@ -30,6 +30,6 @@ rm -rf bower_components/
 rm -rf output/
 bower install
 
-pulp build --to dist/example.js
+pulp --then 'cp assets/* dist/' build --to dist/app.js
 open dist/index.html
 ```
