@@ -2,6 +2,7 @@
 .fretboard {
   position: relative;
   margin: 4em;
+  float: left;
 }
 
 .chord-info {

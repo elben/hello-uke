@@ -21,13 +21,13 @@ import Chords
 c  :: Note
 c  = Note "C"  0
 cs :: Note
-cs = Note "C#" 1
+cs = Note "C♯" 1
 df :: Note
 df = Note "Db" 1
 d  :: Note
 d  = Note "D"  2
 ds :: Note
-ds = Note "D#" 3
+ds = Note "D♯" 3
 ef :: Note
 ef = Note "Eb" 3
 e  :: Note
@@ -35,19 +35,19 @@ e  = Note "E"  4
 f  :: Note
 f  = Note "F"  5
 fs :: Note
-fs = Note "F#" 6
+fs = Note "F♯" 6
 gf :: Note
 gf = Note "Gb" 6
 g  :: Note
 g  = Note "G"  7
 gs :: Note
-gs = Note "G#" 8
+gs = Note "G♯" 8
 af :: Note
 af = Note "Ab" 8
 a  :: Note
 a  = Note "A"  9
 as :: Note
-as = Note "A#" 10
+as = Note "A♯" 10
 bf :: Note
 bf = Note "Bb" 10
 b  :: Note

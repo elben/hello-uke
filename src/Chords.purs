@@ -54,6 +54,12 @@ data ChordQuality =
   | Augmented
   | Diminished
 
+instance chordQualityShow :: Show ChordQuality where
+  show Major = "Major"
+  show Minor = "Minor"
+  show Suspended = "Sus"
+  show Augmented = "Aug"
+  show Diminished = "Dim"
 derive instance chordQualityEq :: Eq ChordQuality
 derive instance chordQualityOrd :: Ord ChordQuality
 
@@ -66,6 +72,13 @@ data ChordInterval =
   -- Second and Fourth also works with Suspended quality to make sus2 and sus4.
   | Second
   | Fourth
+
+instance chordIntervalShow :: Show ChordInterval where
+  show Triad = ""
+  show Dom7 = "7"
+  show Maj7 = "Maj7"
+  show Second = "2"
+  show Fourth = "4"
 
 derive instance chordIntervalEq :: Eq ChordInterval
 derive instance chordIntervalOrd :: Ord ChordInterval
