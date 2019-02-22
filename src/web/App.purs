@@ -20,9 +20,9 @@ import Web.HTML.Event.EventTypes (offline)
 data State = NoChord
            | Chord Pos ChordQuality ChordInterval (List Finger)
 
-instance stateShow :: Show State where
-  show NoChord = "No chord"
-  show (Chord p q i _) = getNoteName (posToNote p) <> " " <> show q <> " " <> show i
+humanChord :: State -> String
+humanChord NoChord = ""
+humanChord (Chord p q i _) = getNoteName (posToNote p) <> humanChordMod q i
 
 data Query a
   = Toggle a
@@ -45,7 +45,7 @@ renderChordInfo :: forall p i. State -> HH.HTML p i
 renderChordInfo s =
   let chordName = case s of
                     NoChord -> ""
-                    (Chord p q i _) -> show s
+                    (Chord p q i _) -> humanChord s
   in HH.div
        [ HP.classes [ClassName "chord-info"] ]
        [ HH.text chordName ]
@@ -105,21 +105,18 @@ myButton =
   where
 
   initialState :: State
-  initialState = Chord 0 Major Dom7 (Finger 1 : X : Finger 0 : Finger 2 : Nil)
+  initialState = Chord 0 Minor Maj7 (Finger 1 : X : Finger 0 : Finger 2 : Nil)
 
   render :: State -> H.ComponentHTML Query
   render state =
-    let
-      chordName = show state
-    in
-      HH.div
-        [ HP.classes [ClassName "fretboard"] ]
-        [ renderChordInfo state
-        , renderString state 7 0 -- G = 7
-        , renderString state 0 1 -- C = 0
-        , renderString state 4 2 -- E = 4
-        , renderString state 9 3 -- A = 9
-        ]
+    HH.div
+      [ HP.classes [ClassName "fretboard"] ]
+      [ renderChordInfo state
+      , renderString state 7 0 -- G = 7
+      , renderString state 0 1 -- C = 0
+      , renderString state 4 2 -- E = 4
+      , renderString state 9 3 -- A = 9
+      ]
 
   eval :: Query ~> H.ComponentDSL State Query Message m
   eval = case _ of

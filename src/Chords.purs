@@ -63,6 +63,13 @@ instance chordQualityShow :: Show ChordQuality where
 derive instance chordQualityEq :: Eq ChordQuality
 derive instance chordQualityOrd :: Ord ChordQuality
 
+humanChordQuality :: ChordQuality -> String
+humanChordQuality Major = ""
+humanChordQuality Minor = "m"
+humanChordQuality Suspended = "sus"
+humanChordQuality Augmented = "aug"
+humanChordQuality Diminished = "dim"
+
 data ChordInterval =
     Triad
   -- Seventh
@@ -76,12 +83,27 @@ data ChordInterval =
 instance chordIntervalShow :: Show ChordInterval where
   show Triad = ""
   show Dom7 = "7"
-  show Maj7 = "Maj7"
+  show Maj7 = "M7"
   show Second = "2"
   show Fourth = "4"
 
 derive instance chordIntervalEq :: Eq ChordInterval
 derive instance chordIntervalOrd :: Ord ChordInterval
+
+-- https://en.wikipedia.org/wiki/Chord_(music)#Examples
+humanChordInterval :: ChordInterval -> String
+humanChordInterval Triad = ""
+humanChordInterval Dom7 = "7"
+humanChordInterval Maj7 = "M7"
+humanChordInterval Second = "2"
+humanChordInterval Fourth = "4"
+
+humanChordMod :: ChordQuality -> ChordInterval -> String
+humanChordMod q i =
+  let divide = case q of
+                 Minor -> "/"
+                 _ -> ""
+  in humanChordQuality q <> divide <> humanChordInterval i
 
 -- Represents a fingering on a string. Finger 0 is equivalent to the open string. NoPlay means don't
 -- play that string.
