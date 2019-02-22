@@ -1,15 +1,16 @@
 module Main where
 
 import Prelude
+
+import ChordSelector as ChordSelector
+import Effect (Effect)
 import Effect (Effect)
 import Effect.Console (log)
-
-import Effect (Effect)
+import Fretboard as Fretboard
 import Halogen.Aff as HA
 import Halogen.VDom.Driver (runUI)
-import App as App
 
 main :: Effect Unit
 main = HA.runHalogenAff do
   body <- HA.awaitBody
-  runUI App.myButton unit body
+  runUI ChordSelector.chordSelectorComponent unit body

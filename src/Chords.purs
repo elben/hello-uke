@@ -1,8 +1,8 @@
 module Chords where
 
+import Data.Maybe
 import Prelude
 
-import Data.Maybe
 import Data.List (List(..), (:))
 import Data.List as L
 import Data.Map (Map)
@@ -70,6 +70,9 @@ humanChordQuality Suspended = "sus"
 humanChordQuality Augmented = "aug"
 humanChordQuality Diminished = "dim"
 
+chordQualities :: Array ChordQuality
+chordQualities = [ Major, Minor, Suspended, Augmented, Diminished ]
+
 data ChordInterval =
     Triad
   -- Seventh
@@ -79,6 +82,9 @@ data ChordInterval =
   -- Second and Fourth also works with Suspended quality to make sus2 and sus4.
   | Second
   | Fourth
+
+chordIntervals :: Array ChordInterval
+chordIntervals = [ Triad, Dom7, Maj7, Second, Fourth ]
 
 instance chordIntervalShow :: Show ChordInterval where
   show Triad = ""

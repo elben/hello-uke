@@ -72,3 +72,53 @@
   transform: translate3d(0%, 21%, 0);
   text-align: center;
 }
+
+.chord-selector {
+}
+
+.selector-section {
+  height: 60px;
+}
+
+.selection {
+  min-width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+
+  float: left;
+  margin: 0 10px 0 0;
+  padding: 5px;
+  color: #eee;
+}
+
+.btn {
+  cursor: pointer;
+  background: #222;
+  border: 2px solid #333;
+  border-radius: 13px;
+
+  /* Don't allow user to select text. Make it behave more like a button.
+   * https://stackoverflow.com/questions/6900124/how-to-make-certain-text-not-selectable-with-css
+   */
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+/Edge */
+  user-select: none; /* Standard */
+}
+
+.btn:hover {
+  background: red;
+}
+
+.btn.selected.green {
+  background: green;
+}
+
+.btn.selected.blue {
+  background: lightblue;
+}
+
+.btn.selected.pink {
+  background: pink;
+}

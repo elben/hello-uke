@@ -53,6 +53,9 @@ bf = Note "Bb" 10
 b  :: Note
 b  = Note "B"  11
 
+allNotes :: Array Note
+allNotes = [c, cs, df, d, ds, ef, e, f, fs, gf, g, gs, af, a, as, bf, b]
+
 notes :: List (List Note)
 notes = (
     (c : Nil)

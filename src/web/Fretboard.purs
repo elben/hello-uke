@@ -1,9 +1,7 @@
-module App where
-
-import Prelude
+module Fretboard where
 
 import Chords
-import ChordSelector
+import Prelude
 
 import Data.Array (range, snoc)
 import Data.List (List(..), foldl, index, intercalate, (:))
@@ -99,8 +97,8 @@ renderFrets baseNote numFrets f =
 -- chordSelectionComponent :: forall m. H.Component HH.HTML Query Input Message m
 -- chordSelectionComponent =
 
-chordComponent :: forall m. H.Component HH.HTML Query Input Message m
-chordComponent =
+fretboardComponent :: forall m. H.Component HH.HTML Query Input Message m
+fretboardComponent =
   H.component
     { initialState: const initialState
     , render
