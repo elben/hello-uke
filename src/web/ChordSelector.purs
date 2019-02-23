@@ -39,6 +39,14 @@ setStateChordQuality q (Chord p _ i) = Chord p (Just q) i
 setStateChordInterval :: ChordInterval -> State -> State
 setStateChordInterval i (Chord p q _) = Chord p q (Just i)
 
+isChordSelected :: State -> Boolean
+isChordSelected (Chord (Just _) (Just _) (Just _)) = true
+isChordSelected _ = false
+
+toMessage :: State -> Message
+toMessage (Chord (Just p) (Just q) (Just i)) = ChordSelected p q i
+toMessage _ = NoMessage
+
 data Query a
   -- These are "actions"
   -- https://pursuit.purescript.org/packages/purescript-halogen/3.1.3/docs/Halogen.Query#t:Action
@@ -49,7 +57,9 @@ data Query a
 
 type Input = Unit
 
-data Message = Toggled Boolean
+data Message =
+  NoMessage
+  | ChordSelected Pos ChordQuality ChordInterval
 
 rootNoteSelectorClasses :: Array ClassName
 rootNoteSelectorClasses = [ClassName "selection", ClassName "root-note-selection", ClassName "btn" ]
@@ -149,13 +159,19 @@ chordSelectorComponent =
       pure next
     SelectPos pos next -> do
       state <- H.get
-      H.put (setStatePos pos state)
+      let state' = setStatePos pos state
+      H.put state'
+      H.raise (toMessage state')
       pure next
     SelectChordQuality quality next -> do
       state <- H.get
-      H.put (setStateChordQuality quality state)
+      let state' = setStateChordQuality quality state
+      H.put state'
+      H.raise (toMessage state')
       pure next
     SelectChordInterval interval next -> do
       state <- H.get
-      H.put (setStateChordInterval interval state)
+      let state' = setStateChordInterval interval state
+      H.put state'
+      H.raise (toMessage state)
       pure next
