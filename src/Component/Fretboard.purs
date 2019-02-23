@@ -1,4 +1,4 @@
-module Fretboard where
+module Component.Fretboard where
 
 import Chords
 import Prelude

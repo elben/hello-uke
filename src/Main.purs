@@ -2,11 +2,11 @@ module Main where
 
 import Prelude
 
-import ChordSelector as ChordSelector
-import Effect (Effect)
+import Component.ChordSelector as ChordSelector
+import Component.Fretboard as Fretboard
+
 import Effect (Effect)
 import Effect.Console (log)
-import Fretboard as Fretboard
 import Halogen.Aff as HA
 import Halogen.VDom.Driver (runUI)
 

@@ -1,4 +1,4 @@
-module ChordSelector where
+module Component.ChordSelector where
 
 import Chords
 import Engine
