@@ -13,7 +13,6 @@ import Data.Maybe (Maybe(..), fromMaybe)
 import Engine (f, posToNote, step)
 import Halogen (ClassName(..))
 import Halogen as H
-import Halogen.HTML (i)
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
@@ -22,11 +21,16 @@ import Web.HTML.Event.EventTypes (offline)
 
 data State = Chord (Maybe Pos) (Maybe ChordQuality) (Maybe ChordInterval)
 
+setStatePos :: Pos -> State -> State
+setStatePos pos (Chord _ q i) = Chord (Just pos) q i
+
 data Query a
+  -- These are "actions"
+  -- https://pursuit.purescript.org/packages/purescript-halogen/3.1.3/docs/Halogen.Query#t:Action
   = Clear a
-  | SelectPos (Pos -> a)
-  | SelectChordQuality (ChordQuality -> a)
-  | SelectChordInterval (ChordInterval -> a)
+  | SelectPos Pos a
+  | SelectChordQuality ChordQuality a
+  | SelectChordInterval ChordInterval a
 
 type Input = Unit
 
@@ -73,7 +77,12 @@ chordSelectorComponent =
         [ HH.div
             [ HP.classes [ClassName "selector-section root-note-selector"] ]
             (map
-                (\(Note name pos) -> HH.div [ HP.classes [ClassName "selection", ClassName "root-note-selection", ClassName "btn" ] ] [ HH.text name ])
+            -- TODO make them divs clickable! and modify state
+                (\(Note name pos) ->
+                  HH.div
+                    [ HP.classes [ClassName "selection", ClassName "root-note-selection", ClassName "btn" ]
+                    , HE.onClick (HE.input (\a -> SelectPos 7))]
+                    [ HH.text name ])
                 selectableNotes)
         , HH.div
             [ HP.classes [ClassName "selector-section chord-quality-selector"] ]
@@ -82,7 +91,6 @@ chordSelectorComponent =
                 selectableChordQualities)
         , HH.div
             [ HP.classes [ClassName "selector-section chord-interval-selector"] ]
-            -- TODO only show for the ones the selected root note has.
             (map
                 (\i -> HH.div [ HP.classes [ClassName "selection", ClassName "chord-interval-selection", ClassName "btn" ] ] [ HH.text (humanChordInterval i) ])
                 selectableChordIntervals)
@@ -96,12 +104,13 @@ chordSelectorComponent =
       -- H.put nextState
       -- H.raise $ Toggled nextState
       pure next
-    SelectPos reply -> do
+    SelectPos pos next -> do
       state <- H.get
-      pure (reply 0)
-    SelectChordQuality reply -> do
+      H.put (setStatePos pos state)
+      pure next
+    SelectChordQuality quality next -> do
       state <- H.get
-      pure (reply Major)
-    SelectChordInterval reply -> do
+      pure next
+    SelectChordInterval interval next -> do
       state <- H.get
-      pure (reply Dom7)
+      pure next
