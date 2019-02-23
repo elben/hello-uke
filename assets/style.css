@@ -111,14 +111,6 @@
   background: red;
 }
 
-.btn.selected.green {
+.btn.selected {
   background: green;
-}
-
-.btn.selected.blue {
-  background: lightblue;
-}
-
-.btn.selected.pink {
-  background: pink;
 }

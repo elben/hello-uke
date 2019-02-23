@@ -21,8 +21,23 @@ import Web.HTML.Event.EventTypes (offline)
 
 data State = Chord (Maybe Pos) (Maybe ChordQuality) (Maybe ChordInterval)
 
+getStatePos :: State -> Maybe Pos
+getStatePos (Chord p _ _) = p
+
+getStateChordQuality :: State -> Maybe ChordQuality
+getStateChordQuality (Chord _ q _) = q
+
+getStateChordInterval :: State -> Maybe ChordInterval
+getStateChordInterval (Chord _ _ i) = i
+
 setStatePos :: Pos -> State -> State
 setStatePos pos (Chord _ q i) = Chord (Just pos) q i
+
+setStateChordQuality :: ChordQuality -> State -> State
+setStateChordQuality q (Chord p _ i) = Chord p (Just q) i
+
+setStateChordInterval :: ChordInterval -> State -> State
+setStateChordInterval i (Chord p q _) = Chord p q (Just i)
 
 data Query a
   -- These are "actions"
@@ -35,6 +50,8 @@ data Query a
 type Input = Unit
 
 data Message = Toggled Boolean
+
+rootNoteSelectorClasses = [ClassName "selection", ClassName "root-note-selection", ClassName "btn" ]
 
 chordSelectorComponent :: forall m. H.Component HH.HTML Query Input Message m
 chordSelectorComponent =
@@ -71,28 +88,42 @@ chordSelectorComponent =
 
             -- Return all of them
             _ -> chordIntervals
+    
+        isPosSelected :: Pos -> Boolean
+        isPosSelected p = case getStatePos state of
+                            Just pos -> pos == p
+                            _ -> false
     in
       HH.div
         [ HP.classes [ClassName "chord-selector"] ]
         [ HH.div
-            [ HP.classes [ClassName "selector-section root-note-selector"] ]
+            [ HP.classes [ClassName "selector-section", ClassName "root-note-selector"] ]
             (map
             -- TODO make them divs clickable! and modify state
                 (\(Note name pos) ->
-                  HH.div
-                    [ HP.classes [ClassName "selection", ClassName "root-note-selection", ClassName "btn" ]
-                    , HE.onClick (HE.input (\a -> SelectPos 7))]
-                    [ HH.text name ])
+                  let classes = if isPosSelected pos then snoc rootNoteSelectorClasses (ClassName "selected") else rootNoteSelectorClasses
+                  in HH.div
+                       [ HP.classes classes
+                       , HE.onClick (HE.input_ (SelectPos pos)) ]
+                       [ HH.text name ])
                 selectableNotes)
         , HH.div
-            [ HP.classes [ClassName "selector-section chord-quality-selector"] ]
+            [ HP.classes [ClassName "selector-section", ClassName "chord-quality-selector"] ]
             (map
-                (\q -> HH.div [ HP.classes [ClassName "selection", ClassName "chord-quality-selection", ClassName "btn" ] ] [ HH.text (show q) ])
+                (\q ->
+                  HH.div
+                    [ HP.classes [ClassName "selection", ClassName "chord-quality-selection", ClassName "btn" ]
+                    , HE.onClick (HE.input_ (SelectChordQuality q)) ]
+                    [ HH.text (show q) ])
                 selectableChordQualities)
         , HH.div
-            [ HP.classes [ClassName "selector-section chord-interval-selector"] ]
+            [ HP.classes [ClassName "selector-section", ClassName "chord-interval-selector"] ]
             (map
-                (\i -> HH.div [ HP.classes [ClassName "selection", ClassName "chord-interval-selection", ClassName "btn" ] ] [ HH.text (humanChordInterval i) ])
+                (\i ->
+                  HH.div
+                    [ HP.classes [ClassName "selection", ClassName "chord-interval-selection", ClassName "btn" ]
+                    , HE.onClick (HE.input_ (SelectChordInterval i)) ]
+                    [ HH.text (humanChordInterval i) ])
                 selectableChordIntervals)
         ]
 
@@ -110,7 +141,9 @@ chordSelectorComponent =
       pure next
     SelectChordQuality quality next -> do
       state <- H.get
+      H.put (setStateChordQuality quality state)
       pure next
     SelectChordInterval interval next -> do
       state <- H.get
+      H.put (setStateChordInterval interval state)
       pure next
