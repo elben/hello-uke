@@ -9,7 +9,7 @@ import Data.FoldableWithIndex (foldlWithIndex)
 import Data.List (List(..), foldl, index, intercalate, (:))
 import Data.List.Lazy (replicate)
 import Data.Map as M
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Engine (f, posToNote, step)
 import Halogen (ClassName(..))
 import Halogen as H
@@ -51,7 +51,14 @@ type Input = Unit
 
 data Message = Toggled Boolean
 
+rootNoteSelectorClasses :: Array ClassName
 rootNoteSelectorClasses = [ClassName "selection", ClassName "root-note-selection", ClassName "btn" ]
+
+chordQualitySelectorClasses :: Array ClassName
+chordQualitySelectorClasses = [ClassName "selection", ClassName "chord-quality-selection", ClassName "btn" ]
+
+chordIntervalSelectorClasses :: Array ClassName
+chordIntervalSelectorClasses = [ClassName "selection", ClassName "chord-interval-selection", ClassName "btn" ]
 
 chordSelectorComponent :: forall m. H.Component HH.HTML Query Input Message m
 chordSelectorComponent =
@@ -90,16 +97,19 @@ chordSelectorComponent =
             _ -> chordIntervals
     
         isPosSelected :: Pos -> Boolean
-        isPosSelected p = case getStatePos state of
-                            Just pos -> pos == p
-                            _ -> false
+        isPosSelected p = maybe false ((==) p) (getStatePos state)
+
+        isChordQualitySelected :: ChordQuality -> Boolean
+        isChordQualitySelected q = maybe false ((==) q) (getStateChordQuality state)
+
+        isChordIntervalSelected :: ChordInterval -> Boolean
+        isChordIntervalSelected q = maybe false ((==) q) (getStateChordInterval state)
     in
       HH.div
         [ HP.classes [ClassName "chord-selector"] ]
         [ HH.div
             [ HP.classes [ClassName "selector-section", ClassName "root-note-selector"] ]
             (map
-            -- TODO make them divs clickable! and modify state
                 (\(Note name pos) ->
                   let classes = if isPosSelected pos then snoc rootNoteSelectorClasses (ClassName "selected") else rootNoteSelectorClasses
                   in HH.div
@@ -111,19 +121,21 @@ chordSelectorComponent =
             [ HP.classes [ClassName "selector-section", ClassName "chord-quality-selector"] ]
             (map
                 (\q ->
-                  HH.div
-                    [ HP.classes [ClassName "selection", ClassName "chord-quality-selection", ClassName "btn" ]
-                    , HE.onClick (HE.input_ (SelectChordQuality q)) ]
-                    [ HH.text (show q) ])
+                  let classes = if isChordQualitySelected q then snoc chordQualitySelectorClasses (ClassName "selected") else chordQualitySelectorClasses
+                  in HH.div
+                       [ HP.classes classes
+                       , HE.onClick (HE.input_ (SelectChordQuality q)) ]
+                       [ HH.text (show q) ])
                 selectableChordQualities)
         , HH.div
             [ HP.classes [ClassName "selector-section", ClassName "chord-interval-selector"] ]
             (map
                 (\i ->
-                  HH.div
-                    [ HP.classes [ClassName "selection", ClassName "chord-interval-selection", ClassName "btn" ]
-                    , HE.onClick (HE.input_ (SelectChordInterval i)) ]
-                    [ HH.text (humanChordInterval i) ])
+                  let classes = if isChordIntervalSelected i then snoc chordIntervalSelectorClasses (ClassName "selected") else chordIntervalSelectorClasses
+                  in HH.div
+                       [ HP.classes classes
+                       , HE.onClick (HE.input_ (SelectChordInterval i)) ]
+                       [ HH.text (humanChordInterval i) ])
                 selectableChordIntervals)
         ]
 
