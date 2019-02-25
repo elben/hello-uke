@@ -4,6 +4,7 @@ import Prelude
 
 import Component.ChordSelector as ChordSelector
 import Component.Fretboard as Fretboard
+import Component.App as App
 
 import Effect (Effect)
 import Effect.Console (log)
@@ -13,4 +14,4 @@ import Halogen.VDom.Driver (runUI)
 main :: Effect Unit
 main = HA.runHalogenAff do
   body <- HA.awaitBody
-  runUI ChordSelector.chordSelectorComponent unit body
+  runUI App.component unit body
