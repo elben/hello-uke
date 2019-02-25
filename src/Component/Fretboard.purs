@@ -28,7 +28,9 @@ data Query a
   = Toggle a
   | IsOn (Boolean -> a)
 
-type Input = Unit
+data Input
+  = NoChordInput
+  | ChordInput Pos ChordQuality ChordInterval
 
 data Message = Toggled Boolean
 
@@ -93,9 +95,6 @@ renderFrets baseNote numFrets f =
       )
       []
       (range 0 (numFrets - 1))
-
--- chordSelectionComponent :: forall m. H.Component HH.HTML Query Input Message m
--- chordSelectionComponent =
 
 fretboardComponent :: forall m. H.Component HH.HTML Query Input Message m
 fretboardComponent =
