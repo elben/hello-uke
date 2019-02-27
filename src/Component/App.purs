@@ -1,6 +1,7 @@
 module Component.App where
 
 import Prelude
+import Chords as C
 
 import Component.ChordSelector as CS
 import Component.Fretboard as FB
@@ -12,7 +13,9 @@ import Halogen.Component.ChildPath as CP
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 
-data State = NoState
+data State
+  = NoChord
+  | Chord C.Pos C.ChordQuality C.ChordInterval
 
 data Query a
   = HandleChordSelector CS.Message a
@@ -36,20 +39,24 @@ component =
   where
 
   initialState :: State
-  initialState = NoState
+  initialState = NoChord
 
   render :: State -> H.ParentHTML Query ChildQuery ChildSlot m
-  render state = HH.div_
-      [ HH.slot' CP.cp1 unit CS.chordSelectorComponent unit (HE.input HandleChordSelector)
-  -- TODO how do I pass in the chord-selected into fretboard?
-      , HH.slot' CP.cp2 unit FB.fretboardComponent FB.NoChordInput (HE.input HandleFretboard)
-      ]
+  render state =
+    let fbState = case state of
+                    NoChord -> FB.NoChordInput
+                    Chord p q i -> FB.ChordInput p q i
+    in HH.div_
+        [ HH.slot' CP.cp1 unit CS.chordSelectorComponent unit (HE.input HandleChordSelector)
+        , HH.slot' CP.cp2 unit FB.fretboardComponent fbState (HE.input HandleFretboard)
+        ]
 
   eval :: Query ~> H.ParentDSL State Query ChildQuery ChildSlot Void m
   eval = case _ of
     HandleChordSelector (CS.ChordSelected pos quality interval) next -> do
       -- clear <- H.query' CP.cp1 unit (H.request CS.Clear)
       -- H.modify_ (\st -> st { toggleCount = st.toggleCount + 1 })
+      H.put (Chord pos quality interval)
       pure next
     HandleChordSelector CS.NoMessage next -> do
       pure next

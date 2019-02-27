@@ -1,21 +1,16 @@
 module Component.Fretboard where
 
-import Chords
 import Prelude
+import Chords
 
 import Data.Array (range, snoc)
-import Data.List (List(..), foldl, index, intercalate, (:))
-import Data.List.Lazy (replicate)
+import Data.List (List(..), foldl, index, (:))
 import Data.Maybe (Maybe(..), fromMaybe)
-import Engine (f, posToNote, step)
+import Engine (posToNote, step)
 import Halogen (ClassName(..))
 import Halogen as H
-import Halogen.HTML (i)
 import Halogen.HTML as HH
-import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Web.Event.EventPhase (EventPhase(..))
-import Web.HTML.Event.EventTypes (offline)
 
 data State = NoChord
            | Chord Pos ChordQuality ChordInterval (List Finger)
@@ -25,7 +20,8 @@ humanChord NoChord = ""
 humanChord (Chord p q i _) = getNoteName (posToNote p) <> humanChordMod q i
 
 data Query a
-  = Toggle a
+  = ChordChange Pos ChordQuality ChordInterval a
+  | ClearChord a
   | IsOn (Boolean -> a)
 
 data Input
@@ -102,7 +98,7 @@ fretboardComponent =
     { initialState: const initialState
     , render
     , eval
-    , receiver: const Nothing
+    , receiver
     }
   where
 
@@ -122,12 +118,25 @@ fretboardComponent =
 
   eval :: Query ~> H.ComponentDSL State Query Message m
   eval = case _ of
-    Toggle next -> do
+    ChordChange p q i next -> do
       -- state <- H.get
       -- let nextState = not state
-      -- H.put nextState
+      let s = case findUkeChord p q i of
+                 Just fingering -> (Chord p q i fingering)
+                 _ -> Chord 2 Major Triad (Finger 4 : X : Finger 0 : Finger 2 : Nil)
+      H.put s
       -- H.raise $ Toggled nextState
+      pure next
+    ClearChord next -> do
+      H.put NoChord
       pure next
     IsOn reply -> do
       -- state <- H.get
       pure (reply true)
+  
+  -- This component receives an Input from the parent component
+  receiver :: Input -> Maybe (Query Unit)
+  receiver input =
+    case input of
+      NoChordInput -> Just (ClearChord unit)
+      ChordInput p q i -> Just (ChordChange p q i unit)

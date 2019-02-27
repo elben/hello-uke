@@ -1,23 +1,17 @@
 module Component.ChordSelector where
 
+import Prelude
 import Chords
 import Engine
-import Prelude
 
-import Data.Array (filter, range, snoc)
-import Data.FoldableWithIndex (foldlWithIndex)
-import Data.List (List(..), foldl, index, intercalate, (:))
-import Data.List.Lazy (replicate)
+import Data.Array (filter, snoc)
 import Data.Map as M
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
-import Engine (f, posToNote, step)
 import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Web.Event.EventPhase (EventPhase(..))
-import Web.HTML.Event.EventTypes (offline)
 
 data State = Chord (Maybe Pos) (Maybe ChordQuality) (Maybe ChordInterval)
 
@@ -173,5 +167,5 @@ chordSelectorComponent =
       state <- H.get
       let state' = setStateChordInterval interval state
       H.put state'
-      H.raise (toMessage state)
+      H.raise (toMessage state')
       pure next
