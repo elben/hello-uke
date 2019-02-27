@@ -107,7 +107,10 @@ humanChordInterval Fourth = "4"
 humanChordMod :: ChordQuality -> ChordInterval -> String
 humanChordMod q i =
   let divide = case q of
-                 Minor -> "/"
+                 Minor ->
+                   case i of
+                     Triad -> ""
+                     _ -> "/"
                  _ -> ""
   in humanChordQuality q <> divide <> humanChordInterval i
 
