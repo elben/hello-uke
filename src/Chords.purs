@@ -159,6 +159,20 @@ ukeChords = M.fromFoldable
             [ Triad ==> fing 0 2 3 1
             ]
         ]
+
+    -- A# / Bb
+    , 10 ==> M.fromFoldable
+        [ Major ==> M.fromFoldable
+            [ Triad ==> fing 3 2 1 1
+            , Dom7  ==> fing 1 2 1 1
+            ]
+        , Minor ==> M.fromFoldable
+            [ Triad ==> fing 3 1 1 1
+            , Dom7  ==> fing 1 1 1 1
+            ]
+        , Suspended ==> M.fromFoldable
+            [ Second ==> fing 3 0 1 1 ]
+        ]
     ]
 
 fing :: Int -> Int -> Int -> Int -> Fingering

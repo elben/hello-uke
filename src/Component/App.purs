@@ -39,7 +39,10 @@ component =
   where
 
   initialState :: State
-  initialState = NoChord
+  initialState =
+    case CS.initialState of
+      CS.Chord (Just p) (Just q) (Just i) -> Chord p q i
+      _ -> NoChord
 
   render :: State -> H.ParentHTML Query ChildQuery ChildSlot m
   render state =

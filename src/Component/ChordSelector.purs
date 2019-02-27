@@ -1,12 +1,12 @@
 module Component.ChordSelector where
 
-import Prelude
 import Chords
-import Engine
+import Prelude
 
 import Data.Array (filter, snoc)
 import Data.Map as M
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Engine (allNotes)
 import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.HTML as HH
@@ -64,6 +64,9 @@ chordQualitySelectorClasses = [ClassName "selection", ClassName "chord-quality-s
 chordIntervalSelectorClasses :: Array ClassName
 chordIntervalSelectorClasses = [ClassName "selection", ClassName "chord-interval-selection", ClassName "btn" ]
 
+initialState :: State
+initialState = Chord (Just 0) (Just Major) (Just Triad)
+
 chordSelectorComponent :: forall m. H.Component HH.HTML Query Input Message m
 chordSelectorComponent =
   H.component
@@ -73,9 +76,6 @@ chordSelectorComponent =
     , receiver: const Nothing
     }
   where
-
-  initialState :: State
-  initialState = Chord (Just 0) (Just Major) Nothing
 
   render :: State -> H.ComponentHTML Query
   render state =
@@ -95,7 +95,7 @@ chordSelectorComponent =
             -- Filter to the ones available for this position
             Chord (Just pos) (Just q) _ ->
                 let intervalsMap = fromMaybe M.empty (M.lookup pos ukeChords >>= M.lookup q)
-                in filter (\q -> M.member q intervalsMap) chordIntervals
+                in filter (\qual -> M.member qual intervalsMap) chordIntervals
 
             -- Return all of them
             _ -> chordIntervals

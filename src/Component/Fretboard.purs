@@ -95,15 +95,12 @@ renderFrets baseNote numFrets f =
 fretboardComponent :: forall m. H.Component HH.HTML Query Input Message m
 fretboardComponent =
   H.component
-    { initialState: const initialState
+    { initialState: initialState
     , render
     , eval
     , receiver
     }
   where
-
-  initialState :: State
-  initialState = Chord 0 Minor Maj7 (Finger 1 : X : Finger 0 : Finger 2 : Nil)
 
   render :: State -> H.ComponentHTML Query
   render state =
@@ -123,7 +120,7 @@ fretboardComponent =
       -- let nextState = not state
       let s = case findUkeChord p q i of
                  Just fingering -> (Chord p q i fingering)
-                 _ -> Chord 2 Major Triad (Finger 4 : X : Finger 0 : Finger 2 : Nil)
+                 _ -> NoChord
       H.put s
       -- H.raise $ Toggled nextState
       pure next
@@ -133,6 +130,15 @@ fretboardComponent =
     IsOn reply -> do
       -- state <- H.get
       pure (reply true)
+
+  initialState :: Input -> State
+  initialState input =
+    case input of
+      NoChordInput -> NoChord
+      ChordInput p q i ->
+        case findUkeChord p q i of
+          Just fingering -> (Chord p q i fingering)
+          _ -> NoChord
   
   -- This component receives an Input from the parent component
   receiver :: Input -> Maybe (Query Unit)
