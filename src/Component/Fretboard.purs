@@ -1,12 +1,11 @@
 module Component.Fretboard where
 
-import Prelude
 import Chords
+import Prelude
 
 import Component.Common as Com
-
-import Data.Array (range, snoc)
-import Data.List (List(..), foldl, index, (:))
+import Data.Array (index, range, snoc)
+import Data.List (foldl)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Engine (posToNote, step)
 import Halogen (ClassName(..))
@@ -15,7 +14,7 @@ import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 
 data State = NoChord
-           | Chord Pos ChordQuality ChordInterval (List Finger)
+           | Chord Pos ChordQuality ChordInterval Fingering
 
 humanChord :: State -> String
 humanChord NoChord = ""

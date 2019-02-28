@@ -127,7 +127,7 @@ derive instance fingerEq :: Eq Finger
 derive instance fingerOrd :: Ord Finger
 
 -- The fingering from left-most string when looking at the fretboard.
-type Fingering = List Finger
+type Fingering = Array Finger
 
 -- Easier way of defining tuples. Precedence is *lower* than List's (:), so that we can create
 -- tuples in lists like this:
@@ -177,13 +177,13 @@ ukeChords = M.fromFoldable
     ]
 
 fing :: Int -> Int -> Int -> Int -> Fingering
-fing a b c d = intToFinger a : intToFinger b : intToFinger c : intToFinger d : Nil
+fing a b c d = [intToFinger a, intToFinger b, intToFinger c, intToFinger d]
 
 ukeChord :: ChordQuality
          -> ChordInterval
          -> Int -> Int -> Int -> Int
          -> Tuple (Tuple ChordQuality ChordInterval) Fingering
-ukeChord q i a b c d = (q ==> i) ==> (intToFinger a : intToFinger b : intToFinger c : intToFinger d : Nil)
+ukeChord q i a b c d = (q ==> i) ==> [intToFinger a, intToFinger b, intToFinger c, intToFinger d]
 
 intToFinger :: Int -> Finger
 intToFinger n = if n < 0 then X else Finger n
