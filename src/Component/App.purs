@@ -50,8 +50,8 @@ component =
                     NoChord -> FB.NoChordInput
                     Chord p q i -> FB.ChordInput p q i
     in HH.div_
-        [ HH.slot' CP.cp1 unit CS.chordSelectorComponent unit (HE.input HandleChordSelector)
-        , HH.slot' CP.cp2 unit FB.fretboardComponent fbState (HE.input HandleFretboard)
+        [ HH.slot' CP.cp1 unit CS.component unit (HE.input HandleChordSelector)
+        , HH.slot' CP.cp2 unit FB.component fbState (HE.input HandleFretboard)
         ]
 
   eval :: Query ~> H.ParentDSL State Query ChildQuery ChildSlot Void m

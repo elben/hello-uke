@@ -67,8 +67,8 @@ chordIntervalSelectorClasses = [ClassName "selection", ClassName "chord-interval
 initialState :: State
 initialState = Chord (Just 0) (Just Major) (Just Triad)
 
-chordSelectorComponent :: forall m. H.Component HH.HTML Query Input Message m
-chordSelectorComponent =
+component :: forall m. H.Component HH.HTML Query Input Message m
+component =
   H.component
     { initialState: const initialState
     , render

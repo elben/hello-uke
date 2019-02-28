@@ -31,13 +31,17 @@ data Input
 
 data Message = Toggled Boolean
 
-barreClassNames :: Int -> Barre -> Array ClassName
+-- Figure out the barre classes.
+barreClassNames :: Int   -- String position
+                -> Barre
+                -> Array ClassName
 barreClassNames stringPos (Barre barreFret start end) 
   | stringPos == start = [ClassName "barre", ClassName "first"]
   | stringPos == end   = [ClassName "barre", ClassName "last"]
   | stringPos >= start && stringPos <= end = [ClassName "barre"]
   | otherwise = []
 
+-- Returns true if the given string and fret position has a barre on it.
 barreOnFret :: Int         -- String position
             -> Int         -- Fret position
             -> Maybe Barre -- Barre
@@ -46,7 +50,11 @@ barreOnFret stringPos fretPos (Just barre@(Barre barreFretPos first last)) =
   barreFretPos == fretPos && stringPos >= first && stringPos <= last
 barreOnFret _ _ _ = false
 
-renderCircle :: forall p i. Array ClassName -> String -> HH.HTML p i
+-- Renders a circle with text inside.
+renderCircle :: forall p i.
+                Array ClassName -- CSS classes
+             -> String          -- Text to go in center
+             -> HH.HTML p i
 renderCircle classes text =
   HH.span
     [ HP.classes ([ClassName "circle"] <> classes) ]
@@ -55,6 +63,7 @@ renderCircle classes text =
         [ HH.text text ]
     ]
 
+-- Renders (or not) a fret for the given string and fret position.
 renderFret :: forall p i.
               Int         -- String position
            -> Pos         -- Root note on string
@@ -68,6 +77,7 @@ renderFret stringPos rootPos fretPos fing barre =
     else
       let classes = if isBarreOnFret then maybe [] (barreClassNames stringPos) barre else []
           text = case fing of
+                   -- This (stringPos, fretPos) is "played", even though it's part of a barre.
                    B n -> getNoteName (posToNote (step n rootPos))
 
                    -- Fret in (stringPos, fretPos) is an unplayed barre. Don't show note because
@@ -118,13 +128,13 @@ renderString s rootPos stringPos =
   in HH.span [ HP.classes [ClassName "string"] ]
        (renderFrets stringPos rootPos (numFretsToRender s) fing barre)
 
--- Draw the frets of a string.
+-- Renders the frets of a string.
 renderFrets :: forall p i.
                Int         -- String position
             -> Pos         -- Root note on string
             -> Int         -- Number of frets to render
             -> Finger      -- Finger to be played for this fret on this string
-            -> Maybe Barre
+            -> Maybe Barre -- Possible barre
             -> Array (HH.HTML p i)
 renderFrets stringPos rootPos numFrets fing barre =
   foldl
@@ -136,8 +146,8 @@ renderFrets stringPos rootPos numFrets fing barre =
     []
     (range 0 (numFrets - 1))
 
-fretboardComponent :: forall m. H.Component HH.HTML Query Input Message m
-fretboardComponent =
+component :: forall m. H.Component HH.HTML Query Input Message m
+component =
   H.component
     { initialState: initialState
     , render
