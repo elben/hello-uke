@@ -3,6 +3,8 @@ module Component.Fretboard where
 import Prelude
 import Chords
 
+import Component.Common as Com
+
 import Data.Array (range, snoc)
 import Data.List (List(..), foldl, index, (:))
 import Data.Maybe (Maybe(..), fromMaybe)
@@ -41,12 +43,12 @@ renderCircle s =
 
 renderChordInfo :: forall p i. State -> HH.HTML p i
 renderChordInfo s =
-  let chordName = case s of
-                    NoChord -> ""
-                    (Chord p q i _) -> humanChord s
+  let htmls = case s of
+                NoChord -> []
+                (Chord p q i _) -> Com.chordHtml (posToNote p) q i
   in HH.div
        [ HP.classes [ClassName "chord-info"] ]
-       [ HH.text chordName ]
+       htmls
 
 -- Determine the number of frets to draw for this state. Draw at least four frets (including the one
 -- behind the nut).

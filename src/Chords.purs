@@ -110,6 +110,7 @@ humanChordMod q i =
                  Minor ->
                    case i of
                      Triad -> ""
+                     Dom7 -> ""
                      _ -> "/"
                  _ -> ""
   in humanChordQuality q <> divide <> humanChordInterval i

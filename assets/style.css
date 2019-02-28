@@ -1,5 +1,6 @@
 body {
   font-size: 16px;
+  font-family: Arial Unicode MS, Lucida Sans Unicode;
 }
 
 .fretboard {
@@ -9,9 +10,9 @@ body {
 }
 
 .chord-info {
+  line-height: 2em;
   width: 200px;
   height: 40px;
-  line-height: 40px;
   background: #eee;
   color: #333;
   text-align: center;
@@ -68,14 +69,31 @@ body {
   transform: translate3d(-50%, 25%, 0);
 }
 
+.circle.barre {
+  width: 45px;
+}
+
+.circle.barre.first {
+  border-bottom-left-radius: 50%;
+  border-top-left-radius: 50%;
+}
+
+.circle.barre.last {
+  border-bottom-right-radius: 50%;
+  border-top-right-radius: 50%;
+}
+
 .circle-info {
   width: 30px;
   height: 30px;
   display: block;
-  transform: translate3d(0%, 21%, 0);
+  transform: translate3d(0%, 20%, 0);
   text-align: center;
-  line-height: 1.2em;
   font-size: 0.9em;
+  font-family: Arial Unicode MS, Lucida Sans Unicode;
+
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .chord-selector {
