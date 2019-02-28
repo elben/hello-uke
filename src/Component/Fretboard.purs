@@ -7,6 +7,7 @@ import Component.Common as Com
 import Data.Array (index, range, snoc)
 import Data.List (foldl)
 import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Traversable (sequence)
 import Engine (posToNote, step)
 import Halogen (ClassName(..))
 import Halogen as H
@@ -40,17 +41,20 @@ renderCircle :: forall p i.
              -> HH.HTML p i
 renderCircle barre pos stringPos s = 
   let barreClass = case barre of
-                     Just (Barre start end) ->
-                          if stringPos == start
-                            -- First barred string
-                            then [ClassName "barre", ClassName "first"]
-                            else if stringPos == end
-                                   -- Last barred string
-                                   then [ClassName "barre", ClassName "last"]
-                                   else if stringPos >= start && stringPos <= end
-                                          -- Inside a barre
-                                          then [ClassName "barre"]
-                                          else []
+                     Just (Barre barreFret start end) ->
+                       if pos == barreFret
+                         then
+                            if stringPos == start
+                              -- First barred string
+                              then [ClassName "barre", ClassName "first"]
+                              else if stringPos == end
+                                    -- Last barred string
+                                    then [ClassName "barre", ClassName "last"]
+                                    else if stringPos >= start && stringPos <= end
+                                            -- Inside a barre
+                                            then [ClassName "barre"]
+                                            else []
+                         else []
                      _ -> []
   in HH.span
       [ HP.classes ([ClassName "circle"] <> barreClass) ]
@@ -100,7 +104,13 @@ renderString s baseNote stringPos =
        (renderFrets baseNote stringPos (numFretsToRender s) fing barre)
 
 -- Draw the frets of a string.
-renderFrets :: forall p i. Pos -> Int -> Int -> Finger -> Maybe Barre -> Array (HH.HTML p i)
+renderFrets :: forall p i.
+               Pos
+            -> Int         -- Base note
+            -> Int         -- String position
+            -> Finger      -- Finger to be played for this fret on this string
+            -> Maybe Barre
+            -> Array (HH.HTML p i)
 renderFrets baseNote stringPos numFrets f barre =
   let 
       fingerIdx = case f of
@@ -112,16 +122,38 @@ renderFrets baseNote stringPos numFrets f barre =
       (\htmls idx ->
 
         let barreHtml =
-              case f of
-                B n ->
-                  -- This fret on this string is barred. If there is a finger note played *below*
-                  -- then we don't want to show the note name. But if the note that will ring is
-                  -- the barred note, then render the note name.
-                  renderCircle barre n stringPos (getNoteName (posToNote (step n baseNote)))
-                _ -> HH.text ""
+              case barre of
+                Just (Barre barreFret first last) ->
+                  if stringPos >= first && stringPos <= last
+                    then
+                      case f of
+                        F n -> 
+                          if idx == barreFret
+                          -- A barre behind the finger for this string, so don't show note name.
+                          then [renderCircle barre barreFret stringPos ""]
+                          else []
+                        B n ->
+                          if idx == n
+                          -- The fret on this string is barred, but the barred note is part of the
+                          -- chord. So render the note name.
+                          then [renderCircle barre n stringPos (getNoteName (posToNote (step n baseNote)))]
+                          else []
+                        _ -> []
+                    else
+                      []
 
-            html = []
+                _ -> []
 
+            noteHtml =
+              if idx == fingerIdx
+                then
+                  case f of
+                    F n -> [renderCircle barre n stringPos (getNoteName (posToNote (step n baseNote)))]
+                    B n -> [renderCircle barre n stringPos (getNoteName (posToNote (step n baseNote)))]
+                    X -> [renderCircle barre (-1) stringPos "X"]
+                else []
+            
+            -- combined = fromMaybe [] (sequence [barreHtml, noteHtml])
 
         -- If the idx-th fret is where the finger is to be played, then
         -- draw the circle representing the finger.
@@ -136,7 +168,7 @@ renderFrets baseNote stringPos numFrets f barre =
         --                F n -> renderCircle barre n stringPos (getNoteName (posToNote (step n baseNote)))
         --     inside = if idx == fingerIdx then [circle] else []
 
-        in snoc htmls (HH.span [ HP.classes [ClassName "fret"] ] html)
+        in snoc htmls (HH.span [ HP.classes [ClassName "fret"] ] (barreHtml <> noteHtml))
       )
       []
       (range 0 (numFrets - 1))

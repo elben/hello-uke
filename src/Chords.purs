@@ -128,9 +128,11 @@ instance fingerShow :: Show Finger where
 derive instance fingerEq :: Eq Finger
 derive instance fingerOrd :: Ord Finger
 
--- Specifies a barre fingering. The first Int is the left-most string
--- (starting at 0), ranging to the right-most string.
-data Barre = Barre Int Int
+-- Specifies a barre fingering. The three Ints are:
+-- * The fret number that is barred
+-- * The left-most string index (starting at 0)
+-- * The right-most string index
+data Barre = Barre Int Int Int
 
 -- The fingering from left-most string when looking at the fretboard.
 data Fingering = Fingering (Maybe Barre) (Array Finger)
@@ -174,12 +176,12 @@ ukeChords = M.fromFoldable
     -- A# / Bb
     , 10 ==> M.fromFoldable
         [ Major ==> M.fromFoldable
-            [ Triad ==> fini (F 3) (F 2) (B 1) (B 1) (Barre 2 3)
-            , Dom7  ==> fini (B 1) (F 2) (B 1) (B 1) (Barre 0 3)
+            [ Triad ==> fini (F 3) (F 2) (B 1) (B 1) (Barre 1 2 3)
+            , Dom7  ==> fini (B 1) (F 2) (B 1) (B 1) (Barre 1 0 3)
             ]
         , Minor ==> M.fromFoldable
-            [ Triad ==> fing 3 1 1 1
-            , Dom7  ==> fing 1 1 1 1
+            [ Triad ==> fini (F 3) (B 1) (B 1) (B 1) (Barre 1 1 3)
+            , Dom7  ==> fini (B 1) (B 1) (B 1) (B 1) (Barre 1 0 3)
             ]
         , Suspended ==> M.fromFoldable
             [ Second ==> fing 3 0 1 1 ]
