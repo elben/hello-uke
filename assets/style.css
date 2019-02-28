@@ -70,17 +70,18 @@ body {
 }
 
 .circle.barre {
-  width: 45px;
+  width: 50px;
+  border-radius: unset;
 }
 
 .circle.barre.first {
-  border-bottom-left-radius: 50%;
-  border-top-left-radius: 50%;
+  border-bottom-left-radius: 15px;
+  border-top-left-radius: 15px;
 }
 
 .circle.barre.last {
-  border-bottom-right-radius: 50%;
-  border-top-right-radius: 50%;
+  border-bottom-right-radius: 15px;
+  border-top-right-radius: 15px;
 }
 
 .circle-info {

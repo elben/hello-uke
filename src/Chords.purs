@@ -115,19 +115,28 @@ humanChordMod q i =
                  _ -> ""
   in humanChordQuality q <> divide <> humanChordInterval i
 
--- Represents a fingering on a string. Finger 0 is equivalent to the open string. NoPlay means don't
--- play that string.
-data Finger = Finger Int
+-- Represents a fingering on a string. (F 0) is equivalent to the open string. X means don't
+-- play that string. B means ignore the fingering, because the Barre will handle it.
+data Finger = F Int
+            | B Int
             | X
 
 instance fingerShow :: Show Finger where
-  show (Finger pos) = show pos
+  show (F pos) = show pos
   show X = "X"
+  show (B pos) = "B" <> show pos
 derive instance fingerEq :: Eq Finger
 derive instance fingerOrd :: Ord Finger
 
+-- Specifies a barre fingering. The first Int is the left-most string
+-- (starting at 0), ranging to the right-most string.
+data Barre = Barre Int Int
+
 -- The fingering from left-most string when looking at the fretboard.
-type Fingering = Array Finger
+data Fingering = Fingering (Maybe Barre) (Array Finger)
+
+getBarre :: Fingering -> Maybe Barre
+getBarre (Fingering barre _) = barre
 
 -- Easier way of defining tuples. Precedence is *lower* than List's (:), so that we can create
 -- tuples in lists like this:
@@ -164,7 +173,7 @@ ukeChords = M.fromFoldable
     -- A# / Bb
     , 10 ==> M.fromFoldable
         [ Major ==> M.fromFoldable
-            [ Triad ==> fing 3 2 1 1
+            [ Triad ==> fini (F 3) (F 2) (B 1) (B 1) (Barre 2 3)
             , Dom7  ==> fing 1 2 1 1
             ]
         , Minor ==> M.fromFoldable
@@ -176,17 +185,25 @@ ukeChords = M.fromFoldable
         ]
     ]
 
+fini :: Finger -> Finger -> Finger -> Finger -> Barre -> Fingering
+fini a b c d barre = Fingering (Just barre) [a, b, c, d]
+
+-- Fingering without barre.
 fing :: Int -> Int -> Int -> Int -> Fingering
-fing a b c d = [intToFinger a, intToFinger b, intToFinger c, intToFinger d]
+fing a b c d = Fingering Nothing [intToFinger a, intToFinger b, intToFinger c, intToFinger d]
+
+-- Fingering with barre.
+finb :: Int -> Int -> Int -> Int -> Barre -> Fingering
+finb a b c d barre = Fingering (Just barre) [intToFinger a, intToFinger b, intToFinger c, intToFinger d]
 
 ukeChord :: ChordQuality
          -> ChordInterval
          -> Int -> Int -> Int -> Int
          -> Tuple (Tuple ChordQuality ChordInterval) Fingering
-ukeChord q i a b c d = (q ==> i) ==> [intToFinger a, intToFinger b, intToFinger c, intToFinger d]
+ukeChord q i a b c d = (q ==> i) ==> Fingering Nothing [intToFinger a, intToFinger b, intToFinger c, intToFinger d]
 
 intToFinger :: Int -> Finger
-intToFinger n = if n < 0 then X else Finger n
+intToFinger n = if n < 0 then X else F n
 
 findUkeChord :: Pos -> ChordQuality -> ChordInterval -> Maybe Fingering
 findUkeChord p q i = M.lookup p ukeChords >>= M.lookup q >>= M.lookup i
