@@ -6,7 +6,7 @@ import Prelude
 import Component.Common as Com
 import Data.Array (index, range, snoc)
 import Data.List (foldl)
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Traversable (sequence)
 import Engine (posToNote, step)
 import Halogen (ClassName(..))
@@ -32,7 +32,13 @@ data Input
 
 data Message = Toggled Boolean
 
--- TODO!! refactor this and its usage to simplify the whole Barre and fret position thing.
+barreClassNames :: Int -> Int -> Barre -> Array ClassName
+barreClassNames notePos stringPos (Barre barreFret start end) 
+  | notePos == barreFret && stringPos == start = [ClassName "barre", ClassName "first"]
+  | notePos == barreFret && stringPos == end   = [ClassName "barre", ClassName "last"]
+  | notePos == barreFret && stringPos >= start && stringPos <= end = [ClassName "barre"]
+  | otherwise = []
+
 renderCircle :: forall p i.
                 Maybe Barre
              -> Int    -- Note pos
@@ -40,22 +46,7 @@ renderCircle :: forall p i.
              -> String -- Text to display
              -> HH.HTML p i
 renderCircle barre pos stringPos s = 
-  let barreClass = case barre of
-                     Just (Barre barreFret start end) ->
-                       if pos == barreFret
-                         then
-                            if stringPos == start
-                              -- First barred string
-                              then [ClassName "barre", ClassName "first"]
-                              else if stringPos == end
-                                    -- Last barred string
-                                    then [ClassName "barre", ClassName "last"]
-                                    else if stringPos >= start && stringPos <= end
-                                            -- Inside a barre
-                                            then [ClassName "barre"]
-                                            else []
-                         else []
-                     _ -> []
+  let barreClass = maybe [] (barreClassNames pos stringPos) barre
   in HH.span
       [ HP.classes ([ClassName "circle"] <> barreClass) ]
       [ HH.span
@@ -133,16 +124,8 @@ renderFrets baseNote stringPos numFrets f barre =
                           -- A barre behind the finger for this string, so don't show note name.
                           then [renderCircle barre barreFret stringPos ""]
                           else []
-                        B n ->
-                          if idx == n
-                          -- The fret on this string is barred, but the barred note is part of the
-                          -- chord. So render the note name.
-                          then [renderCircle barre n stringPos (getNoteName (posToNote (step n baseNote)))]
-                          else []
                         _ -> []
-                    else
-                      []
-
+                    else []
                 _ -> []
 
             noteHtml =
