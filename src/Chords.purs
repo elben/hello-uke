@@ -116,20 +116,17 @@ humanChordMod q i =
   in humanChordQuality q <> divide <> humanChordInterval i
 
 -- Represents a fingering on a string. (F 0) is equivalent to the open string. X means don't
--- play that string. B means ignore the fingering, because the Barre will handle it.
+-- play that string.
 data Finger = F Int
-            | B Int
             | X
 
 getFingerPos :: Finger -> Int
 getFingerPos (F n) = n
-getFingerPos (B n) = n
 getFingerPos X = -1
 
 instance fingerShow :: Show Finger where
   show (F pos) = show pos
   show X = "X"
-  show (B pos) = "B" <> show pos
 derive instance fingerEq :: Eq Finger
 derive instance fingerOrd :: Ord Finger
 
@@ -180,12 +177,12 @@ ukeChords = M.fromFoldable
     -- A# / Bb
     , 10 ==> M.fromFoldable
         [ Major ==> M.fromFoldable
-            [ Triad ==> fini (F 3) (F 2) (B 1) (B 1) (Barre 1 2 3)
-            , Dom7  ==> fini (B 1) (F 2) (B 1) (B 1) (Barre 1 0 3)
+            [ Triad ==> finb 3 2 1 1 (Barre 1 2 3)
+            , Dom7  ==> finb 1 2 1 1 (Barre 1 0 3)
             ]
         , Minor ==> M.fromFoldable
-            [ Triad ==> fini (F 3) (B 1) (B 1) (B 1) (Barre 1 1 3)
-            , Dom7  ==> fini (B 1) (B 1) (B 1) (B 1) (Barre 1 0 3)
+            [ Triad ==> finb 3 1 1 1 (Barre 1 1 3)
+            , Dom7  ==> finb 1 1 1 1 (Barre 1 0 3)
             ]
         , Suspended ==> M.fromFoldable
             [ Second ==> fing 3 0 1 1 ]

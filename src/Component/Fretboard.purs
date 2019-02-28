@@ -77,16 +77,25 @@ renderFret stringPos rootPos fretPos fing barre =
     else
       let classes = if isBarreOnFret then maybe [] (barreClassNames stringPos) barre else []
           text = case fing of
-                   -- This (stringPos, fretPos) is "played", even though it's part of a barre.
-                   B n -> getNoteName (posToNote (step n rootPos))
-
-                   -- Fret in (stringPos, fretPos) is an unplayed barre. Don't show note because
-                   -- another finger (F n) will be playing this string instead.
-                   F n -> if isBarreOnFret then "" else getNoteName (posToNote (step n rootPos))
+                   -- If fret in (stringPos, fretPos) is an unplayed barre, don't show note
+                   -- because another finger (F n) will be playing this string instead.
+                   F n -> if isBarreOnFret && higherFingerPlaying barre n
+                            then ""
+                            else getNoteName (posToNote (step n rootPos))
 
                    X -> "X"
       in Just (renderCircle classes text)
-  where isBarreOnFret = barreOnFret stringPos fretPos barre
+  where
+    isBarreOnFret = barreOnFret stringPos fretPos barre
+
+    -- Check to see if the given finger pos is "higher" up the fretboard than the
+    -- barre. This implies that the finger note will be playing over the barre
+    -- note.
+    higherFingerPlaying :: Maybe Barre -> Int -> Boolean
+    higherFingerPlaying barre fingerPos =
+      case barre of
+        Just (Barre barreFretPos _ _) -> fingerPos > barreFretPos
+        _ -> true
 
 renderChordInfo :: forall p i. State -> HH.HTML p i
 renderChordInfo s =
@@ -107,7 +116,6 @@ numFretsToRender (Chord p q i (Fingering barre fs)) =
     ((foldl
       (\m f -> case f of
                 X -> m
-                B n -> max m n
                 F n -> max m n)
       0
       fs) + 1)
