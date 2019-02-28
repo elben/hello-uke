@@ -121,6 +121,7 @@ renderFrets baseNote stringPos numFrets f barre =
     foldl
       (\htmls idx ->
 
+        -- Figure out if we want to render barre blocks.
         let barreHtml =
               case barre of
                 Just (Barre barreFret first last) ->
@@ -153,21 +154,6 @@ renderFrets baseNote stringPos numFrets f barre =
                     X -> [renderCircle barre (-1) stringPos "X"]
                 else []
             
-            -- combined = fromMaybe [] (sequence [barreHtml, noteHtml])
-
-        -- If the idx-th fret is where the finger is to be played, then
-        -- draw the circle representing the finger.
-
-        -- let circle = case f of
-        --                X -> renderCircle barre (-1) stringPos "X"
-
-        --                -- Just choose the first note name for now (e.g. C# instead of Db)
-        --                B n -> renderCircle barre n stringPos (getNoteName (posToNote (step n baseNote)))
-
-        --                -- Just choose the first note name for now (e.g. C# instead of Db)
-        --                F n -> renderCircle barre n stringPos (getNoteName (posToNote (step n baseNote)))
-        --     inside = if idx == fingerIdx then [circle] else []
-
         in snoc htmls (HH.span [ HP.classes [ClassName "fret"] ] (barreHtml <> noteHtml))
       )
       []

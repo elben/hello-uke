@@ -172,7 +172,6 @@ ukeChords = M.fromFoldable
             ]
         ]
 
--- TODO!! Add barres
     -- A# / Bb
     , 10 ==> M.fromFoldable
         [ Major ==> M.fromFoldable
