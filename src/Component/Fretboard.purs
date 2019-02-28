@@ -31,22 +31,23 @@ data Input
 
 data Message = Toggled Boolean
 
--- TODO refactor this and its usage to simplify the whole Barre and fret position thing.
+-- TODO!! refactor this and its usage to simplify the whole Barre and fret position thing.
 renderCircle :: forall p i.
                 Maybe Barre
+             -> Int    -- Note pos
              -> Int    -- String position
              -> String -- Text to display
              -> HH.HTML p i
-renderCircle barre idx s = 
+renderCircle barre pos stringPos s = 
   let barreClass = case barre of
                      Just (Barre start end) ->
-                          if idx == start
+                          if stringPos == start
                             -- First barred string
                             then [ClassName "barre", ClassName "first"]
-                            else if idx == end
+                            else if stringPos == end
                                    -- Last barred string
                                    then [ClassName "barre", ClassName "last"]
-                                   else if idx >= start && idx <= end
+                                   else if stringPos >= start && stringPos <= end
                                           -- Inside a barre
                                           then [ClassName "barre"]
                                           else []
@@ -109,18 +110,33 @@ renderFrets baseNote stringPos numFrets f barre =
   in
     foldl
       (\htmls idx ->
+
+        let barreHtml =
+              case f of
+                B n ->
+                  -- This fret on this string is barred. If there is a finger note played *below*
+                  -- then we don't want to show the note name. But if the note that will ring is
+                  -- the barred note, then render the note name.
+                  renderCircle barre n stringPos (getNoteName (posToNote (step n baseNote)))
+                _ -> HH.text ""
+
+            html = []
+
+
         -- If the idx-th fret is where the finger is to be played, then
         -- draw the circle representing the finger.
-        let circle = case f of
-                       X -> renderCircle barre stringPos "X"
 
-                       -- Just choose the first note name for now (e.g. C# instead of Db)
-                       B n -> renderCircle barre stringPos (getNoteName (posToNote (step n baseNote)))
+        -- let circle = case f of
+        --                X -> renderCircle barre (-1) stringPos "X"
 
-                       -- Just choose the first note name for now (e.g. C# instead of Db)
-                       F n -> renderCircle barre stringPos (getNoteName (posToNote (step n baseNote)))
-            inside = if idx == fingerIdx then [circle] else []
-        in snoc htmls (HH.span [ HP.classes [ClassName "fret"] ] inside)
+        --                -- Just choose the first note name for now (e.g. C# instead of Db)
+        --                B n -> renderCircle barre n stringPos (getNoteName (posToNote (step n baseNote)))
+
+        --                -- Just choose the first note name for now (e.g. C# instead of Db)
+        --                F n -> renderCircle barre n stringPos (getNoteName (posToNote (step n baseNote)))
+        --     inside = if idx == fingerIdx then [circle] else []
+
+        in snoc htmls (HH.span [ HP.classes [ClassName "fret"] ] html)
       )
       []
       (range 0 (numFrets - 1))

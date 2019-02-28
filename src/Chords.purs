@@ -170,11 +170,12 @@ ukeChords = M.fromFoldable
             ]
         ]
 
+-- TODO!! Add barres
     -- A# / Bb
     , 10 ==> M.fromFoldable
         [ Major ==> M.fromFoldable
             [ Triad ==> fini (F 3) (F 2) (B 1) (B 1) (Barre 2 3)
-            , Dom7  ==> fing 1 2 1 1
+            , Dom7  ==> fini (B 1) (F 2) (B 1) (B 1) (Barre 0 3)
             ]
         , Minor ==> M.fromFoldable
             [ Triad ==> fing 3 1 1 1
