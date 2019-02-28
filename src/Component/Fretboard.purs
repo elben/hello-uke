@@ -32,12 +32,57 @@ data Input
 
 data Message = Toggled Boolean
 
-barreClassNames :: Int -> Int -> Barre -> Array ClassName
-barreClassNames notePos stringPos (Barre barreFret start end) 
-  | notePos == barreFret && stringPos == start = [ClassName "barre", ClassName "first"]
-  | notePos == barreFret && stringPos == end   = [ClassName "barre", ClassName "last"]
-  | notePos == barreFret && stringPos >= start && stringPos <= end = [ClassName "barre"]
+barreClassNames :: Int -> Barre -> Array ClassName
+barreClassNames stringPos (Barre barreFret start end) 
+  | stringPos == start = [ClassName "barre", ClassName "first"]
+  | stringPos == end   = [ClassName "barre", ClassName "last"]
+  | stringPos >= start && stringPos <= end = [ClassName "barre"]
   | otherwise = []
+
+barreOnFret :: Int         -- String position
+            -> Int         -- Fret position
+            -> Maybe Barre -- Barre
+            -> Maybe Int
+barreOnFret stringPos fretPos (Just barre@(Barre barreFretPos first last)) =
+  if barreFretPos == fretPos && stringPos >= first && stringPos <= last
+    then (Just barreFretPos)
+    else Nothing
+barreOnFret _ _ _ = Nothing
+
+renderFret :: forall p i.
+              Int         -- String position
+           -> Pos         -- Root note on string
+           -> Int         -- Fret position to render
+           -> Finger      -- Finger on this string to render
+           -> Maybe Barre -- Barre
+           -> Maybe (HH.HTML p i)
+renderFret stringPos rootPos fretPos fing barre =
+  case barreOnFret stringPos fretPos barre of
+    Just barreFretPos ->
+      let barreClasses = maybe [] (barreClassNames stringPos) barre
+          text = case fing of
+                   B n -> getNoteName (posToNote (step n rootPos))
+                   _ -> ""
+      in Just $ HH.span
+          [ HP.classes ([ClassName "circle"] <> barreClasses) ]
+          [ HH.span
+              [ HP.classes [ClassName "circle-info"] ]
+              [ HH.text text ]
+          ]
+    _ ->
+      if (getFingerPos fing) == fretPos
+        then
+          let text = case fing of
+                      B n -> getNoteName (posToNote (step n rootPos))
+                      F n -> getNoteName (posToNote (step n rootPos))
+                      X -> "X"
+          in Just $ HH.span
+              [ HP.classes [ClassName "circle"] ]
+              [ HH.span
+                  [ HP.classes [ClassName "circle-info"] ]
+                  [ HH.text text ]
+              ]
+        else Nothing
 
 renderCircle :: forall p i.
                 Maybe Barre
@@ -46,7 +91,7 @@ renderCircle :: forall p i.
              -> String -- Text to display
              -> HH.HTML p i
 renderCircle barre pos stringPos s = 
-  let barreClass = maybe [] (barreClassNames pos stringPos) barre
+  let barreClass = maybe [] (barreClassNames stringPos) barre
   in HH.span
       [ HP.classes ([ClassName "circle"] <> barreClass) ]
       [ HH.span
@@ -81,10 +126,10 @@ numFretsToRender (Chord p q i (Fingering barre fs)) =
 -- Draw a string on the instrument, drawing the frets of each string.
 renderString :: forall p i.
                 State
-             -> Pos -- Base note of string
+             -> Pos -- Root note of string
              -> Int -- n-th string (0 is the left-most string)
              -> HH.HTML p i
-renderString s baseNote stringPos =
+renderString s rootPos stringPos =
   let fing = case s of
                    NoChord -> X
                    Chord p q i (Fingering _ fs) -> fromMaybe X (index fs stringPos)
@@ -92,55 +137,25 @@ renderString s baseNote stringPos =
                 NoChord -> Nothing
                 Chord p q i f -> getBarre f
   in HH.span [ HP.classes [ClassName "string"] ]
-       (renderFrets baseNote stringPos (numFretsToRender s) fing barre)
+       (renderFrets stringPos rootPos (numFretsToRender s) fing barre)
 
 -- Draw the frets of a string.
 renderFrets :: forall p i.
-               Pos
-            -> Int         -- Base note
-            -> Int         -- String position
+               Int         -- String position
+            -> Pos         -- Root note on string
+            -> Int         -- Number of frets to render
             -> Finger      -- Finger to be played for this fret on this string
             -> Maybe Barre
             -> Array (HH.HTML p i)
-renderFrets baseNote stringPos numFrets f barre =
-  let 
-      fingerIdx = case f of
-                    X -> 0
-                    B n -> n
-                    F n -> n
-  in
-    foldl
-      (\htmls idx ->
-
-        -- Figure out if we want to render barre blocks.
-        let barreHtml =
-              case barre of
-                Just (Barre barreFret first last) ->
-                  if stringPos >= first && stringPos <= last
-                    then
-                      case f of
-                        F n -> 
-                          if idx == barreFret
-                          -- A barre behind the finger for this string, so don't show note name.
-                          then [renderCircle barre barreFret stringPos ""]
-                          else []
-                        _ -> []
-                    else []
-                _ -> []
-
-            noteHtml =
-              if idx == fingerIdx
-                then
-                  case f of
-                    F n -> [renderCircle barre n stringPos (getNoteName (posToNote (step n baseNote)))]
-                    B n -> [renderCircle barre n stringPos (getNoteName (posToNote (step n baseNote)))]
-                    X -> [renderCircle barre (-1) stringPos "X"]
-                else []
-            
-        in snoc htmls (HH.span [ HP.classes [ClassName "fret"] ] (barreHtml <> noteHtml))
-      )
-      []
-      (range 0 (numFrets - 1))
+renderFrets stringPos rootPos numFrets fing barre =
+  foldl
+    (\htmls fretPos ->
+      snoc htmls
+            (HH.span
+              [ HP.classes [ClassName "fret"] ]
+              (maybe [] (\h -> [h]) (renderFret stringPos rootPos fretPos fing barre))))
+    []
+    (range 0 (numFrets - 1))
 
 fretboardComponent :: forall m. H.Component HH.HTML Query Input Message m
 fretboardComponent =

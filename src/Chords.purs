@@ -121,6 +121,11 @@ data Finger = F Int
             | B Int
             | X
 
+getFingerPos :: Finger -> Int
+getFingerPos (F n) = n
+getFingerPos (B n) = n
+getFingerPos X = -1
+
 instance fingerShow :: Show Finger where
   show (F pos) = show pos
   show X = "X"
