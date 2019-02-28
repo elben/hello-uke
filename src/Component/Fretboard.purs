@@ -7,7 +7,6 @@ import Component.Common as Com
 import Data.Array (index, range, snoc)
 import Data.List (foldl)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
-import Data.Traversable (sequence)
 import Engine (posToNote, step)
 import Halogen (ClassName(..))
 import Halogen as H
@@ -42,12 +41,19 @@ barreClassNames stringPos (Barre barreFret start end)
 barreOnFret :: Int         -- String position
             -> Int         -- Fret position
             -> Maybe Barre -- Barre
-            -> Maybe Int
+            -> Boolean
 barreOnFret stringPos fretPos (Just barre@(Barre barreFretPos first last)) =
-  if barreFretPos == fretPos && stringPos >= first && stringPos <= last
-    then (Just barreFretPos)
-    else Nothing
-barreOnFret _ _ _ = Nothing
+  barreFretPos == fretPos && stringPos >= first && stringPos <= last
+barreOnFret _ _ _ = false
+
+renderCircle :: forall p i. Array ClassName -> String -> HH.HTML p i
+renderCircle classes text =
+  HH.span
+    [ HP.classes ([ClassName "circle"] <> classes) ]
+    [ HH.span
+        [ HP.classes [ClassName "circle-info"] ]
+        [ HH.text text ]
+    ]
 
 renderFret :: forall p i.
               Int         -- String position
@@ -57,47 +63,20 @@ renderFret :: forall p i.
            -> Maybe Barre -- Barre
            -> Maybe (HH.HTML p i)
 renderFret stringPos rootPos fretPos fing barre =
-  case barreOnFret stringPos fretPos barre of
-    Just barreFretPos ->
-      let barreClasses = maybe [] (barreClassNames stringPos) barre
+  if not (isBarreOnFret || (getFingerPos fing) == fretPos)
+    then Nothing -- Neither a fret nor a finger is put in this string/fret position.
+    else
+      let classes = if isBarreOnFret then maybe [] (barreClassNames stringPos) barre else []
           text = case fing of
                    B n -> getNoteName (posToNote (step n rootPos))
-                   _ -> ""
-      in Just $ HH.span
-          [ HP.classes ([ClassName "circle"] <> barreClasses) ]
-          [ HH.span
-              [ HP.classes [ClassName "circle-info"] ]
-              [ HH.text text ]
-          ]
-    _ ->
-      if (getFingerPos fing) == fretPos
-        then
-          let text = case fing of
-                      B n -> getNoteName (posToNote (step n rootPos))
-                      F n -> getNoteName (posToNote (step n rootPos))
-                      X -> "X"
-          in Just $ HH.span
-              [ HP.classes [ClassName "circle"] ]
-              [ HH.span
-                  [ HP.classes [ClassName "circle-info"] ]
-                  [ HH.text text ]
-              ]
-        else Nothing
 
-renderCircle :: forall p i.
-                Maybe Barre
-             -> Int    -- Note pos
-             -> Int    -- String position
-             -> String -- Text to display
-             -> HH.HTML p i
-renderCircle barre pos stringPos s = 
-  let barreClass = maybe [] (barreClassNames stringPos) barre
-  in HH.span
-      [ HP.classes ([ClassName "circle"] <> barreClass) ]
-      [ HH.span
-          [ HP.classes [ClassName "circle-info"] ]
-          [ HH.text s ]
-      ]
+                   -- Fret in (stringPos, fretPos) is an unplayed barre. Don't show note because
+                   -- another finger (F n) will be playing this string instead.
+                   F n -> if isBarreOnFret then "" else getNoteName (posToNote (step n rootPos))
+
+                   X -> "X"
+      in Just (renderCircle classes text)
+  where isBarreOnFret = barreOnFret stringPos fretPos barre
 
 renderChordInfo :: forall p i. State -> HH.HTML p i
 renderChordInfo s =
