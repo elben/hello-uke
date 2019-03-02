@@ -95,7 +95,10 @@ component =
             -- Filter to the ones available for this position
             Chord (Just pos) (Just q) _ ->
                 let intervalsMap = fromMaybe M.empty (M.lookup pos ukeChords >>= M.lookup q)
-                in filter (\qual -> M.member qual intervalsMap) chordIntervals
+                -- Don't show the Triad in the UI, as it is the "default" interval.
+                -- We want intervals to act like a modification, so "no modification"
+                -- equals the Triad interval.
+                in filter (\i -> i /= Triad && M.member i intervalsMap) chordIntervals
 
             -- Return all of them
             _ -> chordIntervals
@@ -165,7 +168,11 @@ component =
       pure next
     SelectChordInterval interval next -> do
       state <- H.get
-      let state' = setStateChordInterval interval state
+      let state' = if maybe false (\i -> i == interval) (getStateChordInterval state)
+                     -- The same interval was clicked, so "unselect" it by defaulting to Triad.
+                     then setStateChordInterval Triad state
+                     -- A different interval was clicked, so choose the selected one.
+                     else setStateChordInterval interval state
       H.put state'
       H.raise (toMessage state')
       pure next

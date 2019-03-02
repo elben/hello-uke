@@ -179,10 +179,12 @@ ukeChords = M.fromFoldable
         [ Major ==> M.fromFoldable
             [ Triad ==> finb 3 2 1 1 (Barre 1 2 3)
             , Dom7  ==> finb 1 2 1 1 (Barre 1 0 3)
+            , Maj7  ==> fing 3 2 1 0
             ]
         , Minor ==> M.fromFoldable
             [ Triad ==> finb 3 1 1 1 (Barre 1 1 3)
             , Dom7  ==> finb 1 1 1 1 (Barre 1 0 3)
+            , Maj7  ==> fing 3 1 1 0
             ]
         , Suspended ==> M.fromFoldable
             [ Second ==> fing 3 0 1 1 ]
