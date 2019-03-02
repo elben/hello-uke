@@ -14,20 +14,20 @@ import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 
 data State = NoChord
-           | Chord Pos ChordQuality ChordInterval Fingering
+           | Chord Note ChordQuality ChordInterval Fingering
 
 humanChord :: State -> String
 humanChord NoChord = ""
-humanChord (Chord p q i _) = getNoteName (posToNote p) <> humanChordMod q i
+humanChord (Chord n q i _) = getNoteName n <> humanChordMod q i
 
 data Query a
-  = ChordChange Pos ChordQuality ChordInterval a
+  = ChordChange Note ChordQuality ChordInterval a
   | ClearChord a
   | IsOn (Boolean -> a)
 
 data Input
   = NoChordInput
-  | ChordInput Pos ChordQuality ChordInterval
+  | ChordInput Note ChordQuality ChordInterval
 
 data Message = Toggled Boolean
 
@@ -92,8 +92,8 @@ renderFret stringPos rootPos fretPos fing barre =
     -- barre. This implies that the finger note will be playing over the barre
     -- note.
     higherFingerPlaying :: Maybe Barre -> Int -> Boolean
-    higherFingerPlaying barre fingerPos =
-      case barre of
+    higherFingerPlaying bar fingerPos =
+      case bar of
         Just (Barre barreFretPos _ _) -> fingerPos > barreFretPos
         _ -> true
 
@@ -101,7 +101,7 @@ renderChordInfo :: forall p i. State -> HH.HTML p i
 renderChordInfo s =
   let htmls = case s of
                 NoChord -> []
-                (Chord p q i _) -> Com.chordHtml (posToNote p) q i
+                (Chord n q i _) -> Com.chordHtml n q i
   in HH.div
        [ HP.classes [ClassName "chord-info"] ]
        htmls
@@ -177,29 +177,25 @@ component =
 
   eval :: Query ~> H.ComponentDSL State Query Message m
   eval = case _ of
-    ChordChange p q i next -> do
-      -- state <- H.get
-      -- let nextState = not state
-      let s = case findUkeChord p q i of
-                 Just fingering -> (Chord p q i fingering)
+    ChordChange note@(Note name pos) q i next -> do
+      let s = case findUkeChord pos q i of
+                 Just fingering -> (Chord note q i fingering)
                  _ -> NoChord
       H.put s
-      -- H.raise $ Toggled nextState
       pure next
     ClearChord next -> do
       H.put NoChord
       pure next
     IsOn reply -> do
-      -- state <- H.get
       pure (reply true)
 
   initialState :: Input -> State
   initialState input =
     case input of
       NoChordInput -> NoChord
-      ChordInput p q i ->
-        case findUkeChord p q i of
-          Just fingering -> (Chord p q i fingering)
+      ChordInput note@(Note name pos) q i ->
+        case findUkeChord pos q i of
+          Just fingering -> (Chord note q i fingering)
           _ -> NoChord
   
   -- This component receives an Input from the parent component

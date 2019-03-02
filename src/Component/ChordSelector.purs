@@ -6,17 +6,18 @@ import Prelude
 import Data.Array (filter, snoc)
 import Data.Map as M
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
-import Engine (allNotes)
+import Engine as E
 import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 
-data State = Chord (Maybe Pos) (Maybe ChordQuality) (Maybe ChordInterval)
+-- Carry Notes, not Pos. So that users can deleniate between A# and Bb.
+data State = Chord (Maybe Note) (Maybe ChordQuality) (Maybe ChordInterval)
 
-getStatePos :: State -> Maybe Pos
-getStatePos (Chord p _ _) = p
+getStateNote :: State -> Maybe Note
+getStateNote (Chord p _ _) = p
 
 getStateChordQuality :: State -> Maybe ChordQuality
 getStateChordQuality (Chord _ q _) = q
@@ -24,8 +25,8 @@ getStateChordQuality (Chord _ q _) = q
 getStateChordInterval :: State -> Maybe ChordInterval
 getStateChordInterval (Chord _ _ i) = i
 
-setStatePos :: Pos -> State -> State
-setStatePos pos (Chord _ q i) = Chord (Just pos) q i
+setStateNote :: Note -> State -> State
+setStateNote note (Chord _ q i) = Chord (Just note) q i
 
 setStateChordQuality :: ChordQuality -> State -> State
 setStateChordQuality q (Chord p _ i) = Chord p (Just q) i
@@ -45,7 +46,7 @@ data Query a
   -- These are "actions"
   -- https://pursuit.purescript.org/packages/purescript-halogen/3.1.3/docs/Halogen.Query#t:Action
   = Clear a
-  | SelectPos Pos a
+  | SelectNote Note a
   | SelectChordQuality ChordQuality a
   | SelectChordInterval ChordInterval a
 
@@ -53,7 +54,7 @@ type Input = Unit
 
 data Message =
   NoMessage
-  | ChordSelected Pos ChordQuality ChordInterval
+  | ChordSelected Note ChordQuality ChordInterval
 
 rootNoteSelectorClasses :: Array ClassName
 rootNoteSelectorClasses = [ClassName "selection", ClassName "root-note-selection", ClassName "btn" ]
@@ -65,7 +66,7 @@ chordIntervalSelectorClasses :: Array ClassName
 chordIntervalSelectorClasses = [ClassName "selection", ClassName "chord-interval-selection", ClassName "btn" ]
 
 initialState :: State
-initialState = Chord (Just 0) (Just Major) (Just Triad)
+initialState = Chord (Just E.c) (Just Major) (Just Triad)
 
 component :: forall m. H.Component HH.HTML Query Input Message m
 component =
@@ -79,12 +80,12 @@ component =
 
   render :: State -> H.ComponentHTML Query
   render state =
-    let selectableNotes = filter (\(Note _ pos) -> M.member pos ukeChords) allNotes
+    let selectableNotes = filter (\(Note _ pos) -> M.member pos ukeChords) E.allNotes
         selectableChordQualities =
           case state of
             -- Filter to the ones available for this position. Go through chordQualities, filtering
             -- each one by the big map, to produce consistent ordering.
-            Chord (Just pos) _ _ ->
+            Chord (Just (Note _ pos)) _ _ ->
                 let qualitiesMap = fromMaybe M.empty (M.lookup pos ukeChords)
                 in filter (\q -> M.member q qualitiesMap) chordQualities
 
@@ -93,7 +94,7 @@ component =
         selectableChordIntervals =
           case state of
             -- Filter to the ones available for this position
-            Chord (Just pos) (Just q) _ ->
+            Chord (Just (Note _ pos)) (Just q) _ ->
                 let intervalsMap = fromMaybe M.empty (M.lookup pos ukeChords >>= M.lookup q)
                 -- Don't show the Triad in the UI, as it is the "default" interval.
                 -- We want intervals to act like a modification, so "no modification"
@@ -103,8 +104,8 @@ component =
             -- Return all of them
             _ -> chordIntervals
     
-        isPosSelected :: Pos -> Boolean
-        isPosSelected p = maybe false ((==) p) (getStatePos state)
+        isNoteSelected :: Note -> Boolean
+        isNoteSelected n = maybe false ((==) n) (getStateNote state)
 
         isChordQualitySelected :: ChordQuality -> Boolean
         isChordQualitySelected q = maybe false ((==) q) (getStateChordQuality state)
@@ -117,11 +118,11 @@ component =
         [ HH.div
             [ HP.classes [ClassName "selector-section", ClassName "root-note-selector"] ]
             (map
-                (\(Note name pos) ->
-                  let classes = if isPosSelected pos then snoc rootNoteSelectorClasses (ClassName "selected") else rootNoteSelectorClasses
+                (\note@(Note name _) ->
+                  let classes = if isNoteSelected note then snoc rootNoteSelectorClasses (ClassName "selected") else rootNoteSelectorClasses
                   in HH.div
                        [ HP.classes classes
-                       , HE.onClick (HE.input_ (SelectPos pos)) ]
+                       , HE.onClick (HE.input_ (SelectNote note)) ]
                        [ HH.text name ])
                 selectableNotes)
         , HH.div
@@ -154,9 +155,9 @@ component =
       -- H.put nextState
       -- H.raise $ Toggled nextState
       pure next
-    SelectPos pos next -> do
+    SelectNote note next -> do
       state <- H.get
-      let state' = setStatePos pos state
+      let state' = setStateNote note state
       H.put state'
       H.raise (toMessage state')
       pure next

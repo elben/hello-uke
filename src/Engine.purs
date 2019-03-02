@@ -1,20 +1,14 @@
 module Engine where
 
-import Data.Maybe
-import Data.String
-import Data.Traversable
-import Data.Tuple
-import Debug.Trace
+import Data.Maybe (fromMaybe)
+import Data.Traversable (foldl)
+import Data.Tuple (Tuple(..))
 import Prelude
 
-import Data.Foldable (foldl)
 import Data.FoldableWithIndex (foldlWithIndex)
 import Data.List (List(..), (:))
 import Data.List as L
 import Data.List.Lazy (replicate)
-import Data.Semigroup ((<>))
-import Data.String.CodeUnits (charAt)
-import Effect.Console (log)
 
 import Chords
 
