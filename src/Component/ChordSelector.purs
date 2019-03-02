@@ -6,7 +6,6 @@ import Prelude
 import Data.Array (filter, snoc)
 import Data.Map as M
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
-import Engine as E
 import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.HTML as HH
@@ -66,7 +65,7 @@ chordIntervalSelectorClasses :: Array ClassName
 chordIntervalSelectorClasses = [ClassName "selection", ClassName "chord-interval-selection", ClassName "btn" ]
 
 initialState :: State
-initialState = Chord (Just E.c) (Just Major) (Just Triad)
+initialState = Chord (Just c) (Just Major) (Just Triad)
 
 component :: forall m. H.Component HH.HTML Query Input Message m
 component =
@@ -80,12 +79,12 @@ component =
 
   render :: State -> H.ComponentHTML Query
   render state =
-    let selectableNotes = filter (\(Note _ pos) -> M.member pos ukeChords) E.allNotes
+    let selectableNotes = filter (\(Note _ _ pos) -> M.member pos ukeChords) allNotes
         selectableChordQualities =
           case state of
             -- Filter to the ones available for this position. Go through chordQualities, filtering
             -- each one by the big map, to produce consistent ordering.
-            Chord (Just (Note _ pos)) _ _ ->
+            Chord (Just (Note _ _ pos)) _ _ ->
                 let qualitiesMap = fromMaybe M.empty (M.lookup pos ukeChords)
                 in filter (\q -> M.member q qualitiesMap) chordQualities
 
@@ -94,7 +93,7 @@ component =
         selectableChordIntervals =
           case state of
             -- Filter to the ones available for this position
-            Chord (Just (Note _ pos)) (Just q) _ ->
+            Chord (Just (Note _ _ pos)) (Just q) _ ->
                 let intervalsMap = fromMaybe M.empty (M.lookup pos ukeChords >>= M.lookup q)
                 -- Don't show the Triad in the UI, as it is the "default" interval.
                 -- We want intervals to act like a modification, so "no modification"
@@ -118,12 +117,12 @@ component =
         [ HH.div
             [ HP.classes [ClassName "selector-section", ClassName "root-note-selector"] ]
             (map
-                (\note@(Note name _) ->
+                (\note ->
                   let classes = if isNoteSelected note then snoc rootNoteSelectorClasses (ClassName "selected") else rootNoteSelectorClasses
                   in HH.div
                        [ HP.classes classes
                        , HE.onClick (HE.input_ (SelectNote note)) ]
-                       [ HH.text name ])
+                       [ HH.text (humanNote note) ])
                 selectableNotes)
         , HH.div
             [ HP.classes [ClassName "selector-section", ClassName "chord-quality-selector"] ]

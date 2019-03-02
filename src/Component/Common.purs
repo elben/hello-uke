@@ -6,8 +6,8 @@ import Prelude
 import Halogen.HTML as HH
 
 chordHtml :: forall p i. Note -> ChordQuality -> ChordInterval -> Array (HH.HTML p i)
-chordHtml (Note name pos) q i =
-  [ HH.text name
+chordHtml note@(Note name acc pos) q i =
+  [ HH.text (humanNote note)
   , keyType
   , divide
   ] <> mod

@@ -7,7 +7,7 @@ import Component.Common as Com
 import Data.Array (index, range, snoc)
 import Data.List (foldl)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
-import Engine (posToNote, step)
+import Engine (step)
 import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.HTML as HH
@@ -18,7 +18,7 @@ data State = NoChord
 
 humanChord :: State -> String
 humanChord NoChord = ""
-humanChord (Chord n q i _) = getNoteName n <> humanChordMod q i
+humanChord (Chord n q i _) = humanNote n <> humanChordMod q i
 
 data Query a
   = ChordChange Note ChordQuality ChordInterval a
@@ -53,25 +53,27 @@ barreOnFret _ _ _ = false
 -- Renders a circle with text inside.
 renderCircle :: forall p i.
                 Array ClassName -- CSS classes
-             -> String          -- Text to go in center
+             -> Maybe String    -- Text to go in center
              -> HH.HTML p i
 renderCircle classes text =
   HH.span
     [ HP.classes ([ClassName "circle"] <> classes) ]
     [ HH.span
         [ HP.classes [ClassName "circle-info"] ]
-        [ HH.text text ]
+        [ HH.text (fromMaybe "" text) ]
     ]
 
+-- TODO Figure out how to render the note names chosen.
 -- Renders (or not) a fret for the given string and fret position.
 renderFret :: forall p i.
               Int         -- String position
            -> Pos         -- Root note on string
            -> Int         -- Fret position to render
+           -> Accidental  -- The chosen key's accidental
            -> Finger      -- Finger on this string to render
            -> Maybe Barre -- Barre
            -> Maybe (HH.HTML p i)
-renderFret stringPos rootPos fretPos fing barre =
+renderFret stringPos rootPos fretPos acc fing barre =
   if not (isBarreOnFret || (getFingerPos fing) == fretPos)
     then Nothing -- Neither a fret nor a finger is put in this string/fret position.
     else
@@ -80,10 +82,10 @@ renderFret stringPos rootPos fretPos fing barre =
                    -- If fret in (stringPos, fretPos) is an unplayed barre, don't show note
                    -- because another finger (F n) will be playing this string instead.
                    F n -> if isBarreOnFret && higherFingerPlaying barre n
-                            then ""
-                            else getNoteName (posToNote (step n rootPos))
+                            then Nothing
+                            else map humanNote (findNoteForAccidental (step n rootPos) acc)
 
-                   X -> "X"
+                   X -> Just "X"
       in Just (renderCircle classes text)
   where
     isBarreOnFret = barreOnFret stringPos fretPos barre
@@ -127,30 +129,34 @@ renderString :: forall p i.
              -> Int -- n-th string (0 is the left-most string)
              -> HH.HTML p i
 renderString s rootPos stringPos =
-  let fing = case s of
-                   NoChord -> X
-                   Chord p q i (Fingering _ fs) -> fromMaybe X (index fs stringPos)
+  let fing  = case s of
+                 NoChord -> X
+                 Chord n q i (Fingering _ fs) -> fromMaybe X (index fs stringPos)
       barre = case s of
                 NoChord -> Nothing
-                Chord p q i f -> getBarre f
+                Chord n q i f -> getBarre f
+      acc   = case s of
+                NoChord -> Natural
+                Chord (Note _ a p) q i f -> if a == Natural then defaultAccidental p else a
   in HH.span [ HP.classes [ClassName "string"] ]
-       (renderFrets stringPos rootPos (numFretsToRender s) fing barre)
+       (renderFrets stringPos rootPos (numFretsToRender s) acc fing barre)
 
 -- Renders the frets of a string.
 renderFrets :: forall p i.
                Int         -- String position
             -> Pos         -- Root note on string
             -> Int         -- Number of frets to render
+            -> Accidental  -- The chosen key's accidental
             -> Finger      -- Finger to be played for this fret on this string
             -> Maybe Barre -- Possible barre
             -> Array (HH.HTML p i)
-renderFrets stringPos rootPos numFrets fing barre =
+renderFrets stringPos rootPos numFrets acc fing barre =
   foldl
     (\htmls fretPos ->
       snoc htmls
             (HH.span
               [ HP.classes [ClassName "fret"] ]
-              (maybe [] (\h -> [h]) (renderFret stringPos rootPos fretPos fing barre))))
+              (maybe [] (\h -> [h]) (renderFret stringPos rootPos fretPos acc fing barre))))
     []
     (range 0 (numFrets - 1))
 
@@ -177,7 +183,7 @@ component =
 
   eval :: Query ~> H.ComponentDSL State Query Message m
   eval = case _ of
-    ChordChange note@(Note name pos) q i next -> do
+    ChordChange note@(Note name acc pos) q i next -> do
       let s = case findUkeChord pos q i of
                  Just fingering -> (Chord note q i fingering)
                  _ -> NoChord
@@ -193,7 +199,7 @@ component =
   initialState input =
     case input of
       NoChordInput -> NoChord
-      ChordInput note@(Note name pos) q i ->
+      ChordInput note@(Note name acc pos) q i ->
         case findUkeChord pos q i of
           Just fingering -> (Chord note q i fingering)
           _ -> NoChord

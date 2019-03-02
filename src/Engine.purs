@@ -1,6 +1,6 @@
 module Engine where
 
-import Data.Maybe (fromMaybe)
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Traversable (foldl)
 import Data.Tuple (Tuple(..))
 import Prelude
@@ -8,68 +8,10 @@ import Prelude
 import Data.FoldableWithIndex (foldlWithIndex)
 import Data.List (List(..), (:))
 import Data.List as L
+import Data.Array as A
 import Data.List.Lazy (replicate)
 
 import Chords
-
-c  :: Note
-c  = Note "C"  0
-cs :: Note
-cs = Note "C♯" 1
-df :: Note
-df = Note "D♭" 1
-d  :: Note
-d  = Note "D"  2
-ds :: Note
-ds = Note "D♯" 3
-ef :: Note
-ef = Note "E♭" 3
-e  :: Note
-e  = Note "E"  4
-f  :: Note
-f  = Note "F"  5
-fs :: Note
-fs = Note "F♯" 6
-gf :: Note
-gf = Note "G♭" 6
-g  :: Note
-g  = Note "G"  7
-gs :: Note
-gs = Note "G♯" 8
-af :: Note
-af = Note "Ab" 8
-a  :: Note
-a  = Note "A"  9
-as :: Note
-as = Note "A♯" 10
-bf :: Note
-bf = Note "B♭" 10
-b  :: Note
-b  = Note "B"  11
-
-allNotes :: Array Note
-allNotes = [c, cs, df, d, ds, ef, e, f, fs, gf, g, gs, af, a, as, bf, b]
-
-notes :: List (List Note)
-notes = (
-    (c : Nil)
-  : (cs : df : Nil)
-  : (d : Nil)
-  : (ds : ef : Nil)
-  : (e : Nil)
-  : (f : Nil)
-  : (fs : gf : Nil)
-  : (g : Nil)
-  : (gs : af : Nil)
-  : (a : Nil)
-  : (as : bf : Nil)
-  : (b : Nil)
-  : Nil)
-
-posToNote :: Pos -> Note
-posToNote pos =
-  let choices = fromMaybe Nil (L.index notes pos)
-  in fromMaybe (Note "?" pos) (L.index choices 0)
 
 -- ChordStructure explains how a specific chord can be built. The list of
 -- numbers represent the half-steps required to build the chord.
