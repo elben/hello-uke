@@ -3,7 +3,7 @@ module Component.ChordSelector where
 import Chords
 import Prelude
 
-import Data.Array (filter, snoc)
+import Data.Array as A
 import Data.Map as M
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Halogen (ClassName(..))
@@ -67,6 +67,57 @@ chordIntervalSelectorClasses = [ClassName "selection", ClassName "chord-interval
 initialState :: State
 initialState = Chord (Just c) (Just Major) (Just Triad)
 
+selectableChordQualities :: State -> Array ChordQuality
+selectableChordQualities state =
+  case state of
+    -- Filter to the ones available for this position. Go through chordQualities, filtering
+    -- each one by the big map, to produce consistent ordering.
+    Chord (Just (Note _ _ pos)) _ _ ->
+        let qualitiesMap = fromMaybe M.empty (M.lookup pos ukeChords)
+        in A.filter (\q -> M.member q qualitiesMap) chordQualities
+
+    -- Return all of them
+    _ -> chordQualities
+
+selectableChordIntervals :: State -> Array ChordInterval
+selectableChordIntervals state =
+  case state of
+    -- Filter to the ones available for this position
+    Chord (Just (Note _ _ pos)) (Just q) _ ->
+        let intervalsMap = fromMaybe M.empty (M.lookup pos ukeChords >>= M.lookup q)
+        in A.filter (\i -> M.member i intervalsMap) chordIntervals
+
+    -- Return all of them
+    _ -> chordIntervals
+
+-- For a specific item in the state, figure out if we can use the *existing* selection
+-- based off the list of available options, or use the given default value.
+considerStateSelection :: forall a. (Eq a) =>
+                          (State -> Maybe a)
+                       -- ^ Gets the thing we are considering from the state
+                       -> (State -> Array a)
+                       -- ^ Gets the list of available options from the state
+                       -> (a -> State -> State)
+                       -- ^ Sets the thing into the state
+                       -> a
+                       -- ^ The default value to set to
+                       -> State
+                       -- ^ The state to modify
+                       -> State
+                       -- ^ The potentially-modified state
+considerStateSelection get getSelection set default state =
+  case get state of
+    Just a ->
+      let selection = getSelection state
+      in
+        if A.elem a selection
+          -- The currently-set `a` in the state is available, so leave as-is.
+          then state
+          -- The currently-set `a` is not allowed; set to default value.
+          else set (fromMaybe default (A.index selection 0)) state
+
+    _ -> state
+    
 component :: forall m. H.Component HH.HTML Query Input Message m
 component =
   H.component
@@ -79,29 +130,7 @@ component =
 
   render :: State -> H.ComponentHTML Query
   render state =
-    let selectableNotes = filter (\(Note _ _ pos) -> M.member pos ukeChords) allNotes
-        selectableChordQualities =
-          case state of
-            -- Filter to the ones available for this position. Go through chordQualities, filtering
-            -- each one by the big map, to produce consistent ordering.
-            Chord (Just (Note _ _ pos)) _ _ ->
-                let qualitiesMap = fromMaybe M.empty (M.lookup pos ukeChords)
-                in filter (\q -> M.member q qualitiesMap) chordQualities
-
-            -- Return all of them
-            _ -> chordQualities
-        selectableChordIntervals =
-          case state of
-            -- Filter to the ones available for this position
-            Chord (Just (Note _ _ pos)) (Just q) _ ->
-                let intervalsMap = fromMaybe M.empty (M.lookup pos ukeChords >>= M.lookup q)
-                -- Don't show the Triad in the UI, as it is the "default" interval.
-                -- We want intervals to act like a modification, so "no modification"
-                -- equals the Triad interval.
-                in filter (\i -> i /= Triad && M.member i intervalsMap) chordIntervals
-
-            -- Return all of them
-            _ -> chordIntervals
+    let selectableNotes = A.filter (\(Note _ _ pos) -> M.member pos ukeChords) allNotes
     
         isNoteSelected :: Note -> Boolean
         isNoteSelected n = maybe false ((==) n) (getStateNote state)
@@ -118,7 +147,7 @@ component =
             [ HP.classes [ClassName "selector-section", ClassName "root-note-selector"] ]
             (map
                 (\note ->
-                  let classes = if isNoteSelected note then snoc rootNoteSelectorClasses (ClassName "selected") else rootNoteSelectorClasses
+                  let classes = if isNoteSelected note then A.snoc rootNoteSelectorClasses (ClassName "selected") else rootNoteSelectorClasses
                   in HH.div
                        [ HP.classes classes
                        , HE.onClick (HE.input_ (SelectNote note)) ]
@@ -128,22 +157,25 @@ component =
             [ HP.classes [ClassName "selector-section", ClassName "chord-quality-selector"] ]
             (map
                 (\q ->
-                  let classes = if isChordQualitySelected q then snoc chordQualitySelectorClasses (ClassName "selected") else chordQualitySelectorClasses
+                  let classes = if isChordQualitySelected q then A.snoc chordQualitySelectorClasses (ClassName "selected") else chordQualitySelectorClasses
                   in HH.div
                        [ HP.classes classes
                        , HE.onClick (HE.input_ (SelectChordQuality q)) ]
                        [ HH.text (show q) ])
-                selectableChordQualities)
+                (selectableChordQualities state))
         , HH.div
             [ HP.classes [ClassName "selector-section", ClassName "chord-interval-selector"] ]
             (map
                 (\i ->
-                  let classes = if isChordIntervalSelected i then snoc chordIntervalSelectorClasses (ClassName "selected") else chordIntervalSelectorClasses
+                  let classes = if isChordIntervalSelected i then A.snoc chordIntervalSelectorClasses (ClassName "selected") else chordIntervalSelectorClasses
                   in HH.div
                        [ HP.classes classes
                        , HE.onClick (HE.input_ (SelectChordInterval i)) ]
                        [ HH.text (humanChordInterval i) ])
-                selectableChordIntervals)
+                -- Don't show the Triad in the UI, as it is the "default" interval.
+                -- We want intervals to act like a modification, so "no modification"
+                -- equals the Triad interval.
+                (A.filter ((/=) Triad) (selectableChordIntervals state)))
         ]
 
   eval :: Query ~> H.ComponentDSL State Query Message m
@@ -155,17 +187,31 @@ component =
       -- H.raise $ Toggled nextState
       pure next
     SelectNote note next -> do
-      state <- H.get
-      let state' = setStateNote note state
-      H.put state'
-      H.raise (toMessage state')
+      s1 <- H.get
+      let s2 = setStateNote note s1
+
+      -- With the newly-chosen note, check to see if that note has the currently-selected
+      -- quality available as a selection. If not, then use the first chord quality in that
+      -- note's bank of chord qualities.
+      let s3 = considerStateSelection getStateChordQuality selectableChordQualities setStateChordQuality Major s2
+
+      -- With the newly-chosen note and quality, check to see if the currently-selected
+      -- interval is available. If not, then use the first chord interval in that
+      -- note quality's bank of chord intervals.
+      let s4 = considerStateSelection getStateChordInterval selectableChordIntervals setStateChordInterval Triad s3
+
+      H.put s4
+      H.raise (toMessage s4)
       pure next
+
     SelectChordQuality quality next -> do
-      state <- H.get
-      let state' = setStateChordQuality quality state
-      H.put state'
-      H.raise (toMessage state')
+      s1 <- H.get
+      let s2 = setStateChordQuality quality s1
+      let s3 = considerStateSelection getStateChordInterval selectableChordIntervals setStateChordInterval Triad s2
+      H.put s3
+      H.raise (toMessage s3)
       pure next
+
     SelectChordInterval interval next -> do
       state <- H.get
       let state' = if maybe false (\i -> i == interval) (getStateChordInterval state)

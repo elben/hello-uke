@@ -63,7 +63,6 @@ renderCircle classes text =
         [ HH.text (fromMaybe "" text) ]
     ]
 
--- TODO Figure out how to render the note names chosen.
 -- Renders (or not) a fret for the given string and fret position.
 renderFret :: forall p i.
               Int         -- String position
@@ -125,10 +124,10 @@ numFretsToRender (Chord p q i (Fingering barre fs)) =
 -- Draw a string on the instrument, drawing the frets of each string.
 renderString :: forall p i.
                 State
-             -> Pos -- Root note of string
              -> Int -- n-th string (0 is the left-most string)
+             -> Pos -- Root note of string
              -> HH.HTML p i
-renderString s rootPos stringPos =
+renderString s stringPos rootPos =
   let fing  = case s of
                  NoChord -> X
                  Chord n q i (Fingering _ fs) -> fromMaybe X (index fs stringPos)
@@ -175,10 +174,10 @@ component =
     HH.div
       [ HP.classes [ClassName "fretboard"] ]
       [ renderChordInfo state
-      , renderString state 7 0 -- G = 7
-      , renderString state 0 1 -- C = 0
-      , renderString state 4 2 -- E = 4
-      , renderString state 9 3 -- A = 9
+      , renderString state 0 7 -- G
+      , renderString state 1 0 -- C
+      , renderString state 2 4 -- E
+      , renderString state 3 9 -- A
       ]
 
   eval :: Query ~> H.ComponentDSL State Query Message m
