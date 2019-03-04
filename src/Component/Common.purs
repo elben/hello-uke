@@ -30,3 +30,4 @@ chordHtml note@(Note name acc pos) q i =
             Maj7 ->   [ HH.text "M", HH.sup [] [ HH.text "7" ] ]
             Second -> [ HH.text "2" ]
             Fourth -> [ HH.text "4" ]
+            Dom9 ->   [ HH.text "9" ]

@@ -182,9 +182,11 @@ data ChordInterval =
   -- Second and Fourth also works with Suspended quality to make sus2 and sus4.
   | Second
   | Fourth
+  | Dom9 -- The dominant 9th (e.g. in C major: C, E, G, Bb, D)
+  -- | Maj9
 
 chordIntervals :: Array ChordInterval
-chordIntervals = [ Triad, Dom7, Maj7, Second, Fourth ]
+chordIntervals = [ Triad, Dom7, Maj7, Second, Fourth, Dom9 ]
 
 instance chordIntervalShow :: Show ChordInterval where
   show Triad = ""
@@ -192,6 +194,7 @@ instance chordIntervalShow :: Show ChordInterval where
   show Maj7 = "M7"
   show Second = "2"
   show Fourth = "4"
+  show Dom9 = "9"
 
 derive instance chordIntervalEq :: Eq ChordInterval
 derive instance chordIntervalOrd :: Ord ChordInterval
@@ -203,6 +206,7 @@ humanChordInterval Dom7 = "7"
 humanChordInterval Maj7 = "M7"
 humanChordInterval Second = "2"
 humanChordInterval Fourth = "4"
+humanChordInterval Dom9 = "9"
 
 humanChordMod :: ChordQuality -> ChordInterval -> String
 humanChordMod q i =
@@ -255,12 +259,21 @@ ukeChords = M.fromFoldable
     [
     -- C
       0 ==> M.fromFoldable
-        [ Major ==> M.fromFoldable
-            [ Triad ==> fing 0 0 0 3
-            , Dom7  ==> fing 0 0 0 1
+        [ Major      ==> M.fromFoldable
+            [ Triad  ==> fing 0 0 0 3
+            , Dom7   ==> fing 0 0 0 1
+            , Maj7   ==> fing 0 0 0 2
+            , Dom9   ==> fing 3 2 0 3
             ]
-        , Minor ==> M.fromFoldable
-            [ Triad ==> fing 0 3 3 3
+        , Minor      ==> M.fromFoldable
+            [ Triad  ==> fing 0 3 3 3
+            , Dom7   ==> fing 3 3 3 3
+            , Maj7   ==> fing 4 3 3 3
+            , Dom9   ==> fing 5 3 6 5
+            ]
+        , Suspended  ==> M.fromFoldable
+            [ Second ==> fing 0 2 3 3
+            , Fourth ==> fing 0 0 1 3
             ]
         ]
 
