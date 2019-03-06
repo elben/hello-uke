@@ -20,9 +20,8 @@ chordHtml note@(Note name acc pos) q i =
     divide = case q of
                Minor ->
                  case i of
-                   Triad -> HH.text ""
-                   Dom7 -> HH.text ""
-                   _ -> HH.text "/"
+                   Maj7 -> HH.text "/"
+                   _ -> HH.text ""
                _ -> HH.text ""
     mod = case i of
             Triad ->  [ HH.text "" ]

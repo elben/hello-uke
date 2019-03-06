@@ -277,35 +277,69 @@ ukeChords = M.fromFoldable
             ]
         ]
 
+    -- C# / Db
+    , 1 ==> M.fromFoldable
+        [ Major      ==> M.fromFoldable
+            [ Triad  ==> finb 1 1 1 4 (Barre 1 0 3)
+            , Dom7   ==> finb 1 1 1 2 (Barre 1 0 3)
+            , Maj7   ==> finb 1 1 1 3 (Barre 1 0 3)
+            , Dom9   ==> fing 4 3 1 4
+            ]
+        , Minor      ==> M.fromFoldable
+            [ Triad  ==> fini (F 1) (F 1) (F 0) X Nothing
+            , Dom7   ==> fing 1 1 0 2
+            , Maj7   ==> fing 1 0 0 4
+            , Dom9   ==> fing 4 3 0 4
+            ]
+        , Suspended  ==> M.fromFoldable
+            [ Second ==> fing 1 3 4 4
+            , Fourth ==> fing 1 1 2 4
+            ]
+        ]
+
     -- G
     , 7 ==> M.fromFoldable
-        [ Major ==> M.fromFoldable
-            [ Triad ==> fing 0 2 3 2
+        [ Major      ==> M.fromFoldable
+            [ Triad  ==> fing 0 2 3 2
+            , Dom7   ==> fing 0 2 1 2
+            , Maj7   ==> fing 0 2 2 2
+            , Dom9   ==> fing 0 2 5 2
             ]
-        , Minor ==> M.fromFoldable
-            [ Triad ==> fing 0 2 3 1
+        , Minor      ==> M.fromFoldable
+            [ Triad  ==> fing 0 2 3 1
+            , Dom7   ==> fing 0 2 1 1
+            , Maj7   ==> fing 0 2 2 1
+            , Dom9   ==> fing 0 5 5 1
+            ]
+        , Suspended  ==> M.fromFoldable
+            [ Second ==> fing 0 2 3 0
+            , Fourth ==> fing 0 2 3 3
             ]
         ]
 
     -- A# / Bb
     , 10 ==> M.fromFoldable
-        [ Major ==> M.fromFoldable
-            [ Triad ==> finb 3 2 1 1 (Barre 1 2 3)
-            , Dom7  ==> finb 1 2 1 1 (Barre 1 0 3)
-            , Maj7  ==> fing 3 2 1 0
+        [ Major      ==> M.fromFoldable
+            [ Triad  ==> finb 3 2 1 1 (Barre 1 2 3)
+            , Dom7   ==> finb 1 2 1 1 (Barre 1 0 3)
+            , Maj7   ==> fing 3 2 1 0
+            , Dom9   ==> fing 3 2 4 3
             ]
         , Minor ==> M.fromFoldable
-            [ Triad ==> finb 3 1 1 1 (Barre 1 1 3)
-            , Dom7  ==> finb 1 1 1 1 (Barre 1 0 3)
-            , Maj7  ==> fing 3 1 1 0
+            [ Triad  ==> finb 3 1 1 1 (Barre 1 1 3)
+            , Dom7   ==> finb 1 1 1 1 (Barre 1 0 3)
+            , Maj7   ==> fing 3 1 1 0
+            , Dom9   ==> fing 3 1 4 3
             ]
-        , Suspended ==> M.fromFoldable
-            [ Second ==> fing 3 0 1 1 ]
+        , Suspended  ==> M.fromFoldable
+            [ Second ==> fing 3 0 1 1
+            , Fourth ==> fing 0 2 3 3
+            ]
         ]
     ]
 
-fini :: Finger -> Finger -> Finger -> Finger -> Barre -> Fingering
-fini a b c d barre = Fingering (Just barre) [a, b, c, d]
+fini :: Finger -> Finger -> Finger -> Finger -> Maybe Barre -> Fingering
+fini a b c d barre = Fingering barre [a, b, c, d]
 
 -- Fingering without barre.
 fing :: Int -> Int -> Int -> Int -> Fingering
