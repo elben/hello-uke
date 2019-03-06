@@ -381,6 +381,26 @@ ukeChords = M.fromFoldable
             ]
         ]
 
+    -- F# / Gb
+    , 6 ==> M.fromFoldable
+        [ Major      ==> M.fromFoldable
+            [ Triad  ==> finb 3 1 2 1 (Barre 1 1 3)
+            , Dom7   ==> fing 3 4 1 4
+            , Maj7   ==> fing 3 5 1 4
+            , Dom9   ==> finb 1 4 2 1 (Barre 1 0 3)
+            ]
+        , Minor      ==> M.fromFoldable
+            [ Triad  ==> fing 2 1 2 0
+            , Dom7   ==> fing 2 4 2 4
+            , Maj7   ==> finb 2 5 2 4 (Barre 2 0 3)
+            , Dom9   ==> fing 11 9 12 11
+            ]
+        , Suspended  ==> M.fromFoldable
+            [ Second ==> finb 1 1 2 4 (Barre 1 0 3)
+            , Fourth ==> fing 4 1 2 2
+            ]
+        ]
+
     -- G
     , 7 ==> M.fromFoldable
         [ Major      ==> M.fromFoldable
