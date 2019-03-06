@@ -421,6 +421,46 @@ ukeChords = M.fromFoldable
             ]
         ]
 
+    -- G# / Ab
+    , 8 ==> M.fromFoldable
+        [ Major      ==> M.fromFoldable
+            [ Triad  ==> finb 5 3 4 3 (Barre 3 1 3)
+            , Dom7   ==> fing 1 3 4 3
+            , Maj7   ==> finb 1 3 3 3 (Barre 1 0 3)
+            , Dom9   ==> fing 1 0 2 1
+            ]
+        , Minor      ==> M.fromFoldable
+            [ Triad  ==> fing 4 3 4 2
+            , Dom7   ==> fing 1 3 2 2
+            , Maj7   ==> fing 0 3 4 2
+            , Dom9   ==> fing 11 10 7 11
+            ]
+        , Suspended  ==> M.fromFoldable
+            [ Second ==> finb 1 3 4 1 (Barre 1 0 3)
+            , Fourth ==> fing 1 3 4 4
+            ]
+        ]
+
+    -- A
+    , 9 ==> M.fromFoldable
+        [ Major      ==> M.fromFoldable
+            [ Triad  ==> fing 2 1 0 0
+            , Dom7   ==> fing 0 1 0 0
+            , Maj7   ==> fing 1 1 0 0
+            , Dom9   ==> fing 2 1 3 2
+            ]
+        , Minor      ==> M.fromFoldable
+            [ Triad  ==> fing 2 0 0 0
+            , Dom7   ==> fing 0 0 0 0
+            , Maj7   ==> fing 1 0 0 0
+            , Dom9   ==> fing 2 0 3 2
+            ]
+        , Suspended  ==> M.fromFoldable
+            [ Second ==> finb 2 4 5 2 (Barre 2 0 3)
+            , Fourth ==> fing 2 2 0 0
+            ]
+        ]
+
     -- A# / Bb
     , 10 ==> M.fromFoldable
         [ Major      ==> M.fromFoldable
@@ -438,6 +478,26 @@ ukeChords = M.fromFoldable
         , Suspended  ==> M.fromFoldable
             [ Second ==> fing 3 0 1 1
             , Fourth ==> fing 0 2 3 3
+            ]
+        ]
+
+    -- B
+    , 11 ==> M.fromFoldable
+        [ Major      ==> M.fromFoldable
+            [ Triad  ==> finb 4 3 2 2 (Barre 2 2 3)
+            , Dom7   ==> finb 2 3 2 2 (Barre 2 0 3)
+            , Maj7   ==> fing 4 3 2 1
+            , Dom9   ==> fing 4 3 5 4
+            ]
+        , Minor ==> M.fromFoldable
+            [ Triad  ==> finb 4 3 3 3 (Barre 3 1 3)
+            , Dom7   ==> finb 1 1 1 1 (Barre 1 0 3)
+            , Maj7   ==> finb 3 2 2 2 (Barre 2 1 3)
+            , Dom9   ==> fing 4 2 5 4
+            ]
+        , Suspended  ==> M.fromFoldable
+            [ Second ==> fing 4 1 2 2
+            , Fourth ==> finb 4 4 2 2 (Barre 2 2 3)
             ]
         ]
     ]
