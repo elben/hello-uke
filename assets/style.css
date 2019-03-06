@@ -58,6 +58,11 @@ body {
   transform: translate3d(-50%, 7%, 0);
 }
 
+/* When a string shouldn't be played */
+.string .fret:first-child .circle.no-play {
+  background-color: #e69868;
+}
+
 .string:last-child .fret {
   border-bottom: none;
   height: 50px;

@@ -74,9 +74,14 @@ renderFret :: forall p i.
            -> Maybe (HH.HTML p i)
 renderFret stringPos rootPos fretPos acc fing barre =
   if not (isBarreOnFret || (getFingerPos fing) == fretPos || (fingNoPlay fing && fretPos == 0))
-    then Nothing -- Neither a fret nor a finger is put in this string/fret position.
+    then Nothing -- Neither a fret nor a finger is put in this string/fret position nor it's an unplayed string.
     else
-      let classes = if isBarreOnFret then maybe [] (barreClassNames stringPos) barre else []
+      let classes = if isBarreOnFret
+                    then maybe [] (barreClassNames stringPos) barre
+                    else
+                      if (fingNoPlay fing && fretPos == 0)
+                      then [ ClassName "no-play" ]
+                      else []
           text = case fing of
                    -- If fret in (stringPos, fretPos) is an unplayed barre, don't show note
                    -- because another finger (F n) will be playing this string instead.
