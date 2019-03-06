@@ -228,6 +228,10 @@ getFingerPos :: Finger -> Int
 getFingerPos (F n) = n
 getFingerPos X = -1
 
+fingNoPlay :: Finger -> Boolean
+fingNoPlay X = true
+fingNoPlay _ = false
+
 instance fingerShow :: Show Finger where
   show (F pos) = show pos
   show X = "X"
@@ -294,6 +298,46 @@ ukeChords = M.fromFoldable
         , Suspended  ==> M.fromFoldable
             [ Second ==> fing 1 3 4 4
             , Fourth ==> fing 1 1 2 4
+            ]
+        ]
+
+    -- D
+    , 2 ==> M.fromFoldable
+        [ Major      ==> M.fromFoldable
+            [ Triad  ==> fing 2 2 2 0
+            , Dom7   ==> finb 2 2 2 3 (Barre 2 0 3)
+            , Maj7   ==> finb 2 2 2 4 (Barre 2 0 3)
+            , Dom9   ==> fing 5 4 2 5
+            ]
+        , Minor      ==> M.fromFoldable
+            [ Triad  ==> fing 2 2 1 0
+            , Dom7   ==> fing 2 2 1 3
+            , Maj7   ==> finb 6 5 5 5 (Barre 5 1 3)
+            , Dom9   ==> fing 5 4 1 5
+            ]
+        , Suspended  ==> M.fromFoldable
+            [ Second ==> fing 2 2 0 0
+            , Fourth ==> fing 0 2 3 0
+            ]
+        ]
+
+    -- D# / Eb
+    , 3 ==> M.fromFoldable
+        [ Major      ==> M.fromFoldable
+            [ Triad  ==> fing 3 3 3 1
+            , Dom7   ==> finb 3 3 3 4 (Barre 3 0 3)
+            , Maj7   ==> finb 3 3 3 5 (Barre 3 0 3)
+            , Dom9   ==> fing 0 3 1 4
+            ]
+        , Minor      ==> M.fromFoldable
+            [ Triad  ==> fing 3 3 2 1
+            , Dom7   ==> fing 3 3 2 4
+            , Maj7   ==> finb 3 2 2 6 (Barre 2 1 3)
+            , Dom9   ==> fing 6 5 1 6
+            ]
+        , Suspended  ==> M.fromFoldable
+            [ Second ==> finb 3 3 1 1 (Barre 1 2 3)
+            , Fourth ==> finb 1 3 4 1 (Barre 1 0 3)
             ]
         ]
 

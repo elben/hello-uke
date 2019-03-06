@@ -73,7 +73,7 @@ renderFret :: forall p i.
            -> Maybe Barre -- Barre
            -> Maybe (HH.HTML p i)
 renderFret stringPos rootPos fretPos acc fing barre =
-  if not (isBarreOnFret || (getFingerPos fing) == fretPos)
+  if not (isBarreOnFret || (getFingerPos fing) == fretPos || (fingNoPlay fing && fretPos == 0))
     then Nothing -- Neither a fret nor a finger is put in this string/fret position.
     else
       let classes = if isBarreOnFret then maybe [] (barreClassNames stringPos) barre else []
