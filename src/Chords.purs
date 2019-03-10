@@ -490,8 +490,8 @@ ukeChords = M.fromFoldable
             , Dom9   ==> fing 4 3 5 4
             ]
         , Minor ==> M.fromFoldable
-            [ Triad  ==> finb 4 3 3 3 (Barre 3 1 3)
-            , Dom7   ==> finb 1 1 1 1 (Barre 1 0 3)
+            [ Triad  ==> finb 4 2 2 2 (Barre 2 1 3)
+            , Dom7   ==> finb 2 2 2 2 (Barre 2 0 3)
             , Maj7   ==> finb 3 2 2 2 (Barre 2 1 3)
             , Dom9   ==> fing 4 2 5 4
             ]

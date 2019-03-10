@@ -117,7 +117,12 @@ considerStateSelection get getSelection set default state =
           else set (fromMaybe default (A.index selection 0)) state
 
     _ -> state
-    
+
+
+defaultInterval :: ChordQuality -> ChordInterval
+defaultInterval Suspended = Second
+defaultInterval _ = Triad
+
 component :: forall m. H.Component HH.HTML Query Input Message m
 component =
   H.component
@@ -215,8 +220,9 @@ component =
     SelectChordInterval interval next -> do
       state <- H.get
       let state' = if maybe false (\i -> i == interval) (getStateChordInterval state)
-                     -- The same interval was clicked, so "unselect" it by defaulting to Triad.
-                     then setStateChordInterval Triad state
+                     -- The same interval was clicked, so "unselect" it by choosing the default
+                     -- interval for the quality.
+                     then setStateChordInterval (maybe Triad defaultInterval (getStateChordQuality state)) state
                      -- A different interval was clicked, so choose the selected one.
                      else setStateChordInterval interval state
       H.put state'
