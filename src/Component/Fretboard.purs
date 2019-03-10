@@ -89,7 +89,7 @@ renderFret stringPos rootPos fretPos acc fing barre =
                             then Nothing
                             else map humanNote (findNoteForAccidental (step n rootPos) acc)
 
-                   X -> Just "X"
+                   X -> Just "✖︎"
       in Just (renderCircle classes text)
   where
     isBarreOnFret = barreOnFret stringPos fretPos barre
@@ -145,6 +145,26 @@ renderString s stringPos rootPos =
   in HH.span [ HP.classes [ClassName "string"] ]
        (renderFrets stringPos rootPos (numFretsToRender s) acc fing barre)
 
+-- Potentially-render fret markers, given the string and fret position. The frets are rendered
+-- for the middle string. On the 12th fret, the two side strings get the markers.
+renderFretMarker :: forall p i.
+                    Int -- n-th String
+                 -> Pos -- Fret number
+                 -> Maybe (HH.HTML p i)
+renderFretMarker stringPos fretPos =
+  if (stringPos == 1 && (fretPos == 5 || fretPos == 7 || fretPos == 10 || fretPos == 15))
+     || ((stringPos == 0 || stringPos == 2) && fretPos == 12)
+  then Just $ HH.span [ HP.classes [ClassName "fret-marker"]
+                      , HP.title (ordinalize fretPos <> " fret") ]
+                      [ HH.text "◉" ]
+  else Nothing
+
+ordinalize :: Int -> String
+ordinalize n | n == 1 || n == 21 = show n <> "st"
+             | n == 2 || n == 22 = show n <> "nd"
+             | n == 3 || n == 23 = show n <> "rd"
+             | otherwise = show n <> "th"
+
 -- Renders the frets of a string.
 renderFrets :: forall p i.
                Int         -- String position
@@ -160,7 +180,8 @@ renderFrets stringPos rootPos numFrets acc fing barre =
       snoc htmls
             (HH.span
               [ HP.classes [ClassName "fret"] ]
-              (maybe [] (\h -> [h]) (renderFret stringPos rootPos fretPos acc fing barre))))
+              (  (maybe [] (\h -> [h]) (renderFretMarker stringPos fretPos))
+              <> (maybe [] (\h -> [h]) (renderFret stringPos rootPos fretPos acc fing barre)))))
     []
     (range 0 (numFrets - 1))
 

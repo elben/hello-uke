@@ -60,7 +60,7 @@ body {
 
 /* When a string shouldn't be played */
 .string .fret:first-child .circle.no-play {
-  background-color: #e69868;
+  /* background-color: #e69868; */
 }
 
 .string:last-child .fret {
@@ -105,6 +105,15 @@ body {
 
   margin-left: auto;
   margin-right: auto;
+}
+
+.fret-marker {
+  transform: translate3d(0%, 15%, 0);
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  font-size: 1.5em;
+  text-align: center;
 }
 
 .chord-selector {
