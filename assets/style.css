@@ -135,6 +135,10 @@ body {
   color: #eee;
 }
 
+.selection.wide {
+  min-width: 100px;
+}
+
 .btn {
   cursor: pointer;
   background: #222;

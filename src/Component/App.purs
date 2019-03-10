@@ -61,6 +61,9 @@ component =
       -- H.modify_ (\st -> st { toggleCount = st.toggleCount + 1 })
       H.put (Chord note quality interval)
       pure next
+    HandleChordSelector (CS.ChordAdded note quality interval) next -> do
+      -- TODO
+      pure next
     HandleChordSelector CS.NoMessage next -> do
       pure next
     HandleFretboard m next -> do

@@ -37,9 +37,9 @@ isChordSelected :: State -> Boolean
 isChordSelected (Chord (Just _) (Just _) (Just _)) = true
 isChordSelected _ = false
 
-toMessage :: State -> Message
-toMessage (Chord (Just p) (Just q) (Just i)) = ChordSelected p q i
-toMessage _ = NoMessage
+toMessage :: (Note -> ChordQuality -> ChordInterval -> Message) -> State -> Message
+toMessage f (Chord (Just n) (Just q) (Just i)) = f n q i
+toMessage _ _ = NoMessage
 
 data Query a
   -- These are "actions"
@@ -48,12 +48,14 @@ data Query a
   | SelectNote Note a
   | SelectChordQuality ChordQuality a
   | SelectChordInterval ChordInterval a
+  | AddChord a
 
 type Input = Unit
 
 data Message =
   NoMessage
   | ChordSelected Note ChordQuality ChordInterval
+  | ChordAdded Note ChordQuality ChordInterval
 
 rootNoteSelectorClasses :: Array ClassName
 rootNoteSelectorClasses = [ClassName "selection", ClassName "root-note-selection", ClassName "btn" ]
@@ -181,6 +183,10 @@ component =
                 -- We want intervals to act like a modification, so "no modification"
                 -- equals the Triad interval.
                 (A.filter ((/=) Triad) (selectableChordIntervals state)))
+        , HH.div
+            [ HP.classes [ClassName "selection", ClassName "wide", ClassName "btn"]
+            , HE.onClick (HE.input_ (AddChord)) ]
+            [ HH.text "Add" ]
         ]
 
   eval :: Query ~> H.ComponentDSL State Query Message m
@@ -206,7 +212,7 @@ component =
       let s4 = considerStateSelection getStateChordInterval selectableChordIntervals setStateChordInterval Triad s3
 
       H.put s4
-      H.raise (toMessage s4)
+      H.raise (toMessage ChordSelected s4)
       pure next
 
     SelectChordQuality quality next -> do
@@ -214,7 +220,7 @@ component =
       let s2 = setStateChordQuality quality s1
       let s3 = considerStateSelection getStateChordInterval selectableChordIntervals setStateChordInterval Triad s2
       H.put s3
-      H.raise (toMessage s3)
+      H.raise (toMessage ChordSelected s3)
       pure next
 
     SelectChordInterval interval next -> do
@@ -226,5 +232,10 @@ component =
                      -- A different interval was clicked, so choose the selected one.
                      else setStateChordInterval interval state
       H.put state'
-      H.raise (toMessage state')
+      H.raise (toMessage ChordSelected state')
+      pure next
+
+    AddChord next -> do
+      state <- H.get
+      H.raise (toMessage ChordAdded state)
       pure next
