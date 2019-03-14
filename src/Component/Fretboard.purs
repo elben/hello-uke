@@ -207,7 +207,7 @@ component =
       ]
 
   eval :: Query ~> H.ComponentDSL State Query Message m
-  eval = case _ of
+  eval q = case q of
     ChordChange note@(Note name acc pos) q i next -> do
       let s = case findUkeChord pos q i of
                  Just fingering -> (Chord note q i fingering)

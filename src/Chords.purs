@@ -21,6 +21,8 @@ type Octave = Int
 -- A Note consists of its letter, accidental, and position.
 data Note = Note String Accidental Pos
 
+data Chord = Chord Note ChordQuality ChordInterval
+
 c  :: Note
 c  = Note "C" Natural 0
 cs :: Note
