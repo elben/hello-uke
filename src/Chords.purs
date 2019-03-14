@@ -395,7 +395,7 @@ ukeChords = M.fromFoldable
             [ Triad  ==> fing 2 1 2 0
             , Dom7   ==> fing 2 4 2 4
             , Maj7   ==> finb 2 5 2 4 (Barre 2 0 3)
-            , Dom9   ==> fing 11 9 12 11
+            , Dom9   ==> fing 11 9 12 11 -- TODO find better fingering
             ]
         , Suspended  ==> M.fromFoldable
             [ Second ==> finb 1 1 2 4 (Barre 1 0 3)
@@ -435,7 +435,7 @@ ukeChords = M.fromFoldable
             [ Triad  ==> fing 4 3 4 2
             , Dom7   ==> fing 1 3 2 2
             , Maj7   ==> fing 0 3 4 2
-            , Dom9   ==> fing 11 10 7 11
+            , Dom9   ==> fing 11 10 7 11 -- TODO find simpler chord
             ]
         , Suspended  ==> M.fromFoldable
             [ Second ==> finb 1 3 4 1 (Barre 1 0 3)

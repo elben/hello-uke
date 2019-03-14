@@ -165,6 +165,7 @@ ordinalize n | n == 1 || n == 21 = show n <> "st"
              | n == 3 || n == 23 = show n <> "rd"
              | otherwise = show n <> "th"
 
+-- TODO allow "adding" chords so we can have a page of chords
 -- Renders the frets of a string.
 renderFrets :: forall p i.
                Int         -- String position

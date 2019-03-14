@@ -6,7 +6,7 @@ import Prelude
 import Chords as C
 import Component.Fretboard as FB
 import Data.Array as A
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.HTML as HH
@@ -66,7 +66,7 @@ component =
     s <- H.get
     let s2 = case fbInput of
                FB.ChordInput n q i -> do
-                 let fretboards2 = maybe s.fretboards (\fbState -> A.snoc s.fretboards (fbState {input = fbInput})) (A.index s.fretboards 0)
+                 let fretboards2 = fromMaybe s.fretboards (A.updateAt 0 ({input: fbInput, id: 0}) s.fretboards)
                  s { fretboards = fretboards2 }
                FB.NoChordInput -> s
     H.put s2
