@@ -19,17 +19,15 @@ type State =
   }
 
 type FretboardState =
-  { input :: FB.Input
+  { chord :: Chord
   , id :: FretboardId }
 
 data Query a
   = HandleFretboardMessage FretboardId FB.Message a
-  | AddFretboard FB.Input a
-  | ModifyActiveFretboard FB.Input a
+  | ReplaceChords (Array Chord) a
 
 data Input
-  = AddFretboardInput FB.Input
-  | ModifyActiveFretboardInput FB.Input
+  = FretboardChords (Array Chord)
 
 newtype FretboardSlot = FretboardSlot Int
 derive instance eqFretboardSlot :: Eq FretboardSlot
@@ -50,36 +48,20 @@ component =
   where
 
   initialState :: Input -> State
-  initialState (ModifyActiveFretboardInput fbInput) = { fretboards: [ { input: fbInput, id: 0 } ], nextId: 0 }
-  initialState (AddFretboardInput fbInput) =          { fretboards: [ { input: fbInput, id: 0 } ], nextId: 0 }
+  initialState (FretboardChords chords) = { fretboards: map (\c -> { chord: c, id: 0 } ) chords, nextId: 0 }
 
   render :: State -> H.ParentHTML Query FB.Query FretboardSlot m
   render s = HH.div [ HP.classes [ ClassName "fretboards" ] ] (map renderFretboard s.fretboards)
 
   renderFretboard :: FretboardState -> H.ParentHTML Query FB.Query FretboardSlot m
   renderFretboard fbState =
-    HH.slot (FretboardSlot fbState.id) FB.component fbState.input (HE.input (HandleFretboardMessage fbState.id))
+    HH.slot (FretboardSlot fbState.id) FB.component (FB.ChordInput fbState.chord) (HE.input (HandleFretboardMessage fbState.id))
 
   eval :: Query ~> H.ParentDSL State Query FB.Query FretboardSlot Message m
   eval (HandleFretboardMessage fbId msg next) = pure next
-  eval (AddFretboard fbInput next) = do
+  eval (ReplaceChords chords next) = do
     s <- H.get
-    let s2 = case fbInput of
-               FB.ChordInput _ -> do
-                 -- TODO get the next ID
-                 s { fretboards = A.snoc s.fretboards { input: fbInput, id: 1 } }
-               FB.NoChordInput -> s
-    H.put s2
+    H.put (s { fretboards = map (\c -> { chord: c, id: 1 }) chords } )
     pure next
-  eval (ModifyActiveFretboard fbInput next) = do
-    s <- H.get
-    let s2 = case fbInput of
-               FB.ChordInput _ -> do
-                 s { fretboards = fromMaybe s.fretboards (A.updateAt 0 ({input: fbInput, id: 0}) s.fretboards) }
-               FB.NoChordInput -> s
-    H.put s2
-    pure next
-
   receiver :: Input -> Maybe (Query Unit)
-  receiver (AddFretboardInput fbInput) = Just (AddFretboard fbInput unit)
-  receiver (ModifyActiveFretboardInput fbInput) = Just (ModifyActiveFretboard fbInput unit)
+  receiver (FretboardChords chords) = Just (ReplaceChords chords unit)
