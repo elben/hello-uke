@@ -4,6 +4,7 @@ import Chords
 import Prelude
 
 import Component.Common as Com
+import Model as M
 import Data.Array (index, range, snoc)
 import Data.List (foldl)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
@@ -14,11 +15,11 @@ import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 
 data State = NoChord
-           | Chord Note ChordQuality ChordInterval Fingering
+           | FBChord Note ChordQuality ChordInterval Fingering
 
 humanChord :: State -> String
 humanChord NoChord = ""
-humanChord (Chord n q i _) = humanNote n <> humanChordMod q i
+humanChord (FBChord n q i _) = humanNote n <> humanChordMod q i
 
 data Query a
   = ChordChange Note ChordQuality ChordInterval a
@@ -27,7 +28,7 @@ data Query a
 
 data Input
   = NoChordInput
-  | ChordInput Note ChordQuality ChordInterval
+  | ChordInput M.Chord
 
 data Message = Toggled Boolean
 
@@ -107,7 +108,7 @@ renderChordInfo :: forall p i. State -> HH.HTML p i
 renderChordInfo s =
   let htmls = case s of
                 NoChord -> []
-                (Chord n q i _) -> Com.chordHtml n q i
+                (FBChord n q i _) -> Com.chordHtml n q i
   in HH.div
        [ HP.classes [ClassName "chord-info"] ]
        htmls
@@ -116,7 +117,7 @@ renderChordInfo s =
 -- behind the nut).
 numFretsToRender :: State -> Int
 numFretsToRender NoChord = 4
-numFretsToRender (Chord p q i (Fingering barre fs)) =
+numFretsToRender (FBChord p q i (Fingering barre fs)) =
   -- Draw at least 4 frets, including the open string fret (the one behind the nut)
   max 4
     ((foldl
@@ -135,13 +136,13 @@ renderString :: forall p i.
 renderString s stringPos rootPos =
   let fing  = case s of
                  NoChord -> X
-                 Chord n q i (Fingering _ fs) -> fromMaybe X (index fs stringPos)
+                 FBChord n q i (Fingering _ fs) -> fromMaybe X (index fs stringPos)
       barre = case s of
                 NoChord -> Nothing
-                Chord n q i f -> getBarre f
+                FBChord n q i f -> getBarre f
       acc   = case s of
                 NoChord -> Natural
-                Chord (Note _ a p) q i f -> if a == Natural then defaultAccidental p else a
+                FBChord (Note _ a p) q i f -> if a == Natural then defaultAccidental p else a
   in HH.span [ HP.classes [ClassName "string"] ]
        (renderFrets stringPos rootPos (numFretsToRender s) acc fing barre)
 
@@ -211,7 +212,7 @@ component =
   eval q = case q of
     ChordChange note@(Note name acc pos) q i next -> do
       let s = case findUkeChord pos q i of
-                 Just fingering -> (Chord note q i fingering)
+                 Just fingering -> (FBChord note q i fingering)
                  _ -> NoChord
       H.put s
       pure next
@@ -225,9 +226,9 @@ component =
   initialState input =
     case input of
       NoChordInput -> NoChord
-      ChordInput note@(Note name acc pos) q i ->
+      ChordInput (M.Chord note@(Note name acc pos) q i) ->
         case findUkeChord pos q i of
-          Just fingering -> (Chord note q i fingering)
+          Just fingering -> (FBChord note q i fingering)
           _ -> NoChord
   
   -- This component receives an Input from the parent component
@@ -235,4 +236,4 @@ component =
   receiver input =
     case input of
       NoChordInput -> Just (ClearChord unit)
-      ChordInput p q i -> Just (ChordChange p q i unit)
+      ChordInput (M.Chord n q i) -> Just (ChordChange n q i unit)

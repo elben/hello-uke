@@ -48,14 +48,12 @@ data Query a
   | SelectNote Note a
   | SelectChordQuality ChordQuality a
   | SelectChordInterval ChordInterval a
-  | AddChord a
 
 type Input = Unit
 
 data Message =
   NoMessage
   | ChordSelected Note ChordQuality ChordInterval
-  | ChordAdded Note ChordQuality ChordInterval
 
 rootNoteSelectorClasses :: Array ClassName
 rootNoteSelectorClasses = [ClassName "selection", ClassName "root-note-selection", ClassName "btn" ]
@@ -183,10 +181,6 @@ component =
                 -- We want intervals to act like a modification, so "no modification"
                 -- equals the Triad interval.
                 (A.filter ((/=) Triad) (selectableChordIntervals state)))
-        , HH.div
-            [ HP.classes [ClassName "selection", ClassName "wide", ClassName "btn"]
-            , HE.onClick (HE.input_ (AddChord)) ]
-            [ HH.text "Add" ]
         ]
 
   eval :: Query ~> H.ComponentDSL State Query Message m
@@ -233,9 +227,4 @@ component =
                      else setStateChordInterval interval state
       H.put state'
       H.raise (toMessage ChordSelected state')
-      pure next
-
-    AddChord next -> do
-      state <- H.get
-      H.raise (toMessage ChordAdded state)
       pure next
