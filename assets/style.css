@@ -13,10 +13,21 @@ body {
   margin-right: auto;
 }
 
+.top-component {
+  display: flex;
+}
+
+.fretboard-active {
+}
+
+.fretboards {
+  display: flex;
+  flex-flow: row;
+  flex-wrap: wrap;
+}
+
 .fretboard {
-  position: relative;
-  margin: 4em;
-  float: left;
+  margin: 2em;
 }
 
 .chord-info {
@@ -131,7 +142,7 @@ body {
 }
 
 .chord-selector-section {
-  width: 400px;
+  flex-basis: 30%;
 }
 
 .selector-section {
