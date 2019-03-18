@@ -1,6 +1,7 @@
 module Component.ChordSelector where
 
 import Chords
+import Model as M
 import Prelude
 
 import Data.Array as A
@@ -37,8 +38,8 @@ isChordSelected :: State -> Boolean
 isChordSelected (Chord (Just _) (Just _) (Just _)) = true
 isChordSelected _ = false
 
-toMessage :: (Note -> ChordQuality -> ChordInterval -> Message) -> State -> Message
-toMessage f (Chord (Just n) (Just q) (Just i)) = f n q i
+toMessage :: (M.Chord -> Message) -> State -> Message
+toMessage f (Chord (Just n) (Just q) (Just i)) = f (M.Chord n q i)
 toMessage _ _ = NoMessage
 
 data Query a
@@ -53,7 +54,7 @@ type Input = Unit
 
 data Message =
   NoMessage
-  | ChordSelected Note ChordQuality ChordInterval
+  | ChordSelected M.Chord
 
 rootNoteSelectorClasses :: Array ClassName
 rootNoteSelectorClasses = [ClassName "selection", ClassName "root-note-selection", ClassName "btn" ]

@@ -5,7 +5,6 @@ module Component.App where
 import Prelude
 
 import Component.ChordSelector as CS
-import Component.Fretboard as FB
 import Component.Fretboards as FBS
 import Data.Array as A
 import Data.Either.Nested (Either2)
@@ -23,7 +22,6 @@ type State = { chord :: M.Chord, chords :: Array M.Chord }
 
 data Query a
   = HandleChordSelector CS.Message a
-  | HandleFretboard FB.Message a
   | HandleFretboards FBS.Message a
   | AddChord a
 
@@ -63,40 +61,20 @@ component =
         , HE.onClick (HE.input_ AddChord) ]
         [ HH.text "Add" ]
 
-    -- TODO what if we made the App state include ALL the chords, including the current one.
-    -- We pass the list of ALL chords to FBS component, as the input. FBS basically takes as
-    -- input only one thing: the list of chords to render. FBS is then "dumb" and just renders.
-    --
-    -- But is this good design? The App component doesn't need to know all the chords we have
-    -- added. The Fretboards component should know that. When the App component gets an Add,
-    -- it needs to somehow send a message to Fretboards to update, via the Input mechanism.
-    -- But how? The Input to Fretboards is done in render, in which we only can query the state.
-    --
-    -- In the TODO example, see NewTask query
-    -- https://github.com/slamdata/purescript-halogen/blob/v4.0.0/examples/todo/src/Component/List.purs
-    -- When we click "Add" here, we could pass in the CURRENT chord from the ChordSelector.
-    -- But again, we can only modify the state.
-    --
-    -- Maybe we SHOULD just pass in all the chords into Fretboards...
+    -- Render all the fretboards. Passes in the list of chords to render as input to the fretboard.
     , HH.slot' CP.cp2 unit FBS.component (FBS.FretboardChords (A.cons state.chord state.chords)) (HE.input HandleFretboards)
-    -- , HH.slot' CP.cp2 unit FBS.component (FBS.AddFretboardInput fbInput) (HE.input HandleFretboards)
-    ] -- <> fretboards)
+    ]
 
   eval :: Query ~> H.ParentDSL State Query ChildQuery ChildSlot Void m
   eval = case _ of
-    HandleChordSelector (CS.ChordSelected note quality interval) next -> do
-      -- st <- H.get
-      -- H.put ({ chord: M.Chord note quality interval, chords: st.chords })
-      H.modify_ (_ { chord = M.Chord note quality interval })
+    HandleChordSelector (CS.ChordSelected chord) next -> do
+      H.modify_ (_ { chord = chord })
       pure next
     HandleChordSelector CS.NoMessage next -> do
-      pure next
-    HandleFretboard m next -> do
       pure next
     HandleFretboards m next -> do
       pure next
     AddChord next -> do
-      -- st <- H.get
-      -- H.put ({ chord: st.chord, chords: A.snoc st.chords st.chord })
+      -- Add the "active" chord into the list of archived chords.
       H.modify_ (\st -> st { chords = A.snoc st.chords st.chord })
       pure next

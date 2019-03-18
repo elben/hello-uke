@@ -33,9 +33,8 @@ newtype FretboardSlot = FretboardSlot Int
 derive instance eqFretboardSlot :: Eq FretboardSlot
 derive instance ordFretboardSlot :: Ord FretboardSlot
 
-data Message = Toggled Boolean
+data Message = NoMessage
 
--- component :: forall m. Applicative m => H.Component HH.HTML Query Input Message m
 component :: forall m. H.Component HH.HTML Query Input Message m
 component =
   H.parentComponent
