@@ -5,6 +5,7 @@ import Prelude
 
 import Chords as C
 import Component.Fretboard as FB
+import Data.Array (mapWithIndex)
 import Data.Array as A
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Halogen (ClassName(..))
@@ -15,7 +16,6 @@ import Halogen.HTML.Properties as HP
 
 type State =
   { fretboards :: Array FretboardState
-  , nextId :: Int
   }
 
 type FretboardState =
@@ -48,7 +48,7 @@ component =
   where
 
   initialState :: Input -> State
-  initialState (FretboardChords chords) = { fretboards: map (\c -> { chord: c, id: 0 } ) chords, nextId: 0 }
+  initialState (FretboardChords chords) = { fretboards: mapWithIndex (\i c -> { chord: c, id: i } ) chords }
 
   render :: State -> H.ParentHTML Query FB.Query FretboardSlot m
   render s = HH.div [ HP.classes [ ClassName "fretboards" ] ] (map renderFretboard s.fretboards)
@@ -60,8 +60,8 @@ component =
   eval :: Query ~> H.ParentDSL State Query FB.Query FretboardSlot Message m
   eval (HandleFretboardMessage fbId msg next) = pure next
   eval (ReplaceChords chords next) = do
-    s <- H.get
-    H.put (s { fretboards = map (\c -> { chord: c, id: 1 }) chords } )
+    H.modify_ (_ { fretboards = mapWithIndex (\i c -> { chord: c, id: i }) chords } )
     pure next
+
   receiver :: Input -> Maybe (Query Unit)
   receiver (FretboardChords chords) = Just (ReplaceChords chords unit)
