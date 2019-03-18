@@ -135,7 +135,8 @@ body {
 }
 
 .selector-section {
-  /* height: 60px; */
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .selection {
