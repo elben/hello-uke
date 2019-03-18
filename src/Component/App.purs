@@ -50,20 +50,20 @@ component =
   render :: State -> H.ParentHTML Query ChildQuery ChildSlot m
   render state =
     HH.div_
-    -- Render the ChordSelector component. It doesn't have any inputs to it, so pass in
-    -- unit as the input. It emits a message whenever a valid chord is selected, which is
-    -- passed via the HandleChordSelector wrapper.
-    [ HH.slot' CP.cp1 unit CS.component unit (HE.input HandleChordSelector)
+      -- Render the ChordSelector component. It doesn't have any inputs to it, so pass in
+      -- unit as the input. It emits a message whenever a valid chord is selected, which is
+      -- passed via the HandleChordSelector wrapper.
+      [ HH.slot' CP.cp1 unit CS.component unit (HE.input HandleChordSelector)
 
-    -- Render the [Add] button.
-    , HH.div
-        [ HP.classes [ClassName "selection", ClassName "wide", ClassName "btn"]
-        , HE.onClick (HE.input_ AddChord) ]
-        [ HH.text "Add" ]
+      -- Render the [Add] button.
+      , HH.div
+          [ HP.classes [ClassName "selection", ClassName "wide", ClassName "btn"]
+          , HE.onClick (HE.input_ AddChord) ]
+          [ HH.text "Add" ]
 
-    -- Render all the fretboards. Passes in the list of chords to render as input to the fretboard.
-    , HH.slot' CP.cp2 unit FBS.component (FBS.FretboardChords (A.cons state.chord state.chords)) (HE.input HandleFretboards)
-    ]
+      -- Render all the fretboards. Passes in the list of chords to render as input to the fretboard.
+      , HH.slot' CP.cp2 unit FBS.component (FBS.FretboardChords (A.cons state.chord state.chords)) (HE.input HandleFretboards)
+      ]
 
   eval :: Query ~> H.ParentDSL State Query ChildQuery ChildSlot Void m
   eval = case _ of

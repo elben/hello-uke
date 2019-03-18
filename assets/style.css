@@ -3,6 +3,12 @@ body {
   font-family: Arial Unicode MS, Lucida Sans Unicode;
 }
 
+.structure {
+  width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .fretboard {
   position: relative;
   margin: 4em;
