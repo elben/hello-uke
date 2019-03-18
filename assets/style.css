@@ -1,3 +1,7 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
   font-size: 16px;
   font-family: Arial Unicode MS, Lucida Sans Unicode;
@@ -16,9 +20,9 @@ body {
 }
 
 .chord-info {
-  line-height: 40px;
+  line-height: 45px;
   width: 200px;
-  height: 40px;
+  height: 45px;
   background: #eee;
   color: #333;
   text-align: center;
@@ -38,8 +42,8 @@ body {
 }
 
 .fret {
-  width: 48px;
-  height: 45px;
+  width: 50px;
+  height: 50px;
   display: block;
   border-bottom: 5px solid #333;
   border-left: 2px solid #333;
@@ -48,7 +52,7 @@ body {
 /* Open strings */
 .fret:first-child {
   background-color: #999;
-  height: 38px;
+  height: 50px;
   border-bottom: 12px solid #333;
 }
 
@@ -62,6 +66,10 @@ body {
   border: 2px solid #333;
   color: #333;
   transform: translate3d(-50%, 7%, 0);
+
+  /* Use content-box sizing so that visually it looks the same size as the other circles,
+   * which don't have borders. */
+  box-sizing: content-box;
 }
 
 /* When a string shouldn't be played */
@@ -131,14 +139,14 @@ body {
 }
 
 .selection {
-  min-width: 30px;
-  height: 30px;
-  line-height: 30px;
+  min-width: 45px;
+  height: 45px;
+  line-height: 45px;
   text-align: center;
 
   float: left;
   margin: 0 10px 5px 0;
-  padding: 5px;
+  padding: 0 10px;
   color: #eee;
 }
 
@@ -149,7 +157,6 @@ body {
 .btn {
   cursor: pointer;
   background: #222;
-  border: 2px solid #333;
   border-radius: 13px;
 
   /* Don't allow user to select text. Make it behave more like a button.
