@@ -203,7 +203,7 @@ derive instance chordIntervalOrd :: Ord ChordInterval
 
 -- https://en.wikipedia.org/wiki/Chord_(music)#Examples
 humanChordInterval :: ChordInterval -> String
-humanChordInterval Triad = ""
+humanChordInterval Triad = "Triad"
 humanChordInterval Dom7 = "7"
 humanChordInterval Maj7 = "M7"
 humanChordInterval Second = "2"

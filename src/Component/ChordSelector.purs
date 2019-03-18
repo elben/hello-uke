@@ -1,7 +1,6 @@
 module Component.ChordSelector where
 
 import Chords
-import Model as M
 import Prelude
 
 import Data.Array as A
@@ -12,6 +11,7 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Model as M
 
 -- Carry Notes, not Pos. So that users can deleniate between A# and Bb.
 data State = Chord (Maybe Note) (Maybe ChordQuality) (Maybe ChordInterval)
@@ -149,7 +149,9 @@ component =
     in
       HH.div
         [ HP.classes [ClassName "chord-selector"] ]
-        [ HH.div
+        [ HH.div_
+            [ HH.h3 [] [ HH.text "Root Note" ] ]
+        , HH.div
             [ HP.classes [ClassName "selector-section", ClassName "root-note-selector"] ]
             (map
                 (\note ->
@@ -159,6 +161,8 @@ component =
                        , HE.onClick (HE.input_ (SelectNote note)) ]
                        [ HH.text (humanNote note) ])
                 selectableNotes)
+        , HH.div_
+            [ HH.h3 [] [ HH.text "Quality" ] ]
         , HH.div
             [ HP.classes [ClassName "selector-section", ClassName "chord-quality-selector"] ]
             (map
@@ -169,6 +173,8 @@ component =
                        , HE.onClick (HE.input_ (SelectChordQuality q)) ]
                        [ HH.text (show q) ])
                 (selectableChordQualities state))
+        , HH.div_
+            [ HH.h3 [] [ HH.text "Interval" ] ]
         , HH.div
             [ HP.classes [ClassName "selector-section", ClassName "chord-interval-selector"] ]
             (map
@@ -181,7 +187,8 @@ component =
                 -- Don't show the Triad in the UI, as it is the "default" interval.
                 -- We want intervals to act like a modification, so "no modification"
                 -- equals the Triad interval.
-                (A.filter ((/=) Triad) (selectableChordIntervals state)))
+                -- (A.filter ((/=) Triad) (selectableChordIntervals state)))
+                (selectableChordIntervals state))
         ]
 
   eval :: Query ~> H.ComponentDSL State Query Message m
