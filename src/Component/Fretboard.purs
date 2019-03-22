@@ -4,7 +4,6 @@ import Chords
 import Prelude
 
 import Component.Common as Com
-import Model as M
 import Data.Array (index, range, snoc)
 import Data.List (foldl)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
@@ -12,18 +11,30 @@ import Engine (step)
 import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.HTML as HH
+import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Model as M
+
+-- type State = { chord :: M.Chord
+--              , fingering :: Fingering
+--              , displayActions :: Boolean
+--              }
 
 data State = NoChord
-           | FBChord Note ChordQuality ChordInterval Fingering
+           | FBChord
+             { chord :: M.Chord
+             , fingering :: Fingering
+             , displayActions :: Boolean
+             }
 
 humanChord :: State -> String
 humanChord NoChord = ""
-humanChord (FBChord n q i _) = humanNote n <> humanChordMod q i
+humanChord (FBChord s) = humanNote s.chord.note <> humanChordMod s.chord.quality s.chord.interval
 
 data Query a
-  = ChordChange Note ChordQuality ChordInterval a
+  = ChordChange M.Chord a
   | ClearChord a
+  | HoverChordMeta a
   | IsOn (Boolean -> a)
 
 data Input
@@ -108,16 +119,26 @@ renderChordInfo :: forall p i. State -> HH.HTML p i
 renderChordInfo s =
   let htmls = case s of
                 NoChord -> []
-                (FBChord n q i _) -> Com.chordHtml n q i
+                FBChord struct -> Com.chordHtml struct.chord.note struct.chord.quality struct.chord.interval
   in HH.div
-       [ HP.classes [ClassName "chord-info"] ]
+       [ HP.classes [ ClassName "chord-meta-item", ClassName "chord-info" ] ]
        htmls
+
+renderChordActions :: forall p i. HH.HTML p i
+renderChordActions =
+  HH.div
+    [ HP.classes [ ClassName "chord-actions" ] ]
+    [ HH.span
+        [ HP.classes [ ClassName "chord-action-delete" ] ]
+        [ HH.text "✖︎" ]
+    ]
+
 
 -- Determine the number of frets to draw for this state. Draw at least four frets (including the one
 -- behind the nut).
 numFretsToRender :: State -> Int
 numFretsToRender NoChord = 4
-numFretsToRender (FBChord p q i (Fingering barre fs)) =
+numFretsToRender (FBChord s) =
   -- Draw at least 4 frets, including the open string fret (the one behind the nut)
   max 4
     ((foldl
@@ -125,7 +146,7 @@ numFretsToRender (FBChord p q i (Fingering barre fs)) =
                 X -> m
                 F n -> max m n)
       0
-      fs) + 1)
+      (getFingers s.fingering)) + 1)
 
 -- Draw a string on the instrument, drawing the frets of each string.
 renderString :: forall p i.
@@ -136,13 +157,15 @@ renderString :: forall p i.
 renderString s stringPos rootPos =
   let fing  = case s of
                  NoChord -> X
-                 FBChord n q i (Fingering _ fs) -> fromMaybe X (index fs stringPos)
+                 FBChord s -> fromMaybe X (index (getFingers s.fingering) stringPos)
       barre = case s of
                 NoChord -> Nothing
-                FBChord n q i f -> getBarre f
+                FBChord s -> getBarre s.fingering
       acc   = case s of
                 NoChord -> Natural
-                FBChord (Note _ a p) q i f -> if a == Natural then defaultAccidental p else a
+                FBChord s ->
+                  let Note _ a p = s.chord.note in
+                  if a == Natural then defaultAccidental p else a
   in HH.span [ HP.classes [ClassName "string"] ]
        (renderFrets stringPos rootPos (numFretsToRender s) acc fing barre)
 
@@ -187,6 +210,14 @@ renderFrets stringPos rootPos numFrets acc fing barre =
     []
     (range 0 (numFrets - 1))
 
+chordToState :: M.Chord -> State
+chordToState chord =
+    let Note _ _ pos = chord.note in
+      case findUkeChord pos chord.quality chord.interval of
+          Just fingering -> FBChord { chord: chord, fingering: fingering, displayActions: false }
+          _ -> NoChord
+
+
 component :: forall m. H.Component HH.HTML Query Input Message m
 component =
   H.component
@@ -201,7 +232,14 @@ component =
   render state =
     HH.div
       [ HP.classes [ClassName "fretboard"] ]
-      [ renderChordInfo state
+      [ renderChordActions
+      , HH.div
+          [ HP.classes [ ClassName "chord-meta" ]
+          , HE.onMouseOver (HE.input_ HoverChordMeta) ]
+          [ HH.div [ HP.classes [ ClassName "chord-meta-item" ] ] []
+          , renderChordInfo state
+          ]
+      -- TODO add HTML to delete fretboard on hover.
       , renderString state 0 7 -- G
       , renderString state 1 0 -- C
       , renderString state 2 4 -- E
@@ -210,14 +248,19 @@ component =
 
   eval :: Query ~> H.ComponentDSL State Query Message m
   eval q = case q of
-    ChordChange note@(Note name acc pos) q i next -> do
-      let s = case findUkeChord pos q i of
-                 Just fingering -> (FBChord note q i fingering)
-                 _ -> NoChord
-      H.put s
+    -- ChordChange note@(Note name acc pos) q i next -> do
+    ChordChange chord next -> do
+      H.put (chordToState chord)
       pure next
     ClearChord next -> do
       H.put NoChord
+      pure next
+    HoverChordMeta next -> do
+      s <- H.get
+      -- TODO send a message. But how do we uniquely identify this component? We need to handler in
+      -- the parent component (fretboards) to do it. See
+      -- https://github.com/slamdata/purescript-halogen/blob/v4.0.0/examples/todo/src/Component/List.purs
+      -- and NotifyRemove.
       pure next
     IsOn reply -> do
       pure (reply true)
@@ -226,14 +269,11 @@ component =
   initialState input =
     case input of
       NoChordInput -> NoChord
-      ChordInput (M.Chord note@(Note name acc pos) q i) ->
-        case findUkeChord pos q i of
-          Just fingering -> (FBChord note q i fingering)
-          _ -> NoChord
+      ChordInput chord -> chordToState chord
   
   -- This component receives an Input from the parent component
   receiver :: Input -> Maybe (Query Unit)
   receiver input =
     case input of
       NoChordInput -> Just (ClearChord unit)
-      ChordInput (M.Chord n q i) -> Just (ChordChange n q i unit)
+      ChordInput c -> Just (ChordChange c unit)

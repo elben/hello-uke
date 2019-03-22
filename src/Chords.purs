@@ -252,6 +252,9 @@ data Fingering = Fingering (Maybe Barre) (Array Finger)
 getBarre :: Fingering -> Maybe Barre
 getBarre (Fingering barre _) = barre
 
+getFingers :: Fingering -> Array Finger
+getFingers (Fingering _ fingers) = fingers
+
 -- Easier way of defining tuples. Precedence is *lower* than List's (:), so that we can create
 -- tuples in lists like this:
 --

@@ -27,19 +27,37 @@ body {
 }
 
 .fretboard {
-  margin: 2em;
+  padding-right: 2em;
+  padding-top: 2em;
 }
 
-.chord-info {
+.chord-meta {
+  display: flex;
+  flex-direction: row;
+
   line-height: 45px;
   width: 200px;
   height: 45px;
+  /* transform: translate3d(-11%, 0, 0); */
   background: #eee;
   color: #333;
-  text-align: center;
-  transform: translate3d(-11%, 0, 0);
   border-radius: 15px;
   border: 2px solid #333;
+}
+
+.chord-meta-item {
+  flex-basis: 33%;
+}
+
+.hidden {
+  display: none;
+}
+
+.chord-action-delete {
+}
+
+.chord-info {
+  text-align: center;
 }
 
 .chord-info sup {
@@ -50,6 +68,7 @@ body {
 .string {
   width: 50px;
   float: left;
+  padding-left: 25px;
 }
 
 .fret {

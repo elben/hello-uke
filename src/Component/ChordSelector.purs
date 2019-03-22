@@ -39,7 +39,7 @@ isChordSelected (Chord (Just _) (Just _) (Just _)) = true
 isChordSelected _ = false
 
 toMessage :: (M.Chord -> Message) -> State -> Message
-toMessage f (Chord (Just n) (Just q) (Just i)) = f (M.Chord n q i)
+toMessage f (Chord (Just n) (Just q) (Just i)) = f (M.buildChord n q i)
 toMessage _ _ = NoMessage
 
 data Query a
