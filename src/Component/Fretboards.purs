@@ -5,7 +5,6 @@ import Prelude
 
 import Chords as C
 import Component.Fretboard as FB
-import Data.Array (mapWithIndex)
 import Data.Array as A
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Halogen (ClassName(..))
@@ -47,7 +46,7 @@ component =
   where
 
   initialState :: Input -> State
-  initialState (FretboardChords chords) = { fretboards: mapWithIndex (\i c -> { chord: c, id: i } ) chords }
+  initialState (FretboardChords chords) = { fretboards: A.mapWithIndex (\i c -> { chord: c, id: i } ) chords }
 
   render :: State -> H.ParentHTML Query FB.Query FretboardSlot m
   render s = HH.div [ HP.classes [ ClassName "fretboards" ] ] (map renderFretboard s.fretboards)
@@ -57,9 +56,12 @@ component =
     HH.slot (FretboardSlot fbState.id) FB.component (FB.ChordInput fbState.chord) (HE.input (HandleFretboardMessage fbState.id))
 
   eval :: Query ~> H.ParentDSL State Query FB.Query FretboardSlot Message m
-  eval (HandleFretboardMessage fbId msg next) = pure next
+  eval (HandleFretboardMessage fbId FB.NotifyRemove next) = do
+    -- TODO the problem is that we update the Fretboards state, but the App state is NOT updated!
+    H.modify_ (\s -> s { fretboards = A.filter (\fb -> fb.id /= fbId) s.fretboards } )
+    pure next
   eval (ReplaceChords chords next) = do
-    H.modify_ (_ { fretboards = mapWithIndex (\i c -> { chord: c, id: i }) chords } )
+    H.modify_ (_ { fretboards = A.mapWithIndex (\i c -> { chord: c, id: i }) chords } )
     pure next
 
   receiver :: Input -> Maybe (Query Unit)

@@ -57,13 +57,13 @@ data Message =
   | ChordSelected M.Chord
 
 rootNoteSelectorClasses :: Array ClassName
-rootNoteSelectorClasses = [ClassName "selection", ClassName "root-note-selection", ClassName "btn" ]
+rootNoteSelectorClasses = [ClassName "selection", ClassName "root-note-selection", ClassName "btn", ClassName "clickable" ]
 
 chordQualitySelectorClasses :: Array ClassName
-chordQualitySelectorClasses = [ClassName "selection", ClassName "chord-quality-selection", ClassName "btn" ]
+chordQualitySelectorClasses = [ClassName "selection", ClassName "chord-quality-selection", ClassName "btn", ClassName "clickable" ]
 
 chordIntervalSelectorClasses :: Array ClassName
-chordIntervalSelectorClasses = [ClassName "selection", ClassName "chord-interval-selection", ClassName "btn" ]
+chordIntervalSelectorClasses = [ClassName "selection", ClassName "chord-interval-selection", ClassName "btn", ClassName "clickable" ]
 
 initialState :: State
 initialState = Chord (Just c) (Just Major) (Just Triad)

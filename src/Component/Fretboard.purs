@@ -34,14 +34,14 @@ humanChord (FBChord s) = humanNote s.chord.note <> humanChordMod s.chord.quality
 data Query a
   = ChordChange M.Chord a
   | ClearChord a
-  | HoverChordMeta a
+  | RemoveChord a
   | IsOn (Boolean -> a)
 
 data Input
   = NoChordInput
   | ChordInput M.Chord
 
-data Message = Toggled Boolean
+data Message = NotifyRemove
 
 -- Figure out the barre classes.
 barreClassNames :: Int   -- String position
@@ -124,12 +124,13 @@ renderChordInfo s =
        [ HP.classes [ ClassName "chord-meta-item", ClassName "chord-info" ] ]
        htmls
 
-renderChordActions :: forall p i. HH.HTML p i
+renderChordActions :: forall p. HH.HTML p (Query Unit)
 renderChordActions =
   HH.div
     [ HP.classes [ ClassName "chord-actions" ] ]
     [ HH.span
-        [ HP.classes [ ClassName "chord-action-delete" ] ]
+        [ HP.classes [ ClassName "chord-action-delete", ClassName "clickable" ]
+        , HE.onClick (HE.input_ RemoveChord) ]
         [ HH.text "✖︎" ]
     ]
 
@@ -189,8 +190,6 @@ ordinalize n | n == 1 || n == 21 = show n <> "st"
              | n == 3 || n == 23 = show n <> "rd"
              | otherwise = show n <> "th"
 
--- TODO allow "adding" chords so we can have a page of chords
--- Renders the frets of a string.
 renderFrets :: forall p i.
                Int         -- String position
             -> Pos         -- Root note on string
@@ -234,12 +233,11 @@ component =
       [ HP.classes [ClassName "fretboard"] ]
       [ renderChordActions
       , HH.div
-          [ HP.classes [ ClassName "chord-meta" ]
-          , HE.onMouseOver (HE.input_ HoverChordMeta) ]
+          [ HP.classes [ ClassName "chord-meta" ] ]
           [ HH.div [ HP.classes [ ClassName "chord-meta-item" ] ] []
           , renderChordInfo state
           ]
-      -- TODO add HTML to delete fretboard on hover.
+      -- TODO: add HTML to delete fretboard on hover.
       , renderString state 0 7 -- G
       , renderString state 1 0 -- C
       , renderString state 2 4 -- E
@@ -255,12 +253,10 @@ component =
     ClearChord next -> do
       H.put NoChord
       pure next
-    HoverChordMeta next -> do
+    RemoveChord next -> do
       s <- H.get
-      -- TODO send a message. But how do we uniquely identify this component? We need to handler in
-      -- the parent component (fretboards) to do it. See
       -- https://github.com/slamdata/purescript-halogen/blob/v4.0.0/examples/todo/src/Component/List.purs
-      -- and NotifyRemove.
+      H.raise NotifyRemove
       pure next
     IsOn reply -> do
       pure (reply true)
