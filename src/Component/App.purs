@@ -34,9 +34,6 @@ type ChildSlot = Either3 Unit Unit Unit
 
 newtype FretboardSlot = FretboardSlot Int
 
--- derive instance eqChildSlot :: Eq ChildSlot
--- derive instance ordChildSlot :: Eq ChildSlot
-
 component :: forall m. H.Component HH.HTML Query Unit Void m
 component =
   H.parentComponent

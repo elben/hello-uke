@@ -3,10 +3,9 @@ module Component.Fretboards where
 import Model
 import Prelude
 
-import Chords as C
 import Component.Fretboard as FB
 import Data.Array as A
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.Maybe (Maybe(..))
 import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.HTML as HH

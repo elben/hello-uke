@@ -237,7 +237,6 @@ component =
           [ HH.div [ HP.classes [ ClassName "chord-meta-item" ] ] []
           , renderChordInfo state
           ]
-      -- TODO: add HTML to delete fretboard on hover.
       , renderString state 0 7 -- G
       , renderString state 1 0 -- C
       , renderString state 2 4 -- E

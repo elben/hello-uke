@@ -18,6 +18,7 @@ main = HA.runHalogenAff do
   root <- awaitRoot
   runUI App.component unit root
 
+-- Copy-pasted from Halogen source. We want to inject the main app into a specific HTML element.
 awaitRoot :: Aff HTMLElement
 awaitRoot = do
   awaitLoad
