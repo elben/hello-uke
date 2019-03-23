@@ -32,7 +32,7 @@ newtype FretboardSlot = FretboardSlot Int
 derive instance eqFretboardSlot :: Eq FretboardSlot
 derive instance ordFretboardSlot :: Ord FretboardSlot
 
-data Message = NoMessage
+data Message = NotifyRemove FretboardId
 
 component :: forall m. H.Component HH.HTML Query Input Message m
 component =
@@ -57,8 +57,9 @@ component =
 
   eval :: Query ~> H.ParentDSL State Query FB.Query FretboardSlot Message m
   eval (HandleFretboardMessage fbId FB.NotifyRemove next) = do
-    -- TODO the problem is that we update the Fretboards state, but the App state is NOT updated!
     H.modify_ (\s -> s { fretboards = A.filter (\fb -> fb.id /= fbId) s.fretboards } )
+    -- Tell parent that this fretboard was removed, so that parent can also update internal state
+    H.raise (NotifyRemove fbId)
     pure next
   eval (ReplaceChords chords next) = do
     H.modify_ (_ { fretboards = A.mapWithIndex (\i c -> { chord: c, id: i }) chords } )

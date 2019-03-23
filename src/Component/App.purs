@@ -9,6 +9,7 @@ import Component.Fretboard as FB
 import Component.Fretboards as FBS
 import Data.Array as A
 import Data.Either.Nested (Either3)
+import Data.FoldableWithIndex (foldlWithIndex)
 import Data.Functor.Coproduct.Nested (Coproduct3)
 import Data.Maybe (Maybe(..))
 import Halogen (ClassName(..))
@@ -76,7 +77,8 @@ component =
                 [ HH.slot' CP.cp2 unit FB.component (FB.ChordInput state.chord) (HE.input HandleFretboard) ]
           ]
 
-      -- Render all the fretboards. Passes in the list of chords to render as input to the fretboard.
+      -- Render all the fretboards. Passes in the list of chords to render as input to the
+      -- fretboard.
       , HH.slot' CP.cp3 unit FBS.component (FBS.FretboardChords state.chords) (HE.input HandleFretboards)
       ]
 
@@ -89,7 +91,9 @@ component =
       pure next
     HandleFretboard m next -> do
       pure next
-    HandleFretboards m next -> do
+    HandleFretboards (FBS.NotifyRemove fbId) next -> do
+      -- Remove by index
+      H.modify_ (\s -> s { chords = foldlWithIndex (\i acc c -> if fbId == i then acc else A.snoc acc c) [] s.chords } )
       pure next
     AddChord next -> do
       -- Add the "active" chord into the list of archived chords.
