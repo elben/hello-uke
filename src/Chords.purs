@@ -1,13 +1,10 @@
 module Chords where
 
-import Data.Maybe
 import Prelude
 
-import Data.List (List(..), (:))
-import Data.List as L
 import Data.Array as A
-import Data.Map (Map)
 import Data.Map as M
+import Data.Maybe(Maybe(..), fromMaybe)
 import Data.Tuple (Tuple(..))
 
 -- Note position. C is position 0, C# and Db are position 1, and so on.
@@ -263,7 +260,7 @@ getFingers (Fingering _ fingers) = fingers
 infix 7 Tuple as ==>
 
 -- Mapping of Note, ChordQuality to the fingering.
-ukeChords :: Map Pos (Map ChordQuality (Map ChordInterval Fingering))
+ukeChords :: M.Map Pos (M.Map ChordQuality (M.Map ChordInterval Fingering))
 ukeChords = M.fromFoldable
     [
     -- C

@@ -1,19 +1,20 @@
 module Component.Fretboard where
 
-import Chords
 import Prelude
 
+import Chords
+import Model as M
+import Engine (step)
 import Component.Common as Com
+
 import Data.Array (index, range, snoc)
 import Data.List (foldl)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
-import Engine (step)
 import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Model as M
 
 -- type State = { chord :: M.Chord
 --              , fingering :: Fingering
@@ -24,7 +25,7 @@ data State = NoChord
            | FBChord
              { chord :: M.Chord
              , fingering :: Fingering
-             , displayActions :: Boolean
+             , displayClose :: Boolean
              }
 
 humanChord :: State -> String
@@ -155,20 +156,20 @@ renderString :: forall p i.
              -> Int -- n-th string (0 is the left-most string)
              -> Pos -- Root note of string
              -> HH.HTML p i
-renderString s stringPos rootPos =
-  let fing  = case s of
+renderString state stringPos rootPos =
+  let fing  = case state of
                  NoChord -> X
                  FBChord s -> fromMaybe X (index (getFingers s.fingering) stringPos)
-      barre = case s of
+      barre = case state of
                 NoChord -> Nothing
                 FBChord s -> getBarre s.fingering
-      acc   = case s of
+      acc   = case state of
                 NoChord -> Natural
                 FBChord s ->
                   let Note _ a p = s.chord.note in
                   if a == Natural then defaultAccidental p else a
   in HH.span [ HP.classes [ClassName "string"] ]
-       (renderFrets stringPos rootPos (numFretsToRender s) acc fing barre)
+       (renderFrets stringPos rootPos (numFretsToRender state) acc fing barre)
 
 -- Potentially-render fret markers, given the string and fret position. The frets are rendered
 -- for the middle string. On the 12th fret, the two side strings get the markers.
@@ -213,7 +214,7 @@ chordToState :: M.Chord -> State
 chordToState chord =
     let Note _ _ pos = chord.note in
       case findUkeChord pos chord.quality chord.interval of
-          Just fingering -> FBChord { chord: chord, fingering: fingering, displayActions: true }
+          Just fingering -> FBChord { chord: chord, fingering: fingering, displayClose: true }
           _ -> NoChord
 
 

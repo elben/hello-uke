@@ -158,7 +158,9 @@ component =
             [ HP.classes [ClassName "selector-section", ClassName "root-note-selector"] ]
             (map
                 (\note ->
-                  let classes = if isNoteSelected note then A.snoc rootNoteSelectorClasses (ClassName "selected") else rootNoteSelectorClasses
+                  let classes = if isNoteSelected note
+                                  then A.snoc rootNoteSelectorClasses (ClassName "selected")
+                                  else rootNoteSelectorClasses
                   in HH.div
                        [ HP.classes classes
                        , HE.onClick (HE.input_ (SelectNote note)) ]
@@ -170,7 +172,9 @@ component =
             [ HP.classes [ClassName "selector-section", ClassName "chord-quality-selector"] ]
             (map
                 (\q ->
-                  let classes = if isChordQualitySelected q then A.snoc chordQualitySelectorClasses (ClassName "selected") else chordQualitySelectorClasses
+                  let classes = if isChordQualitySelected q
+                                  then A.snoc chordQualitySelectorClasses (ClassName "selected")
+                                  else chordQualitySelectorClasses
                   in HH.div
                        [ HP.classes classes
                        , HE.onClick (HE.input_ (SelectChordQuality q)) ]
@@ -182,7 +186,9 @@ component =
             [ HP.classes [ClassName "selector-section", ClassName "chord-interval-selector"] ]
             (map
                 (\i ->
-                  let classes = if isChordIntervalSelected i then A.snoc chordIntervalSelectorClasses (ClassName "selected") else chordIntervalSelectorClasses
+                  let classes = if isChordIntervalSelected i
+                                  then A.snoc chordIntervalSelectorClasses (ClassName "selected")
+                                  else chordIntervalSelectorClasses
                   in HH.div
                        [ HP.classes classes
                        , HE.onClick (HE.input_ (SelectChordInterval i)) ]

@@ -1,17 +1,15 @@
 module Engine where
 
-import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Traversable (foldl)
-import Data.Tuple (Tuple(..))
 import Prelude
 
+import Chords
+
+import Data.Traversable (foldl)
+import Data.Tuple (Tuple(..))
 import Data.FoldableWithIndex (foldlWithIndex)
 import Data.List (List(..), (:))
 import Data.List as L
-import Data.Array as A
 import Data.List.Lazy (replicate)
-
-import Chords
 
 -- ChordStructure explains how a specific chord can be built. The list of
 -- numbers represent the half-steps required to build the chord.

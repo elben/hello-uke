@@ -1,9 +1,10 @@
 module Component.Fretboards where
 
-import Model
 import Prelude
 
+import Model (Chord, FretboardId)
 import Component.Fretboard as FB
+
 import Data.Array as A
 import Data.Maybe (Maybe(..))
 import Halogen (ClassName(..))
@@ -12,34 +13,47 @@ import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 
+-- This component displays a list of Fretboards. Keep track of them in the array of FretboardStates.
 type State =
   { fretboards :: Array FretboardState
   }
 
+-- The id is used as the slot index. We use this index to know which fretboard to delete when a user
+-- clicks "X" on a fretboard.
 type FretboardState =
   { chord :: Chord
   , id :: FretboardId }
 
+-- Queries that this component needs to handle.
+--
+-- * HandleFretboardMessage captures Fretboard Messages.
+-- * ReplaceChords is used by the parent component communicates with this component to give the list of
+--   chords to render Fretboards for.
 data Query a
   = HandleFretboardMessage FretboardId FB.Message a
   | ReplaceChords (Array Chord) a
 
+-- The input to this component is the list of chords to render Fretboards for.
 data Input
   = FretboardChords (Array Chord)
 
+-- The slot unique ID is just an integer, representing the literal index position of the Fretboard
+-- in the list of Fretboards.
 newtype FretboardSlot = FretboardSlot Int
 derive instance eqFretboardSlot :: Eq FretboardSlot
 derive instance ordFretboardSlot :: Ord FretboardSlot
 
+-- Messages this component raises to the parent.
+-- * NotifyRemove - raised when a the inner Fretboard component clicks "X" to remove the fretboard.
 data Message = NotifyRemove FretboardId
 
 component :: forall m. H.Component HH.HTML Query Input Message m
 component =
   H.parentComponent
-    { initialState: initialState
+    { initialState
     , render
     , eval
-    , receiver: receiver
+    , receiver
     }
 
   where
@@ -52,7 +66,10 @@ component =
 
   renderFretboard :: FretboardState -> H.ParentHTML Query FB.Query FretboardSlot m
   renderFretboard fbState =
-    HH.slot (FretboardSlot fbState.id) FB.component (FB.ChordInput fbState.chord) (HE.input (HandleFretboardMessage fbState.id))
+    HH.slot (FretboardSlot fbState.id)
+            FB.component
+            (FB.ChordInput fbState.chord)
+            (HE.input (HandleFretboardMessage fbState.id))
 
   eval :: Query ~> H.ParentDSL State Query FB.Query FretboardSlot Message m
   eval (HandleFretboardMessage fbId FB.NotifyRemove next) = do
@@ -61,6 +78,7 @@ component =
     H.raise (NotifyRemove fbId)
     pure next
   eval (ReplaceChords chords next) = do
+    -- Replace the list of fretboards entirely with this new array of chords
     H.modify_ (_ { fretboards = A.mapWithIndex (\i c -> { chord: c, id: i }) chords } )
     pure next
 
