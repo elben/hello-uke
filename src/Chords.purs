@@ -246,6 +246,9 @@ data Barre = Barre Int Int Int
 -- The fingering from left-most string when looking at the fretboard.
 data Fingering = Fingering (Maybe Barre) (Array Finger)
 
+defaultFingering :: Fingering
+defaultFingering = fing 0 0 0 0
+
 getBarre :: Fingering -> Maybe Barre
 getBarre (Fingering barre _) = barre
 
@@ -524,5 +527,5 @@ ukeChord q i a b c d = (q ==> i) ==> Fingering Nothing [intToFinger a, intToFing
 intToFinger :: Int -> Finger
 intToFinger n = if n < 0 then X else F n
 
-findUkeChord :: Pos -> ChordQuality -> ChordInterval -> Maybe Fingering
-findUkeChord p q i = M.lookup p ukeChords >>= M.lookup q >>= M.lookup i
+findUkeChord :: Pos -> ChordQuality -> ChordInterval -> Fingering
+findUkeChord p q i = fromMaybe defaultFingering (M.lookup p ukeChords >>= M.lookup q >>= M.lookup i)

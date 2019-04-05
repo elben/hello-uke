@@ -18,15 +18,13 @@ import Halogen.HTML.Properties as HP
 
 -- TODO add tons of comments!
 
-data State = NoChord
-           | FBChord
+data State = FBChord
              { chord :: M.Chord
              , fingering :: Fingering
              , displayActions :: Boolean
              }
 
 humanChord :: State -> String
-humanChord NoChord = ""
 humanChord (FBChord s) = humanNote s.chord.note <> humanChordMod s.chord.quality s.chord.interval
 
 stateDisplayActions :: State -> Boolean
@@ -35,7 +33,6 @@ stateDisplayActions _ = false
 
 data Query a
   = ChordChange M.Chord a
-  | ClearChord a
   | RemoveChord a
   | IsOn (Boolean -> a)
 
@@ -120,7 +117,6 @@ renderFret stringPos rootPos fretPos acc fing barre =
 renderChordInfo :: forall p i. State -> HH.HTML p i
 renderChordInfo s =
   let htmls = case s of
-                NoChord -> []
                 FBChord struct -> Com.chordHtml struct.chord.note struct.chord.quality struct.chord.interval
   in HH.div
        [ HP.classes [ ClassName "chord-meta-item", ClassName "chord-info" ] ]
@@ -140,7 +136,6 @@ renderChordActions =
 -- Determine the number of frets to draw for this state. Draw at least four frets (including the one
 -- behind the nut).
 numFretsToRender :: State -> Int
-numFretsToRender NoChord = 4
 numFretsToRender (FBChord s) =
   -- Draw at least 4 frets, including the open string fret (the one behind the nut)
   max 4
@@ -159,13 +154,10 @@ renderString :: forall p i.
              -> HH.HTML p i
 renderString state stringPos rootPos =
   let fing  = case state of
-                 NoChord -> X
                  FBChord s -> fromMaybe X (index (getFingers s.fingering) stringPos)
       barre = case state of
-                NoChord -> Nothing
                 FBChord s -> getBarre s.fingering
       acc   = case state of
-                NoChord -> Natural
                 FBChord s ->
                   let Note _ a p = s.chord.note in
                   if a == Natural then defaultAccidental p else a
@@ -213,11 +205,8 @@ renderFrets stringPos rootPos numFrets acc fing barre =
 
 chordToState :: M.Chord -> Boolean -> State
 chordToState chord displayActions =
-    let Note _ _ pos = chord.note in
-      case findUkeChord pos chord.quality chord.interval of
-          Just fingering -> FBChord { chord: chord, fingering: fingering, displayActions }
-          _ -> NoChord
-
+    let Note _ _ pos = chord.note
+    in FBChord { chord: chord, fingering: findUkeChord pos chord.quality chord.interval, displayActions }
 
 component :: forall m. H.Component HH.HTML Query Input Message m
 component =
@@ -260,9 +249,6 @@ component =
                              FBChord s -> s.displayActions
                              _ -> false
       H.put (chordToState chord displayActions)
-      pure next
-    ClearChord next -> do
-      H.put NoChord
       pure next
     RemoveChord next -> do
       s <- H.get
