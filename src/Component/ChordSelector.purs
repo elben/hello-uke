@@ -3,6 +3,7 @@ module Component.ChordSelector where
 import Prelude
 
 import Chords (Chord, ChordInterval(..), ChordQuality(..), buildChord, chordIntervals, chordQualities, humanChordInterval, ukeChords)
+import Data.Array (mapWithIndex)
 import Data.Array as A
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
@@ -59,8 +60,13 @@ data Message =
   NoMessage
   | ChordSelected Chord
 
-rootNoteSelectorClasses :: Array ClassName
-rootNoteSelectorClasses = [ClassName "selection", ClassName "root-note-selection", ClassName "btn", ClassName "clickable" ]
+rootNoteSelectorClasses :: Int -> Array ClassName
+rootNoteSelectorClasses idx =
+  [ ClassName "selection"
+  , ClassName "root-note-selection"
+  , ClassName "btn"
+  , ClassName ("btn-green-" <> show ((mod idx 4) + 1))
+  , ClassName "clickable" ]
 
 chordQualitySelectorClasses :: Array ClassName
 chordQualitySelectorClasses = [ClassName "selection", ClassName "chord-quality-selection", ClassName "btn", ClassName "clickable" ]
@@ -156,15 +162,18 @@ component =
             [ HH.h3 [] [ HH.text "Root Note" ] ]
         , HH.div
             [ HP.classes [ClassName "selector-section", ClassName "root-note-selector"] ]
-            (map
-                (\note ->
+            (mapWithIndex
+                (\idx note ->
                   let classes = if isNoteSelected note
-                                  then A.snoc rootNoteSelectorClasses (ClassName "selected")
-                                  else rootNoteSelectorClasses
+                                  then A.snoc (rootNoteSelectorClasses idx) (ClassName "selected")
+                                  else (rootNoteSelectorClasses idx)
                   in HH.div
                        [ HP.classes classes
                        , HE.onClick (HE.input_ (SelectNote note)) ]
-                       [ HH.text (humanNote note) ])
+                       [ HH.div
+                          [ HP.classes [ ClassName "btn-highlight" ] ]
+                          [ HH.text (humanNote note) ]
+                       ])
                 selectableNotes)
         , HH.div_
             [ HH.h3 [] [ HH.text "Quality" ] ]

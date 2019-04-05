@@ -194,7 +194,7 @@ body {
 
   float: left;
   margin: 0 10px 5px 0;
-  padding: 0 10px;
+  /* padding: 0 10px; */
   color: #eee;
 }
 
@@ -215,14 +215,46 @@ body {
 }
 
 .btn {
-  background: #222;
-  border-radius: 13px;
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: #333;
 }
 
 .btn:hover {
-  background: red;
+  /* background: red; */
 }
 
 .btn.selected {
-  background: green;
+  /* background: green; */
+  background-image: url("./images/btn-highlight-2.png");
+}
+
+.btn-pink {
+  background-image: url("./images/btn-pink.png");
+}
+
+.btn-green-1 {
+  background-image: url("./images/btn-green-1.png");
+}
+
+.btn-green-2 {
+  background-image: url("./images/btn-green-2.png");
+}
+
+.btn-green-3 {
+  background-image: url("./images/btn-green-3.png");
+}
+
+.btn-green-4 {
+  background-image: url("./images/btn-green-4.png");
+}
+
+.btn-blue {
+  background-image: url("./images/btn-blue.png");
+}
+
+.btn-highlight:hover {
+  background-image: url("./images/btn-highlight-2.png");
+  background-repeat: no-repeat;
+  background-size: cover;
 }
