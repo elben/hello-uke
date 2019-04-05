@@ -1,45 +1,48 @@
 module Component.ChordSelector where
 
-import Chords
 import Prelude
 
+import Chords
+import Model as M
+
 import Data.Array as A
-import Data.Map as M
+import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Model as M
+
+-- TODO add tons of comments!
 
 -- Carry Notes, not Pos. So that users can deleniate between A# and Bb.
-data State = Chord (Maybe Note) (Maybe ChordQuality) (Maybe ChordInterval)
+data State = State (Maybe Note) (Maybe ChordQuality) (Maybe ChordInterval)
 
 getStateNote :: State -> Maybe Note
-getStateNote (Chord p _ _) = p
+getStateNote (State p _ _) = p
 
 getStateChordQuality :: State -> Maybe ChordQuality
-getStateChordQuality (Chord _ q _) = q
+getStateChordQuality (State _ q _) = q
 
 getStateChordInterval :: State -> Maybe ChordInterval
-getStateChordInterval (Chord _ _ i) = i
+getStateChordInterval (State _ _ i) = i
 
 setStateNote :: Note -> State -> State
-setStateNote note (Chord _ q i) = Chord (Just note) q i
+setStateNote note (State _ q i) = State (Just note) q i
 
 setStateChordQuality :: ChordQuality -> State -> State
-setStateChordQuality q (Chord p _ i) = Chord p (Just q) i
+setStateChordQuality q (State p _ i) = State p (Just q) i
 
 setStateChordInterval :: ChordInterval -> State -> State
-setStateChordInterval i (Chord p q _) = Chord p q (Just i)
+setStateChordInterval i (State p q _) = State p q (Just i)
 
 isChordSelected :: State -> Boolean
-isChordSelected (Chord (Just _) (Just _) (Just _)) = true
+isChordSelected (State (Just _) (Just _) (Just _)) = true
 isChordSelected _ = false
 
 toMessage :: (M.Chord -> Message) -> State -> Message
-toMessage f (Chord (Just n) (Just q) (Just i)) = f (M.buildChord n q i)
+toMessage f (State (Just n) (Just q) (Just i)) = f (M.buildChord n q i)
 toMessage _ _ = NoMessage
 
 data Query a
@@ -66,16 +69,16 @@ chordIntervalSelectorClasses :: Array ClassName
 chordIntervalSelectorClasses = [ClassName "selection", ClassName "chord-interval-selection", ClassName "btn", ClassName "clickable" ]
 
 initialState :: State
-initialState = Chord (Just c) (Just Major) (Just Triad)
+initialState = State (Just c) (Just Major) (Just Triad)
 
 selectableChordQualities :: State -> Array ChordQuality
 selectableChordQualities state =
   case state of
     -- Filter to the ones available for this position. Go through chordQualities, filtering
     -- each one by the big map, to produce consistent ordering.
-    Chord (Just (Note _ _ pos)) _ _ ->
-        let qualitiesMap = fromMaybe M.empty (M.lookup pos ukeChords)
-        in A.filter (\q -> M.member q qualitiesMap) chordQualities
+    State (Just (Note _ _ pos)) _ _ ->
+        let qualitiesMap = fromMaybe Map.empty (Map.lookup pos ukeChords)
+        in A.filter (\q -> Map.member q qualitiesMap) chordQualities
 
     -- Return all of them
     _ -> chordQualities
@@ -84,9 +87,9 @@ selectableChordIntervals :: State -> Array ChordInterval
 selectableChordIntervals state =
   case state of
     -- Filter to the ones available for this position
-    Chord (Just (Note _ _ pos)) (Just q) _ ->
-        let intervalsMap = fromMaybe M.empty (M.lookup pos ukeChords >>= M.lookup q)
-        in A.filter (\i -> M.member i intervalsMap) chordIntervals
+    State (Just (Note _ _ pos)) (Just q) _ ->
+        let intervalsMap = fromMaybe Map.empty (Map.lookup pos ukeChords >>= Map.lookup q)
+        in A.filter (\i -> Map.member i intervalsMap) chordIntervals
 
     -- Return all of them
     _ -> chordIntervals
@@ -136,7 +139,7 @@ component =
 
   render :: State -> H.ComponentHTML Query
   render state =
-    let selectableNotes = A.filter (\(Note _ _ pos) -> M.member pos ukeChords) allNotes
+    let selectableNotes = A.filter (\(Note _ _ pos) -> Map.member pos ukeChords) allNotes
     
         isNoteSelected :: Note -> Boolean
         isNoteSelected n = maybe false ((==) n) (getStateNote state)

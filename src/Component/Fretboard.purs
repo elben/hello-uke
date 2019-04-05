@@ -213,7 +213,7 @@ chordToState :: M.Chord -> State
 chordToState chord =
     let Note _ _ pos = chord.note in
       case findUkeChord pos chord.quality chord.interval of
-          Just fingering -> FBChord { chord: chord, fingering: fingering, displayActions: false }
+          Just fingering -> FBChord { chord: chord, fingering: fingering, displayActions: true }
           _ -> NoChord
 
 
@@ -245,7 +245,6 @@ component =
 
   eval :: Query ~> H.ComponentDSL State Query Message m
   eval q = case q of
-    -- ChordChange note@(Note name acc pos) q i next -> do
     ChordChange chord next -> do
       H.put (chordToState chord)
       pure next
