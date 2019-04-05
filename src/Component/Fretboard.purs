@@ -16,20 +16,13 @@ import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 
--- TODO add tons of comments!
-
-data State = FBChord
-             { chord :: M.Chord
+type State = { chord :: M.Chord
              , fingering :: Fingering
              , displayActions :: Boolean
              }
 
 humanChord :: State -> String
-humanChord (FBChord s) = humanNote s.chord.note <> humanChordMod s.chord.quality s.chord.interval
-
-stateDisplayActions :: State -> Boolean
-stateDisplayActions (FBChord s) = s.displayActions
-stateDisplayActions _ = false
+humanChord s = humanNote s.chord.note <> humanChordMod s.chord.quality s.chord.interval
 
 data Query a
   = ChordChange M.Chord a
@@ -116,8 +109,7 @@ renderFret stringPos rootPos fretPos acc fing barre =
 
 renderChordInfo :: forall p i. State -> HH.HTML p i
 renderChordInfo s =
-  let htmls = case s of
-                FBChord struct -> Com.chordHtml struct.chord.note struct.chord.quality struct.chord.interval
+  let htmls = Com.chordHtml s.chord.note s.chord.quality s.chord.interval
   in HH.div
        [ HP.classes [ ClassName "chord-meta-item", ClassName "chord-info" ] ]
        htmls
@@ -136,7 +128,7 @@ renderChordActions =
 -- Determine the number of frets to draw for this state. Draw at least four frets (including the one
 -- behind the nut).
 numFretsToRender :: State -> Int
-numFretsToRender (FBChord s) =
+numFretsToRender s =
   -- Draw at least 4 frets, including the open string fret (the one behind the nut)
   max 4
     ((foldl
@@ -153,14 +145,10 @@ renderString :: forall p i.
              -> Pos -- Root note of string
              -> HH.HTML p i
 renderString state stringPos rootPos =
-  let fing  = case state of
-                 FBChord s -> fromMaybe X (index (getFingers s.fingering) stringPos)
-      barre = case state of
-                FBChord s -> getBarre s.fingering
-      acc   = case state of
-                FBChord s ->
-                  let Note _ a p = s.chord.note in
-                  if a == Natural then defaultAccidental p else a
+  let fing  = fromMaybe X (index (getFingers state.fingering) stringPos)
+      barre = getBarre state.fingering
+      acc   = let Note _ a p = state.chord.note
+              in if a == Natural then defaultAccidental p else a
   in HH.span [ HP.classes [ClassName "string"] ]
        (renderFrets stringPos rootPos (numFretsToRender state) acc fing barre)
 
@@ -203,10 +191,11 @@ renderFrets stringPos rootPos numFrets acc fing barre =
     []
     (range 0 (numFrets - 1))
 
-chordToState :: M.Chord -> Boolean -> State
-chordToState chord displayActions =
+-- Finds the fingering for a chord.
+chordFingering :: M.Chord -> Fingering
+chordFingering chord =
     let Note _ _ pos = chord.note
-    in FBChord { chord: chord, fingering: findUkeChord pos chord.quality chord.interval, displayActions }
+    in findUkeFingering pos chord.quality chord.interval
 
 component :: forall m. H.Component HH.HTML Query Input Message m
 component =
@@ -222,7 +211,7 @@ component =
   render state =
     let
       actionBar =
-        if stateDisplayActions state
+        if state.displayActions
           then [renderChordActions]
           else []
     in
@@ -244,11 +233,8 @@ component =
   eval :: Query ~> H.ComponentDSL State Query Message m
   eval q = case q of
     ChordChange chord next -> do
-      state <- H.get
-      let displayActions = case state of
-                             FBChord s -> s.displayActions
-                             _ -> false
-      H.put (chordToState chord displayActions)
+      H.modify_  (_ { chord = chord
+                    , fingering = chordFingering chord })
       pure next
     RemoveChord next -> do
       s <- H.get
@@ -259,8 +245,10 @@ component =
       pure (reply true)
 
   initialState :: Input -> State
-  initialState input =
-      chordToState input.chord input.displayActions
+  initialState input = { chord: input.chord
+                       , displayActions: input.displayActions
+                       , fingering: chordFingering input.chord
+                       }
   
   -- This component receives an Input from the parent component
   receiver :: Input -> Maybe (Query Unit)

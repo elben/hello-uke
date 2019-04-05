@@ -18,8 +18,6 @@ type Octave = Int
 -- A Note consists of its letter, accidental, and position.
 data Note = Note String Accidental Pos
 
-data Chord = Chord Note ChordQuality ChordInterval
-
 c  :: Note
 c  = Note "C" Natural 0
 cs :: Note
@@ -527,5 +525,5 @@ ukeChord q i a b c d = (q ==> i) ==> Fingering Nothing [intToFinger a, intToFing
 intToFinger :: Int -> Finger
 intToFinger n = if n < 0 then X else F n
 
-findUkeChord :: Pos -> ChordQuality -> ChordInterval -> Fingering
-findUkeChord p q i = fromMaybe defaultFingering (M.lookup p ukeChords >>= M.lookup q >>= M.lookup i)
+findUkeFingering :: Pos -> ChordQuality -> ChordInterval -> Fingering
+findUkeFingering p q i = fromMaybe defaultFingering (M.lookup p ukeChords >>= M.lookup q >>= M.lookup i)
