@@ -39,10 +39,9 @@ data Query a
   | RemoveChord a
   | IsOn (Boolean -> a)
 
-data Input
-  = NoChordInput
-  | ChordInput M.Chord -- ^ The chord
-               Boolean -- ^ Whether the actions bar should be displayed or not.
+type Input = { chord :: M.Chord
+            -- Whether the actions bar should be displayed or not.
+             , displayActions :: Boolean }
 
 data Message = NotifyRemove
 
@@ -275,13 +274,8 @@ component =
 
   initialState :: Input -> State
   initialState input =
-    case input of
-      NoChordInput -> NoChord
-      ChordInput chord displayActions -> chordToState chord displayActions
+      chordToState input.chord input.displayActions
   
   -- This component receives an Input from the parent component
   receiver :: Input -> Maybe (Query Unit)
-  receiver input =
-    case input of
-      NoChordInput -> Just (ClearChord unit)
-      ChordInput c displayActions -> Just (ChordChange c unit)
+  receiver input = Just (ChordChange input.chord unit)

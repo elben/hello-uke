@@ -68,7 +68,7 @@ component =
   renderFretboard fbState =
     HH.slot (FretboardSlot fbState.id)
             FB.component
-            (FB.ChordInput fbState.chord true)
+            { chord: fbState.chord, displayActions: true }
             (HE.input (HandleFretboardMessage fbState.id))
 
   eval :: Query ~> H.ParentDSL State Query FB.Query FretboardSlot Message m
