@@ -21,19 +21,36 @@ import Notes as N
 
 -- TODO add tons of comments!
 
+-- The state of the app.
+--
+-- * chord  - the active chord selected.
+-- * chords - the list of chords added. Both the App component and the Fretboards component need to
+--            sync this list of saved chords. Perhaps there's a way where only Fretboards needs to
+--            know, but I haven't found a way. The reason is that in the render function of the App
+--            component, I must pass in an Input to the Fretboards component. I also only have
+--            access to the current State of App. So how do I say: the user hit "Add" for this
+--            chord, please inject this into Fretboards' chords list? Other than using some
+--            temporary variable in App's state? This means that when the user deletes a chord, we
+--            need to update both App's and Fretboards' list of chords.
 type State = { chord :: Chord, chords :: Array Chord }
 
+-- Queries App can make.
+--
+-- * HandleChordSelector, HandleFretboard, HandleFretboards are wrappers around the messages that
+--   these components can raise.
+-- * AddChord is triggered when the user hits the [Add] button.
+--
 data Query a
   = HandleChordSelector CS.Message a
   | HandleFretboard FB.Message a
   | HandleFretboards FBS.Message a
   | AddChord a
 
+-- Halogen requires a coproduct type of all the queriers a component's children can make.
 type ChildQuery = Coproduct3 CS.Query FB.Query FBS.Query
 
+-- A slot for each child component.
 type ChildSlot = Either3 Unit Unit Unit
-
-newtype FretboardSlot = FretboardSlot Int
 
 initialChord :: Chord
 initialChord = { note: N.c, quality: Major, interval: Triad }
