@@ -12,6 +12,7 @@ import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 
+-- Represents a fretboard's position. Used as the fretboard's ID and also the slot type.
 type FretboardId = Int
 
 -- This component displays a list of Fretboards. Keep track of them in the array of FretboardStates.
@@ -38,12 +39,6 @@ data Query a
 data Input
   = FretboardChords (Array Chord)
 
--- The slot unique ID is just an integer, representing the literal index position of the Fretboard
--- in the list of Fretboards.
-newtype FretboardSlot = FretboardSlot Int
-derive instance eqFretboardSlot :: Eq FretboardSlot
-derive instance ordFretboardSlot :: Ord FretboardSlot
-
 -- Messages this component raises to the parent.
 -- * NotifyRemove - raised when a the inner Fretboard component clicks "X" to remove the fretboard.
 data Message = NotifyRemove FretboardId
@@ -62,17 +57,17 @@ component =
   initialState :: Input -> State
   initialState (FretboardChords chords) = { fretboards: A.mapWithIndex (\i c -> { chord: c, id: i } ) chords }
 
-  render :: State -> H.ParentHTML Query FB.Query FretboardSlot m
+  render :: State -> H.ParentHTML Query FB.Query FretboardId m
   render s = HH.div [ HP.classes [ ClassName "fretboards" ] ] (map renderFretboard s.fretboards)
 
-  renderFretboard :: FretboardState -> H.ParentHTML Query FB.Query FretboardSlot m
+  renderFretboard :: FretboardState -> H.ParentHTML Query FB.Query FretboardId m
   renderFretboard fbState =
-    HH.slot (FretboardSlot fbState.id)
+    HH.slot (fbState.id)
             FB.component
             { chord: fbState.chord, displayActions: true }
             (HE.input (HandleFretboardMessage fbState.id))
 
-  eval :: Query ~> H.ParentDSL State Query FB.Query FretboardSlot Message m
+  eval :: Query ~> H.ParentDSL State Query FB.Query FretboardId Message m
   eval (HandleFretboardMessage fbId FB.NotifyRemove next) = do
     H.modify_ (\s -> s { fretboards = A.filter (\fb -> fb.id /= fbId) s.fretboards } )
     -- Tell parent that this fretboard was removed, so that parent can also update internal state
