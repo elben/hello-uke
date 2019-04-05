@@ -2,9 +2,7 @@ module Component.ChordSelector where
 
 import Prelude
 
-import Chords
-import Model as M
-
+import Chords (Chord, ChordInterval(..), ChordQuality(..), buildChord, chordIntervals, chordQualities, humanChordInterval, ukeChords)
 import Data.Array as A
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
@@ -13,6 +11,8 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Notes (Note(..), allNotes, humanNote)
+import Notes as N
 
 -- TODO add tons of comments!
 
@@ -41,8 +41,8 @@ isChordSelected :: State -> Boolean
 isChordSelected (State (Just _) (Just _) (Just _)) = true
 isChordSelected _ = false
 
-toMessage :: (M.Chord -> Message) -> State -> Message
-toMessage f (State (Just n) (Just q) (Just i)) = f (M.buildChord n q i)
+toMessage :: (Chord -> Message) -> State -> Message
+toMessage f (State (Just n) (Just q) (Just i)) = f (buildChord n q i)
 toMessage _ _ = NoMessage
 
 data Query a
@@ -57,7 +57,7 @@ type Input = Unit
 
 data Message =
   NoMessage
-  | ChordSelected M.Chord
+  | ChordSelected Chord
 
 rootNoteSelectorClasses :: Array ClassName
 rootNoteSelectorClasses = [ClassName "selection", ClassName "root-note-selection", ClassName "btn", ClassName "clickable" ]
@@ -69,7 +69,7 @@ chordIntervalSelectorClasses :: Array ClassName
 chordIntervalSelectorClasses = [ClassName "selection", ClassName "chord-interval-selection", ClassName "btn", ClassName "clickable" ]
 
 initialState :: State
-initialState = State (Just c) (Just Major) (Just Triad)
+initialState = State (Just N.c) (Just Major) (Just Triad)
 
 selectableChordQualities :: State -> Array ChordQuality
 selectableChordQualities state =

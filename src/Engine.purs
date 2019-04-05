@@ -2,14 +2,24 @@ module Engine where
 
 import Prelude
 
-import Chords
-
-import Data.Traversable (foldl)
-import Data.Tuple (Tuple(..))
 import Data.FoldableWithIndex (foldlWithIndex)
 import Data.List (List(..), (:))
 import Data.List as L
 import Data.List.Lazy (replicate)
+import Data.Traversable (foldl)
+import Data.Tuple (Tuple(..))
+import Notes (Pos, Step, getNoteName, posToNote)
+
+type Octave = Int
+
+-- Pitch is a position plus an octave. "Middle C" on the piano is C4, or the
+-- fourth octave.
+data Pitch = Pitch Pos Octave
+
+derive instance eqPitch :: Eq Pitch
+
+instance showPitch :: Show Pitch where
+  show (Pitch pos oct) = "Pitch " <> show pos <> " " <> show oct
 
 -- ChordStructure explains how a specific chord can be built. The list of
 -- numbers represent the half-steps required to build the chord.

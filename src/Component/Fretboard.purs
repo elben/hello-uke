@@ -1,22 +1,21 @@
 module Component.Fretboard where
 
+import Chords
 import Prelude
 
-import Chords
-import Model as M
-import Engine (step)
 import Component.Common as Com
-
 import Data.Array (index, range, snoc)
 import Data.List (foldl)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Engine (step)
 import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Notes (Note(..), Accidental(..), Pos, defaultAccidental, findNoteForAccidental, humanNote)
 
-type State = { chord :: M.Chord
+type State = { chord :: Chord
              , fingering :: Fingering
              , displayActions :: Boolean
              }
@@ -25,11 +24,11 @@ humanChord :: State -> String
 humanChord s = humanNote s.chord.note <> humanChordMod s.chord.quality s.chord.interval
 
 data Query a
-  = ChordChange M.Chord a
+  = ChordChange Chord a
   | RemoveChord a
   | IsOn (Boolean -> a)
 
-type Input = { chord :: M.Chord
+type Input = { chord :: Chord
             -- Whether the actions bar should be displayed or not.
              , displayActions :: Boolean }
 
@@ -192,7 +191,7 @@ renderFrets stringPos rootPos numFrets acc fing barre =
     (range 0 (numFrets - 1))
 
 -- Finds the fingering for a chord.
-chordFingering :: M.Chord -> Fingering
+chordFingering :: Chord -> Fingering
 chordFingering chord =
     let Note _ _ pos = chord.note
     in findUkeFingering pos chord.quality chord.interval

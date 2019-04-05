@@ -1,9 +1,10 @@
 module Component.Common where
 
-import Chords
 import Prelude
 
+import Chords (ChordInterval(..), ChordQuality(..))
 import Halogen.HTML as HH
+import Notes (Note(..), humanNote)
 
 chordHtml :: forall p i. Note -> ChordQuality -> ChordInterval -> Array (HH.HTML p i)
 chordHtml note@(Note name acc pos) q i =

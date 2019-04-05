@@ -2,9 +2,8 @@ module Component.Fretboards where
 
 import Prelude
 
-import Model (Chord, FretboardId)
+import Chords (Chord)
 import Component.Fretboard as FB
-
 import Data.Array as A
 import Data.Maybe (Maybe(..))
 import Halogen (ClassName(..))
@@ -12,6 +11,8 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+
+type FretboardId = Int
 
 -- This component displays a list of Fretboards. Keep track of them in the array of FretboardStates.
 type State =

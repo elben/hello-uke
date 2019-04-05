@@ -4,6 +4,7 @@ module Component.App where
 
 import Prelude
 
+import Chords (Chord, ChordInterval(..), ChordQuality(..))
 import Component.ChordSelector as CS
 import Component.Fretboard as FB
 import Component.Fretboards as FBS
@@ -18,9 +19,11 @@ import Halogen.Component.ChildPath as CP
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Model as M
+import Notes as N
 
-type State = { chord :: M.Chord, chords :: Array M.Chord }
+-- TODO add tons of comments!
+
+type State = { chord :: Chord, chords :: Array Chord }
 
 data Query a
   = HandleChordSelector CS.Message a
@@ -34,6 +37,9 @@ type ChildSlot = Either3 Unit Unit Unit
 
 newtype FretboardSlot = FretboardSlot Int
 
+initialChord :: Chord
+initialChord = { note: N.c, quality: Major, interval: Triad }
+
 component :: forall m. H.Component HH.HTML Query Unit Void m
 component =
   H.parentComponent
@@ -45,7 +51,7 @@ component =
   where
 
   initialState :: State
-  initialState = { chord: M.initialChord, chords: [] }
+  initialState = { chord: initialChord, chords: [] }
 
   render :: State -> H.ParentHTML Query ChildQuery ChildSlot m
   render state =
