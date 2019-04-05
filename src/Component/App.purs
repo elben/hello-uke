@@ -1,7 +1,5 @@
 module Component.App where
 
--- TODO refactor and comment everything throughly!
-
 import Prelude
 
 import Chords (Chord, ChordInterval(..), ChordQuality(..))

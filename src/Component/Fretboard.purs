@@ -190,12 +190,6 @@ renderFrets stringPos rootPos numFrets acc fing barre =
     []
     (range 0 (numFrets - 1))
 
--- Finds the fingering for a chord.
-chordFingering :: Chord -> Fingering
-chordFingering chord =
-    let Note _ _ pos = chord.note
-    in findUkeFingering pos chord.quality chord.interval
-
 component :: forall m. H.Component HH.HTML Query Input Message m
 component =
   H.component
@@ -233,7 +227,7 @@ component =
   eval q = case q of
     ChordChange chord next -> do
       H.modify_  (_ { chord = chord
-                    , fingering = chordFingering chord })
+                    , fingering = findUkeFingering chord })
       pure next
     RemoveChord next -> do
       s <- H.get
@@ -246,7 +240,7 @@ component =
   initialState :: Input -> State
   initialState input = { chord: input.chord
                        , displayActions: input.displayActions
-                       , fingering: chordFingering input.chord
+                       , fingering: findUkeFingering input.chord
                        }
   
   -- This component receives an Input from the parent component

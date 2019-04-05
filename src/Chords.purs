@@ -5,7 +5,7 @@ import Prelude
 import Data.Map as M
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple (Tuple(..))
-import Notes (Note, Pos)
+import Notes (Note(..), Pos)
 
 type Chord = { note :: Note
              , quality :: ChordQuality
@@ -405,6 +405,8 @@ ukeChord q i a b c d = (q ==> i) ==> Fingering Nothing [intToFinger a, intToFing
 intToFinger :: Int -> Finger
 intToFinger n = if n < 0 then X else F n
 
--- TODO refactor this to take in a M.Chord. We'll need to move some types into Model.
-findUkeFingering :: Pos -> ChordQuality -> ChordInterval -> Fingering
-findUkeFingering p q i = fromMaybe defaultFingering (M.lookup p ukeChords >>= M.lookup q >>= M.lookup i)
+-- Finds the fingering for a chord.
+findUkeFingering :: Chord -> Fingering
+findUkeFingering chord =
+  let Note _ _ p = chord.note
+  in fromMaybe defaultFingering (M.lookup p ukeChords >>= M.lookup chord.quality >>= M.lookup chord.interval)
