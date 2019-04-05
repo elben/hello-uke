@@ -16,21 +16,22 @@ import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 
--- type State = { chord :: M.Chord
---              , fingering :: Fingering
---              , displayActions :: Boolean
---              }
+-- TODO add tons of comments!
 
 data State = NoChord
            | FBChord
              { chord :: M.Chord
              , fingering :: Fingering
-             , displayClose :: Boolean
+             , displayActions :: Boolean
              }
 
 humanChord :: State -> String
 humanChord NoChord = ""
 humanChord (FBChord s) = humanNote s.chord.note <> humanChordMod s.chord.quality s.chord.interval
+
+stateDisplayActions :: State -> Boolean
+stateDisplayActions (FBChord s) = s.displayActions
+stateDisplayActions _ = false
 
 data Query a
   = ChordChange M.Chord a
@@ -40,7 +41,8 @@ data Query a
 
 data Input
   = NoChordInput
-  | ChordInput M.Chord
+  | ChordInput M.Chord -- ^ The chord
+               Boolean -- ^ Whether the actions bar should be displayed or not.
 
 data Message = NotifyRemove
 
@@ -125,6 +127,7 @@ renderChordInfo s =
        [ HP.classes [ ClassName "chord-meta-item", ClassName "chord-info" ] ]
        htmls
 
+-- Render the action bar (e.g. the close icon). Can trigger a RemoveChord query.
 renderChordActions :: forall p. HH.HTML p (Query Unit)
 renderChordActions =
   HH.div
@@ -134,7 +137,6 @@ renderChordActions =
         , HE.onClick (HE.input_ RemoveChord) ]
         [ HH.text "✖︎" ]
     ]
-
 
 -- Determine the number of frets to draw for this state. Draw at least four frets (including the one
 -- behind the nut).
@@ -210,11 +212,11 @@ renderFrets stringPos rootPos numFrets acc fing barre =
     []
     (range 0 (numFrets - 1))
 
-chordToState :: M.Chord -> State
-chordToState chord =
+chordToState :: M.Chord -> Boolean -> State
+chordToState chord displayActions =
     let Note _ _ pos = chord.note in
       case findUkeChord pos chord.quality chord.interval of
-          Just fingering -> FBChord { chord: chord, fingering: fingering, displayClose: true }
+          Just fingering -> FBChord { chord: chord, fingering: fingering, displayActions }
           _ -> NoChord
 
 
@@ -230,24 +232,35 @@ component =
 
   render :: State -> H.ComponentHTML Query
   render state =
-    HH.div
-      [ HP.classes [ClassName "fretboard"] ]
-      [ renderChordActions
-      , HH.div
-          [ HP.classes [ ClassName "chord-meta" ] ]
-          [ HH.div [ HP.classes [ ClassName "chord-meta-item" ] ] []
-          , renderChordInfo state
-          ]
-      , renderString state 0 7 -- G
-      , renderString state 1 0 -- C
-      , renderString state 2 4 -- E
-      , renderString state 3 9 -- A
-      ]
+    let
+      actionBar =
+        if stateDisplayActions state
+          then [renderChordActions]
+          else []
+    in
+      HH.div
+        [ HP.classes [ClassName "fretboard"] ]
+
+        (actionBar <>
+        [ HH.div
+            [ HP.classes [ ClassName "chord-meta" ] ]
+            [ HH.div [ HP.classes [ ClassName "chord-meta-item" ] ] []
+            , renderChordInfo state
+            ]
+        , renderString state 0 7 -- G
+        , renderString state 1 0 -- C
+        , renderString state 2 4 -- E
+        , renderString state 3 9 -- A
+        ])
 
   eval :: Query ~> H.ComponentDSL State Query Message m
   eval q = case q of
     ChordChange chord next -> do
-      H.put (chordToState chord)
+      state <- H.get
+      let displayActions = case state of
+                             FBChord s -> s.displayActions
+                             _ -> false
+      H.put (chordToState chord displayActions)
       pure next
     ClearChord next -> do
       H.put NoChord
@@ -264,11 +277,11 @@ component =
   initialState input =
     case input of
       NoChordInput -> NoChord
-      ChordInput chord -> chordToState chord
+      ChordInput chord displayActions -> chordToState chord displayActions
   
   -- This component receives an Input from the parent component
   receiver :: Input -> Maybe (Query Unit)
   receiver input =
     case input of
       NoChordInput -> Just (ClearChord unit)
-      ChordInput c -> Just (ChordChange c unit)
+      ChordInput c displayActions -> Just (ChordChange c unit)

@@ -71,7 +71,7 @@ component =
             -- Render the current fretboard.
             , HH.div
                 [ HP.classes [ ClassName "fretboard-active" ] ]
-                [ HH.slot' CP.cp2 unit FB.component (FB.ChordInput state.chord) (HE.input HandleFretboard) ]
+                [ HH.slot' CP.cp2 unit FB.component (FB.ChordInput state.chord false) (HE.input HandleFretboard) ]
           ]
 
       -- Render all the fretboards. Passes in the list of chords to render as input to the
