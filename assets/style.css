@@ -7,17 +7,23 @@ body {
   font-family: Arial Unicode MS, Lucida Sans Unicode;
 }
 
+h3 {
+  margin-bottom: 0.5em;
+}
+
 .structure {
-  width: 1200px;
+  max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
 }
 
 .top-component {
   display: flex;
+  flex-direction: row;
 }
 
 .fretboard-active {
+  padding-left: 2em;
 }
 
 .fretboards {
@@ -178,7 +184,8 @@ body {
 }
 
 .chord-selector-section {
-  flex-basis: 30%;
+  flex-basis: 50%;
+  max-width: 400px;
 }
 
 .selector-section {
@@ -225,4 +232,35 @@ body {
 
 .btn.selected {
   background: green;
+}
+
+.add-chord {
+  margin-top: 1em;
+}
+
+.added-fretboards h3 {
+  margin-bottom: -1em;
+}
+
+@media (max-width: 600px) {
+  .top-component {
+    flex-direction: column;
+  }
+
+  .fretboard-active {
+    margin-left: auto;
+    margin-right: auto;
+
+    /* Clear padding because we're centering it.
+    The padding needed is handled by .fretboard */
+    padding-left: 0;
+  }
+
+  .fretboard {
+    margin-left: auto;
+    margin-right: auto;
+
+    /* Make it look centered. */
+    padding-left: 1.6em;
+  }
 }

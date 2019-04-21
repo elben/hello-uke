@@ -84,7 +84,13 @@ component =
 
               -- Render the [Add] button.
               , HH.div
-                  [ HP.classes [ ClassName "selection", ClassName "wide", ClassName "btn", ClassName "clickable" ]
+                  [ HP.classes
+                      [ ClassName "selection"
+                      , ClassName "wide"
+                      , ClassName "btn"
+                      , ClassName "clickable"
+                      , ClassName "add-chord"
+                      ]
                   , HE.onClick (HE.input_ AddChord) ]
                   [ HH.text "Add" ]
               ]

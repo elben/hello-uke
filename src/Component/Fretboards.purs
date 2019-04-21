@@ -58,7 +58,11 @@ component =
   initialState (FretboardChords chords) = { fretboards: A.mapWithIndex (\i c -> { chord: c, id: i } ) chords }
 
   render :: State -> H.ParentHTML Query FB.Query FretboardId m
-  render s = HH.div [ HP.classes [ ClassName "fretboards" ] ] (map renderFretboard s.fretboards)
+  render s =
+    HH.div
+      [ HP.classes [ ClassName "added-fretboards" ] ]
+      [ HH.h3 [] [ HH.text (if A.null s.fretboards then "" else "Added Chords") ]
+      , HH.div [ HP.classes [ ClassName "fretboards" ] ] (map renderFretboard s.fretboards) ]
 
   renderFretboard :: FretboardState -> H.ParentHTML Query FB.Query FretboardId m
   renderFretboard fbState =
