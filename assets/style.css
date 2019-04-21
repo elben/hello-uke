@@ -211,6 +211,15 @@ h3 {
 
 .clickable {
   cursor: pointer;
+}
+
+.not-clickable {
+  cursor: not-allowed;
+}
+
+.btn {
+  background: #222;
+  border-radius: 13px;
 
   /* Don't allow user to select text. Make it behave more like a button.
    * https://stackoverflow.com/questions/6900124/how-to-make-certain-text-not-selectable-with-css
@@ -221,17 +230,20 @@ h3 {
   user-select: none; /* Standard */
 }
 
-.btn {
-  background: #222;
-  border-radius: 13px;
-}
-
 .btn:hover {
   background: red;
 }
 
 .btn.selected {
   background: green;
+}
+
+.btn.not-clickable {
+  background: #999;
+}
+
+.btn.not-clickable:hover {
+  background: #aaa;
 }
 
 .add-chord {

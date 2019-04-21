@@ -10,7 +10,7 @@ import Data.Array as A
 import Data.Either.Nested (Either3)
 import Data.FoldableWithIndex (foldlWithIndex)
 import Data.Functor.Coproduct.Nested (Coproduct3)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), maybe)
 import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.Component.ChildPath as CP
@@ -70,41 +70,45 @@ component =
 
   render :: State -> H.ParentHTML Query ChildQuery ChildSlot m
   render state =
-    HH.div
-      [ HP.classes [ClassName "main-component"] ]
-      [ HH.div
-          [ HP.classes [ClassName "top-component"] ]
-          [ HH.div
-              [ HP.classes [ClassName "chord-selector-section"] ]
-
-              -- Render the ChordSelector component. It doesn't have any inputs to it, so pass in
-              -- unit as the input. It emits a message whenever a valid chord is selected, which is
-              -- passed via the HandleChordSelector wrapper.
-              [ HH.slot' CP.cp1 unit CS.component unit (HE.input HandleChordSelector)
-
-              -- Render the [Add] button.
-              , HH.div
-                  [ HP.classes
-                      [ ClassName "selection"
-                      , ClassName "wide"
-                      , ClassName "btn"
-                      , ClassName "clickable"
-                      , ClassName "add-chord"
-                      ]
-                  , HE.onClick (HE.input_ AddChord) ]
-                  [ HH.text "Add" ]
-              ]
-
-            -- Render the current fretboard.
-            , HH.div
-                [ HP.classes [ ClassName "fretboard-active" ] ]
-                [ HH.slot' CP.cp2 unit FB.component { chord: state.chord, displayActions: false } (HE.input HandleFretboard) ]
+    let chordAlreadyAdded = maybe false (const true) (A.findIndex ((==) state.chord) state.chords)
+        addBtnClasses = 
+          [ ClassName "selection"
+          , ClassName "wide"
+          , ClassName "btn"
+          , ClassName (if chordAlreadyAdded then "not-clickable" else "clickable")
+          , ClassName "add-chord"
+          , ClassName (if chordAlreadyAdded then "already-added" else "")
           ]
+        onClickProp = if chordAlreadyAdded then [] else [ HE.onClick (HE.input_ AddChord) ]
+    in
+      HH.div
+        [ HP.classes [ClassName "main-component"] ]
+        [ HH.div
+            [ HP.classes [ClassName "top-component"] ]
+            [ HH.div
+                [ HP.classes [ClassName "chord-selector-section"] ]
 
-      -- Render all the fretboards. Passes in the list of chords to render as input to the
-      -- fretboard.
-      , HH.slot' CP.cp3 unit FBS.component (FBS.FretboardChords state.chords) (HE.input HandleFretboards)
-      ]
+                -- Render the ChordSelector component. It doesn't have any inputs to it, so pass in
+                -- unit as the input. It emits a message whenever a valid chord is selected, which is
+                -- passed via the HandleChordSelector wrapper.
+                [ HH.slot' CP.cp1 unit CS.component unit (HE.input HandleChordSelector)
+
+                -- Render the [Add] button.
+                , HH.div
+                    (append [ HP.classes addBtnClasses ] onClickProp)
+                    [ HH.text (if chordAlreadyAdded then "Already Added" else "Add") ]
+                ]
+
+              -- Render the current fretboard.
+              , HH.div
+                  [ HP.classes [ ClassName "fretboard-active" ] ]
+                  [ HH.slot' CP.cp2 unit FB.component { chord: state.chord, displayActions: false } (HE.input HandleFretboard) ]
+            ]
+
+        -- Render all the fretboards. Passes in the list of chords to render as input to the
+        -- fretboard.
+        , HH.slot' CP.cp3 unit FBS.component (FBS.FretboardChords state.chords) (HE.input HandleFretboards)
+        ]
 
   eval :: Query ~> H.ParentDSL State Query ChildQuery ChildSlot Void m
   eval = case _ of
