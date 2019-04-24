@@ -175,7 +175,7 @@ ukeChords = M.fromFoldable
         , Minor      ==> M.fromFoldable
             [ Triad  ==> fini (F 1) (F 1) (F 0) X Nothing
             , Dom7   ==> fing 1 1 0 2
-            , Maj7   ==> fing 1 0 0 4
+            , Maj7   ==> fing 1 1 0 3
             , Dom9   ==> fing 4 3 0 4
             ]
         , Suspended  ==> M.fromFoldable
@@ -195,8 +195,8 @@ ukeChords = M.fromFoldable
         , Minor      ==> M.fromFoldable
             [ Triad  ==> fing 2 2 1 0
             , Dom7   ==> fing 2 2 1 3
-            , Maj7   ==> finb 6 5 5 5 (Barre 5 1 3)
-            , Dom9   ==> fing 5 4 1 5
+            , Maj7   ==> fing 2 2 1 4
+            , Dom9   ==> fing 2 0 0 5
             ]
         , Suspended  ==> M.fromFoldable
             [ Second ==> fing 2 2 0 0
@@ -215,8 +215,8 @@ ukeChords = M.fromFoldable
         , Minor      ==> M.fromFoldable
             [ Triad  ==> fing 3 3 2 1
             , Dom7   ==> fing 3 3 2 4
-            , Maj7   ==> finb 3 2 2 6 (Barre 2 1 3)
-            , Dom9   ==> fing 6 5 1 6
+            , Maj7   ==> fing 3 3 2 5
+            , Dom9   ==> fing 3 3 1 4
             ]
         , Suspended  ==> M.fromFoldable
             [ Second ==> finb 3 3 1 1 (Barre 1 2 3)
@@ -235,7 +235,7 @@ ukeChords = M.fromFoldable
         , Minor      ==> M.fromFoldable
             [ Triad  ==> fing 0 4 3 2
             , Dom7   ==> fing 0 2 0 2
-            , Maj7   ==> fing 1 3 0 2
+            , Maj7   ==> fing 0 3 0 2
             , Dom9   ==> fing 0 6 0 5
             ]
         , Suspended  ==> M.fromFoldable
