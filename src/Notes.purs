@@ -28,7 +28,7 @@ defaultAccidental 4 = Sharp
 defaultAccidental 5 = Flat
 defaultAccidental 7 = Sharp
 defaultAccidental 9 = Sharp
-defaultAccidental 11 = Flat
+defaultAccidental 11 = Sharp
 defaultAccidental _ = Sharp
 
 
