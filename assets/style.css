@@ -1,3 +1,5 @@
+/* Colors from https://www.colourlovers.com/palette/2778385/Hawaii_sunset */
+
 * {
   box-sizing: border-box;
 }
@@ -231,11 +233,13 @@ h3 {
 }
 
 .btn:hover {
-  background: red;
+  background: #FE8072;
+  color: #fff;
 }
 
 .btn.selected {
-  background: green;
+  background: #FED96F;
+  color: #9D691A;
 }
 
 .btn.not-clickable {
