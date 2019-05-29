@@ -22,6 +22,6 @@ main = HA.runHalogenAff do
 awaitRoot :: Aff HTMLElement
 awaitRoot = do
   awaitLoad
-  body <- selectElement (QuerySelector "div.structure")
+  body <- selectElement (QuerySelector "div.app")
   maybe (throwError (error "Could not find body")) pure body
   

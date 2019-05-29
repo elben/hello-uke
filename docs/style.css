@@ -19,6 +19,12 @@ h3 {
   margin-right: auto;
 }
 
+.footer {
+  margin-top: 5em;
+  font-size: 0.8em;
+  color: #888;
+}
+
 .top-component {
   display: flex;
   flex-direction: row;
