@@ -1,4 +1,4 @@
-# Chordify
+# Hello Uke
 
 Find chords for stringed instruments.
 
