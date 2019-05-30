@@ -13,6 +13,14 @@ h3 {
   margin-bottom: 0.5em;
 }
 
+a {
+  color: #FE8071;
+}
+
+a:hover {
+  color: #FE8071;
+}
+
 .structure {
   max-width: 1200px;
   margin-left: auto;
@@ -143,6 +151,7 @@ h3 {
   height: 50px;
 }
 
+/* Open strings */
 .string:last-child .fret:first-child {
   height: 54px;
 }
@@ -243,8 +252,8 @@ h3 {
 }
 
 .btn:hover {
-  background: #FE8072;
-  color: #fff;
+  background: #FED96F;
+  color: #9D691A;
 }
 
 .btn.selected {
@@ -262,6 +271,13 @@ h3 {
 
 .add-chord {
   margin-top: 1em;
+  background: #FE8071;
+  color: #fff;
+}
+
+.add-chord:hover {
+  background: rgb(252, 163, 153);
+  color: #fff;
 }
 
 .added-fretboards h3 {
