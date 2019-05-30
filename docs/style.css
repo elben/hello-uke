@@ -6,7 +6,7 @@
 
 body {
   font-size: 16px;
-  font-family: Arial Unicode MS, Lucida Sans Unicode;
+  font-family: Arial Unicode MS, Avenir Next, sans-serif;
 }
 
 h3 {
@@ -189,7 +189,6 @@ a:hover {
   transform: translate3d(0%, 20%, 0);
   text-align: center;
   font-size: 0.9em;
-  font-family: Arial Unicode MS, Lucida Sans Unicode;
 
   margin-left: auto;
   margin-right: auto;

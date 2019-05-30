@@ -1,7 +1,7 @@
 {
     "private": true,
     "scripts": {
-      "build": "pulp --then 'cp assets/* dist/' build --to dist/app.js"
+      "build": "pulp build --to dist/app.js"
     },
     "devDependencies": {
       "pulp": "^12.3.",
