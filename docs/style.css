@@ -296,6 +296,22 @@ a:hover {
   width: 100%;
 }
 
+.search input:focus {
+  outline: 2px solid #FFDCD8;
+}
+
+.search-results {
+  position: absolute;
+  width: 400px;
+}
+
+.search-result {
+  font-size: 1em;
+  background-color: #FFDCD8;
+  padding: 0.5em 0 0.5em 1em;
+  border-bottom: 1px solid #FE8071;
+}
+
 @media (max-width: 600px) {
   .top-component {
     flex-direction: column;

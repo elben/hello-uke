@@ -3,9 +3,9 @@ module Parser where
 import Notes
 import Prelude hiding (between,when)
 
-import Chords (Chord, ChordInterval(..), ChordQuality(..))
+import Chords (Chord, ChordInterval(..), ChordQuality(..), chordIntervals, chordQualities)
 import Control.Alt ((<|>))
-import Data.Array (snoc)
+import Data.Array (snoc, take)
 import Data.Either (Either(..))
 import Data.Foldable (foldl)
 import Data.String (Pattern(..), Replacement(..), replaceAll, toLower)
@@ -13,24 +13,25 @@ import Text.Parsing.Parser (ParseError, Parser, runParser)
 import Text.Parsing.Parser.Combinators (try, option)
 import Text.Parsing.Parser.String (string)
 
-compute :: String -> Array Chord
-compute s = case parseString s of
+findChords:: Int -> String -> Array Chord
+findChords n s = case parseString n s of
               Right chrds -> chrds
               Left _ -> []
 
 -- TODO we don't want to lower-case "M" since that tells us major or minor.
 -- Except, the words "major" or "minor" or "maj" or "min" we can.
-parseString :: String -> Either ParseError (Array Chord)
-parseString s = runParser (toLower (replaceAll (Pattern " ") (Replacement "") s)) chords
+parseString :: Int -> String -> Either ParseError (Array Chord)
+parseString n s = runParser (toLower (replaceAll (Pattern " ") (Replacement "") s)) (chords n)
 
-chords :: Parser String (Array Chord)
-chords = do
+chords :: Int -> Parser String (Array Chord)
+chords max = do
   ns <- note
-  qs <- option [Major] quality
-  is <- option [Triad] interval
+  qs <- option chordQualities quality
+  is <- option chordIntervals interval
 
   -- Tripe for-loop across the notes, qualities and intervals. Assumes that
   -- order matters (most-likely first) in the ns, qs and is arrays.
+  -- TODO lazily find until max
   let chrds = foldl
                 (\acc n ->
                   foldl
@@ -39,7 +40,9 @@ chords = do
                     acc' is)
                   acc qs)
                 [] ns
-  pure chrds
+-- TODO make this lazy
+--   pure (take max chrds)
+  pure (take max chrds)
 
 note :: Parser String (Array Note)
 note = 

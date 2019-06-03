@@ -47,8 +47,9 @@ humanChordQuality Suspended = "sus"
 humanChordQuality Augmented = "aug"
 humanChordQuality Diminished = "dim"
 
+-- | Qualities that are currently used.
 chordQualities :: Array ChordQuality
-chordQualities = [ Major, Minor, Suspended, Augmented, Diminished ]
+chordQualities = [ Major, Minor, Suspended ]
 
 data ChordInterval =
     Triad
@@ -62,6 +63,7 @@ data ChordInterval =
   | Dom9 -- The dominant 9th (e.g. in C major: C, E, G, Bb, D)
   -- | Maj9
 
+-- | Intervals that are currently used.
 chordIntervals :: Array ChordInterval
 chordIntervals = [ Triad, Dom7, Maj7, Second, Fourth, Dom9 ]
 
