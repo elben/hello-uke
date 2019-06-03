@@ -15,6 +15,7 @@
     "purescript-lists": "^5.4.0",
     "purescript-maybe": "^4.0.1",
     "purescript-ordered-collections": "^1.6.1",
+    "purescript-parsing": "^5.0.3",
     "purescript-prelude": "^4.1.1",
     "purescript-strings": "^4.0.1"
   },
