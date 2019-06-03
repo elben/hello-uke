@@ -286,6 +286,16 @@ a:hover {
   margin-bottom: -1em;
 }
 
+.search input {
+  font-family: Arial Unicode MS, Avenir Next, sans-serif;
+  font-size: 1em;
+  border: 3px solid #FE8071;
+  border-radius: 4px;
+  line-height: 2;
+  padding: 0.21em 0.512em;
+  width: 100%;
+}
+
 @media (max-width: 600px) {
   .top-component {
     flex-direction: column;

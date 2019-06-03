@@ -6,10 +6,11 @@ import Chords (Chord, ChordInterval(..), ChordQuality(..))
 import Component.ChordSelector as CS
 import Component.Fretboard as FB
 import Component.Fretboards as FBS
+import Component.Search as S
 import Data.Array as A
-import Data.Either.Nested (Either3)
+import Data.Either.Nested (Either4)
 import Data.FoldableWithIndex (foldlWithIndex)
-import Data.Functor.Coproduct.Nested (Coproduct3)
+import Data.Functor.Coproduct.Nested (Coproduct4)
 import Data.Maybe (Maybe(..), maybe)
 import Halogen (ClassName(..))
 import Halogen as H
@@ -44,13 +45,14 @@ data Query a
   = HandleChordSelector CS.Message a
   | HandleFretboard FB.Message a
   | HandleFretboards FBS.Message a
+  | HandleSearch S.Message a
   | AddChord a
 
 -- Halogen requires a coproduct type of all the queriers a component's children can make.
-type ChildQuery = Coproduct3 CS.Query FB.Query FBS.Query
+type ChildQuery = Coproduct4 CS.Query FB.Query FBS.Query S.Query
 
 -- A slot for each child component.
-type ChildSlot = Either3 Unit Unit Unit
+type ChildSlot = Either4 Unit Unit Unit Unit
 
 initialChord :: Chord
 initialChord = { note: N.c, quality: Major, interval: Triad }
@@ -88,10 +90,14 @@ component =
             [ HH.div
                 [ HP.classes [ClassName "chord-selector-section"] ]
 
+                [
+                -- Render the Search component
+                  HH.slot' CP.cp4 unit S.component "" (HE.input HandleSearch)
+
                 -- Render the ChordSelector component. It doesn't have any inputs to it, so pass in
                 -- unit as the input. It emits a message whenever a valid chord is selected, which is
                 -- passed via the HandleChordSelector wrapper.
-                [ HH.slot' CP.cp1 unit CS.component unit (HE.input HandleChordSelector)
+                , HH.slot' CP.cp1 unit CS.component unit (HE.input HandleChordSelector)
 
                 -- Render the [Add] button.
                 , HH.div
@@ -122,6 +128,8 @@ component =
     HandleFretboards (FBS.NotifyRemove fbId) next -> do
       -- Remove by index
       H.modify_ (\s -> s { chords = foldlWithIndex (\i acc c -> if fbId == i then acc else A.snoc acc c) [] s.chords } )
+      pure next
+    HandleSearch (S.QueryString qs) next -> do
       pure next
     AddChord next -> do
       -- Add the "active" chord into the list of archived chords.

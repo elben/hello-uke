@@ -2,9 +2,7 @@ module Component.Search where
 
 import Prelude
 
-import Chords
-import Parser (compute)
-
+import Chords (Chord)
 import Data.Array as A
 import Data.Maybe (Maybe(..))
 import Halogen (ClassName(..))
@@ -12,14 +10,15 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Parser (compute)
 
-type State = { q :: String           -- Query string
+type State = { qs :: String          -- Query string
              , chord :: Maybe Chord  -- Selected chord
              , hover :: Maybe Chord  -- Chord user is hovering over
              , chords :: Array Chord -- Selectable chords
              }
 
-data Query a = QueryChanged String a
+data Query a = QueryStringChanged String a
 
 type Input = String
 
@@ -36,17 +35,23 @@ component =
   where
 
   render :: State -> H.ComponentHTML Query
-  render state = HH.div [] []
+  render state =
+    HH.div
+      [ HP.classes [ ClassName "search" ] ]
+      [ HH.input
+         [ HP.placeholder "Hit S or / to search for chords"
+         , HE.onValueInput (HE.input QueryStringChanged)]
+      ]
 
   eval :: Query ~> H.ComponentDSL State Query Message m
-  eval q = case q of
-    QueryChanged q next -> do
+  eval qs = case qs of
+    QueryStringChanged q next -> do
       let chords = compute q
-      H.modify_ (_ { chords = chords })
+      H.modify_ (_ {qs = q, chords = chords })
       pure next
 
   initialState :: Input -> State
-  initialState input = { q: input
+  initialState input = { qs: input
                        , chord: Nothing
                        , hover: Nothing
                        , chords: []
