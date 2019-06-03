@@ -40,6 +40,9 @@ a:hover {
 
 .fretboard-active {
   padding-left: 2em;
+
+  /* Align with left-hand-side components */
+  padding-top: 70px;
 }
 
 .fretboards {
@@ -292,9 +295,18 @@ a:hover {
     margin-left: auto;
     margin-right: auto;
 
-    /* Clear padding because we're centering it.
-    The padding needed is handled by .fretboard */
+
+    /*
+     * Clear padding because we're centering it. he padding needed is handled by
+     * .fretboard *
+     */
     padding-left: 0;
+
+    /*
+     * No need for top padding since we're not trying to align with the
+     * eft-hand-side components. *
+     */
+    padding-top: 0;
   }
 
   .fretboard {
