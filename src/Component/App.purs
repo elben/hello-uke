@@ -20,8 +20,6 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Notes as N
 
--- TODO add tons of comments!
-
 -- The state of the app.
 --
 -- * chord  - the active chord selected.
@@ -129,7 +127,8 @@ component =
       -- Remove by index
       H.modify_ (\s -> s { chords = foldlWithIndex (\i acc c -> if fbId == i then acc else A.snoc acc c) [] s.chords } )
       pure next
-    HandleSearch (S.QueryString qs) next -> do
+    HandleSearch (S.ChordSelectedMessage chord) next -> do
+      H.modify_ (_ { chord = chord })
       pure next
     AddChord next -> do
       -- Add the "active" chord into the list of archived chords.

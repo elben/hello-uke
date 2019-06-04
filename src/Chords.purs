@@ -5,7 +5,7 @@ import Prelude
 import Data.Map as M
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Tuple (Tuple(..))
-import Notes (Note(..), Pos)
+import Notes (Note(..), Pos, humanNote)
 
 type Chord = { note :: Note
              , quality :: ChordQuality
@@ -109,6 +109,9 @@ humanChordMod q i =
 labelChordMod :: ChordQuality -> ChordInterval -> String
 labelChordMod q i =
   humanChordQuality q <> humanDivide q i <> labelChordInterval i
+
+humanChord :: Chord -> String
+humanChord chord = (humanNote chord.note <> humanChordMod chord.quality chord.interval)
 
 -- Represents a fingering on a string. (F 0) is equivalent to the open string. X means don't
 -- play that string.
