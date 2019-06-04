@@ -14,10 +14,11 @@ import Halogen.HTML.Properties as HP
 import Notes (Note(..), allNotes, humanNote)
 import Notes as N
 
--- TODO add tons of comments!
-
 -- Carry Notes, not Pos. So that users can deleniate between A# and Bb.
 data State = State (Maybe Note) (Maybe ChordQuality) (Maybe ChordInterval)
+
+instance showState :: Show State where
+  show (State n q i) = "State " <> show n <> " " <> show q <> " " <> show i
 
 getStateNote :: State -> Maybe Note
 getStateNote (State p _ _) = p
@@ -52,11 +53,16 @@ data Query a
   | SelectNote Note a
   | SelectChordQuality ChordQuality a
   | SelectChordInterval ChordInterval a
+  | ChordSelectedQuery Chord a
 
-type Input = Unit
+data Input =
+    NoInput
+  | ChordSelectedInput Chord
 
 data Message =
-  NoMessage
+  -- A no-op to handle when a full-chord is not (yet) selected. In
+  -- practice this doesn't happen, but we still need a way to signal a no-op.
+    NoMessage
   | ChordSelected Chord
 
 rootNoteSelectorClasses :: Array ClassName
@@ -67,9 +73,6 @@ chordQualitySelectorClasses = [ClassName "selection", ClassName "chord-quality-s
 
 chordIntervalSelectorClasses :: Array ClassName
 chordIntervalSelectorClasses = [ClassName "selection", ClassName "chord-interval-selection", ClassName "btn", ClassName "clickable" ]
-
-initialState :: State
-initialState = State (Just N.c) (Just Major) (Just Triad)
 
 selectableChordQualities :: State -> Array ChordQuality
 selectableChordQualities state =
@@ -130,12 +133,20 @@ defaultInterval _ = Triad
 component :: forall m. H.Component HH.HTML Query Input Message m
 component =
   H.component
-    { initialState: const initialState
+    { initialState
     , render
     , eval
-    , receiver: const Nothing
+    , receiver
     }
   where
+
+  initialState :: Input -> State
+  initialState NoInput = State (Just N.c) (Just Major) (Just Triad)
+  initialState (ChordSelectedInput chord) = State (Just chord.note) (Just chord.quality) (Just chord.interval)
+
+  receiver :: Input -> Maybe (Query Unit)
+  receiver NoInput = Nothing
+  receiver (ChordSelectedInput chord) = Just (ChordSelectedQuery chord unit)
 
   render :: State -> H.ComponentHTML Query
   render state =
@@ -244,4 +255,7 @@ component =
                      else setStateChordInterval interval state
       H.put state'
       H.raise (toMessage ChordSelected state')
+      pure next
+    ChordSelectedQuery chord next -> do
+      H.put $ State (Just chord.note) (Just chord.quality) (Just chord.interval)
       pure next

@@ -91,11 +91,13 @@ component =
                 [
                 -- Render the Search component
                   HH.slot' CP.cp4 unit S.component "" (HE.input HandleSearch)
-
-                -- Render the ChordSelector component. It doesn't have any inputs to it, so pass in
-                -- unit as the input. It emits a message whenever a valid chord is selected, which is
-                -- passed via the HandleChordSelector wrapper.
-                , HH.slot' CP.cp1 unit CS.component unit (HE.input HandleChordSelector)
+                
+                -- Render the ChordSelector component. The input is the selected
+                -- chord, which may have come from itself, or from the search
+                -- component. It emits a message whenever a valid chord is
+                -- selected, which is passed via the HandleChordSelector
+                -- wrapper.
+                , HH.slot' CP.cp1 unit CS.component (CS.ChordSelectedInput state.chord) (HE.input HandleChordSelector)
 
                 -- Render the [Add] button.
                 , HH.div
