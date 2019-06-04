@@ -9,6 +9,19 @@ body {
   font-family: Arial Unicode MS, Avenir Next, sans-serif;
 }
 
+h1 {
+  font-size: 3em;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+h2 {
+  font-size: 1.5em;
+  font-weight: normal;
+  margin-top: 0;
+  margin-bottom: 0.5em;
+}
+
 h3 {
   margin-bottom: 0.5em;
 }
@@ -286,6 +299,14 @@ a:hover {
   margin-bottom: -1em;
 }
 
+.hide {
+  display: none;
+}
+
+.search {
+  position: relative;
+}
+
 .search input {
   font-family: Arial Unicode MS, Avenir Next, sans-serif;
   font-size: 1em;
@@ -302,7 +323,11 @@ a:hover {
 
 .search-results {
   position: absolute;
-  width: 400px;
+
+  /* This, combined with .search's position relative allows the .search-result
+  rows (below) to stretch the entire width of the LHS components. */
+  left: 0;
+  right: 0;
 }
 
 .search-result {
@@ -310,9 +335,57 @@ a:hover {
   background-color: #FFDCD8;
   padding: 0.5em 0 0.5em 1em;
   border-bottom: 1px solid #FE8071;
+  cursor: pointer;
+}
+
+.search-result:hover {
+  background-color: #FF998D;
+}
+
+.search-result.selected {
+  background-color: #FF998D;
+}
+
+@media (hover: none) { 
+  /* Custom css for devices where the primary input mechanism cannot hover 
+   * at all or cannot conveniently hover.
+   * https://stackoverflow.com/questions/12469875/how-to-code-css-media-queries-targeting-all-mobile-devices-and-tablets/42835826#42835826
+   */
+
+   /* There's a weird bug on iOS Safari where, after clicking on a search result
+   row, the root note selector button *behind* the search result row is
+   triggered as "hovered". This makes it look as if there are *two* buttons
+   selected: (1) the real one and (2) the one that is accidentally "hovered"
+   over.
+
+   This doesn't happen on desktop. So we purposefully target this fix only for
+   devices where they shouldn't have an ability to hover.
+
+   If we only had .btn:hover here, when we actually do select a button, the
+   color doesn't change b/c the new button is marked as hovered, thus taking
+   on this CSS. So what we need to do is do a more specific selector to make the
+   color "correct" again for selected buttons. Hence, we target
+   .btn.selected:hover, to handle buttons that are selected AND hovered over.
+    */
+  .btn:hover {
+    background: #222;
+    color: #fff;
+  }
+
+  .btn.selected:hover {
+    background: #FED96F;
+    color: #9D691A;
+  }
 }
 
 @media (max-width: 600px) {
+  h1 {
+    font-size: 2em;
+  }
+
+  h2 {
+    font-size: 1em;
+  }
   .top-component {
     flex-direction: column;
   }
