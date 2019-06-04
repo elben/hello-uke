@@ -81,7 +81,7 @@ quality =
 interval :: Parser String (Array ChordInterval)
 interval =
       (try (string "dom7") >>= opts [Dom7])
-  <|> (try (string "maj7" <|> string "M7") >>= opts [Maj7])
+  <|> (try (string "maj7" <|> anyCase "M7") >>= opts [Maj7])
   <|> (try (string "7") >>= \_ -> pure [Dom7, Maj7])
   <|> (try (string "dom9" <|> string "9") >>= opts [Dom9])
   <|> (try (string "2") >>= opts [Second])

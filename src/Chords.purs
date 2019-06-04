@@ -80,23 +80,35 @@ derive instance chordIntervalOrd :: Ord ChordInterval
 
 -- https://en.wikipedia.org/wiki/Chord_(music)#Examples
 humanChordInterval :: ChordInterval -> String
-humanChordInterval Triad = "Triad"
-humanChordInterval Dom7 = "7"
-humanChordInterval Maj7 = "M7"
-humanChordInterval Second = "2"
-humanChordInterval Fourth = "4"
-humanChordInterval Dom9 = "9"
+humanChordInterval Triad = ""
+humanChordInterval i = labelChordInterval i
+
+-- https://en.wikipedia.org/wiki/Chord_(music)#Examples
+labelChordInterval :: ChordInterval -> String
+labelChordInterval Triad = "Triad"
+labelChordInterval Dom7 = "7"
+labelChordInterval Maj7 = "M7"
+labelChordInterval Second = "2"
+labelChordInterval Fourth = "4"
+labelChordInterval Dom9 = "9"
+
+humanDivide :: ChordQuality -> ChordInterval -> String
+humanDivide q i =
+  case q of
+      Minor ->
+      case i of
+          Triad -> ""
+          Dom7 -> ""
+          _ -> "/"
+      _ -> ""
 
 humanChordMod :: ChordQuality -> ChordInterval -> String
 humanChordMod q i =
-  let divide = case q of
-                 Minor ->
-                   case i of
-                     Triad -> ""
-                     Dom7 -> ""
-                     _ -> "/"
-                 _ -> ""
-  in humanChordQuality q <> divide <> humanChordInterval i
+  humanChordQuality q <> humanDivide q i <> humanChordInterval i
+
+labelChordMod :: ChordQuality -> ChordInterval -> String
+labelChordMod q i =
+  humanChordQuality q <> humanDivide q i <> labelChordInterval i
 
 -- Represents a fingering on a string. (F 0) is equivalent to the open string. X means don't
 -- play that string.

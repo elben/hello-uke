@@ -20,9 +20,6 @@ type State = { chord :: Chord
              , displayActions :: Boolean
              }
 
-humanChord :: State -> String
-humanChord s = humanNote s.chord.note <> humanChordMod s.chord.quality s.chord.interval
-
 data Query a
   = ChordChange Chord a
   | RemoveChord a

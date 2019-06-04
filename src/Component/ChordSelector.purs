@@ -2,7 +2,7 @@ module Component.ChordSelector where
 
 import Prelude
 
-import Chords (Chord, ChordInterval(..), ChordQuality(..), buildChord, chordIntervals, chordQualities, humanChordInterval, ukeChords)
+import Chords (Chord, ChordInterval(..), ChordQuality(..), buildChord, chordIntervals, chordQualities, labelChordInterval, ukeChords)
 import Data.Array as A
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
@@ -192,7 +192,7 @@ component =
                   in HH.div
                        [ HP.classes classes
                        , HE.onClick (HE.input_ (SelectChordInterval i)) ]
-                       [ HH.text (humanChordInterval i) ])
+                       [ HH.text (labelChordInterval i) ])
                 -- Don't show the Triad in the UI, as it is the "default" interval.
                 -- We want intervals to act like a modification, so "no modification"
                 -- equals the Triad interval.
