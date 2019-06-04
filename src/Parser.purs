@@ -89,7 +89,7 @@ interval =
 
 -- Helper to avoid awkward syntax
 sharp :: String -> Parser String Accidental
-sharp _ = (string "#" <|> string "♯") >>= \_ -> pure Sharp
+sharp _ = (string "#" <|> string "♯" <|> string "s") >>= \_ -> pure Sharp
 
 -- Helper to avoid awkward syntax
 flat :: String -> Parser String Accidental
