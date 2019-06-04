@@ -3,7 +3,7 @@ module Chords where
 import Prelude
 
 import Data.Map as M
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Tuple (Tuple(..))
 import Notes (Note(..), Pos)
 
@@ -413,3 +413,7 @@ findUkeFingering :: Chord -> Fingering
 findUkeFingering chord =
   let Note _ _ p = chord.note
   in fromMaybe defaultFingering (M.lookup p ukeChords >>= M.lookup chord.quality >>= M.lookup chord.interval)
+
+ukeChordExists :: Pos -> ChordQuality -> ChordInterval -> Boolean
+ukeChordExists p q i =
+  maybe false identity (M.lookup p ukeChords >>= M.lookup q >>= \m -> pure (M.member i m))

@@ -3,14 +3,14 @@ module Parser where
 import Notes
 import Prelude hiding (between,when)
 
-import Chords (Chord, ChordInterval(..), ChordQuality(..), chordIntervals, chordQualities)
+import Chords (Chord, ChordInterval(..), ChordQuality(..), chordIntervals, chordQualities, ukeChordExists)
 import Control.Alt ((<|>))
 import Data.Array (snoc, take)
 import Data.Either (Either(..))
 import Data.Foldable (foldl)
-import Data.String (Pattern(..), Replacement(..), replaceAll, toLower)
+import Data.String (Pattern(..), Replacement(..), replaceAll, toLower, toUpper)
 import Text.Parsing.Parser (ParseError, Parser, runParser)
-import Text.Parsing.Parser.Combinators (try, option)
+import Text.Parsing.Parser.Combinators (option, optionMaybe, try)
 import Text.Parsing.Parser.String (string)
 
 findChords:: Int -> String -> Array Chord
@@ -18,25 +18,27 @@ findChords n s = case parseString n s of
               Right chrds -> chrds
               Left _ -> []
 
--- TODO we don't want to lower-case "M" since that tells us major or minor.
--- Except, the words "major" or "minor" or "maj" or "min" we can.
 parseString :: Int -> String -> Either ParseError (Array Chord)
-parseString n s = runParser (toLower (replaceAll (Pattern " ") (Replacement "") s)) (chords n)
+parseString n s = runParser (replaceAll (Pattern " ") (Replacement "") s) (chords n)
 
 chords :: Int -> Parser String (Array Chord)
 chords max = do
   ns <- note
   qs <- option chordQualities quality
+  _  <- optionMaybe (string "/") -- optional / separator. Ex: Cm/M7.
   is <- option chordIntervals interval
 
   -- Tripe for-loop across the notes, qualities and intervals. Assumes that
   -- order matters (most-likely first) in the ns, qs and is arrays.
   -- TODO lazily find until max
   let chrds = foldl
-                (\acc n ->
+                (\acc n@(Note _ _ p) ->
                   foldl
                   (\acc' q ->
-                    foldl (\acc'' i -> snoc acc'' {note: n, quality: q, interval: i})
+                    foldl (\acc'' i ->
+                            if ukeChordExists p q i
+                            then snoc acc'' {note: n, quality: q, interval: i}
+                            else acc'')
                     acc' is)
                   acc qs)
                 [] ns
@@ -47,23 +49,26 @@ chords max = do
 note :: Parser String (Array Note)
 note = 
   -- The multi-character strings need to come before the singles
-      try (string "c" >>= \_ -> sharp >>= \_ -> pure [cs])
-  <|> try (string "c" >>= \_ -> pure [c, cs])
-  <|> try (string "d" >>= \_ -> sharp >>= \_ -> pure [ds])
-  <|> try (string "d" >>= \_ -> flat >>= \_ -> pure [df])
-  <|> try (string "d" >>= \_ -> pure [d, ds, df])
-  <|> try (string "e" >>= \_ -> flat >>= \_ -> pure [ef])
-  <|> try (string "e" >>= \_ -> pure [e, ef])
-  <|> try (string "f" >>= \_ -> sharp >>= \_ -> pure [fs])
-  <|> try (string "f" >>= \_ -> pure [f, fs])
-  <|> try (string "g" >>= \_ -> sharp >>= \_ -> pure [gs])
-  <|> try (string "g" >>= \_ -> flat >>= \_ -> pure [gf])
-  <|> try (string "g" >>= \_ -> pure [g, gs, gf])
-  <|> try (string "a" >>= \_ -> sharp >>= \_ -> pure [as])
-  <|> try (string "a" >>= \_ -> flat >>= \_ -> pure [af])
-  <|> try (string "a" >>= \_ -> pure [a, as, af])
-  <|> try (string "b" >>= \_ -> flat >>= \_ -> pure [bf])
-  <|> try (string "b" >>= \_ -> pure [b, bf])
+      try (anyCase "c" >>= sharp >>= opts [cs])
+  <|> try (anyCase "c"           >>= opts [c, cs])
+  <|> try (anyCase "d" >>= sharp >>= opts [ds])
+  <|> try (anyCase "d" >>= flat  >>= opts [df])
+  <|> try (anyCase "d"           >>= opts [d, ds, df])
+  <|> try (anyCase "e" >>= flat  >>= opts [ef])
+  <|> try (anyCase "e"           >>= opts [e, ef])
+  <|> try (anyCase "f" >>= sharp >>= opts [fs])
+  <|> try (anyCase "f"           >>= opts [f, fs])
+  <|> try (anyCase "g" >>= sharp >>= opts [gs])
+  <|> try (anyCase "g" >>= flat  >>= opts [gf])
+  <|> try (anyCase "g"           >>= opts [g, gs, gf])
+  <|> try (anyCase "a" >>= sharp >>= opts [as])
+  <|> try (anyCase "a" >>= flat  >>= opts [af])
+  <|> try (anyCase "a"           >>= opts [a, as, af])
+  <|> try (anyCase "b" >>= flat  >>= opts [bf])
+  <|> try (anyCase "b"           >>= opts [b, bf])
+
+anyCase :: String -> Parser String String
+anyCase n = string (toLower n) <|> string (toUpper n)
 
 quality :: Parser String (Array ChordQuality)
 quality =
@@ -75,15 +80,22 @@ quality =
 
 interval :: Parser String (Array ChordInterval)
 interval =
-      (try (string "dom7") >>= \_ -> pure [Dom7])
-  <|> (try (string "maj7") >>= \_ -> pure [Maj7])
+      (try (string "dom7") >>= opts [Dom7])
+  <|> (try (string "maj7" <|> string "M7") >>= opts [Maj7])
   <|> (try (string "7") >>= \_ -> pure [Dom7, Maj7])
-  <|> (try (string "dom9" <|> string "9") >>= \_ -> pure [Dom9])
-  <|> (try (string "2") >>= \_ -> pure [Second])
-  <|> (try (string "4") >>= \_ -> pure [Fourth])
+  <|> (try (string "dom9" <|> string "9") >>= opts [Dom9])
+  <|> (try (string "2") >>= opts [Second])
+  <|> (try (string "4") >>= opts [Fourth])
 
-sharp :: Parser String Accidental
-sharp = (string "#" <|> string "♯") >>= \_ -> pure Sharp
+-- Helper to avoid awkward syntax
+sharp :: String -> Parser String Accidental
+sharp _ = (string "#" <|> string "♯") >>= \_ -> pure Sharp
 
-flat :: Parser String Accidental
-flat = (string "b" <|> string "♭") >>= \_ -> pure Flat
+-- Helper to avoid awkward syntax
+flat :: String -> Parser String Accidental
+flat _ = (string "b" <|> string "♭") >>= \_ -> pure Flat
+
+-- Helper to avoid awkward syntax of:
+-- try (name "d" >>= \_ -> pure [d, ds, df])
+opts :: forall a b. b -> a -> Parser String b
+opts res _ = pure res
