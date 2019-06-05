@@ -31,17 +31,24 @@ data Query a =
     QueryStringChanged String a
   | ChordSelected Chord a
   | HideResults a
+  -- TODO add keyboard support for [enter] and up/down
+  -- TODO change selected chord as i type
   -- | KeyboardShortcut String a
   -- | HandleKey KeyboardEvent (H.SubscribeStatus -> a)
 
-type Input = String
+data Input =
+    ClearQueryString -- Clear the query string
+  | NoInput          -- No-op to differentiate between ClearQueryString (could also use Maybe)
 
-data Message = ChordSelectedMessage Chord
+-- Messages to send to parent component.
+data Message =
+    ChordSelectedMessage Chord
+  | QueryStringChangedMessage
 
 component :: forall m. H.Component HH.HTML Query Input Message m
 component =
   H.component
-    { initialState: initialState
+    { initialState
     , render
     , eval
     -- , initializer: Just (H.action Init)
@@ -96,8 +103,16 @@ component =
       let chord = if null q then Nothing else s.chord
       let hover = if null q then Nothing else s.hover
       let s' = s {qs = q, chord = chord, hover = hover, chords = chords, hide = false}
+
+      -- TODO if we do this type-ahead change, we need to be able to rever back
+      -- to the last USER selected one (archived chord), and not a
+      -- computer-selected one
+      case A.head chords of
+        Just c -> H.raise (ChordSelectedMessage c)
+        _ -> pure unit
+      -- Send this message too, which is used to reset the App state's chordSelectorChanged
+      H.raise QueryStringChangedMessage
       H.put s'
-      -- H.modify_ (_ {qs = q, chord = Nothing, hover = Nothing, chords = chords})
       pure next
     ChordSelected chord next -> do
       H.modify_ (_ {qs = humanChord chord, chord = Just chord, hover = Just chord, chords = []})
@@ -122,7 +137,7 @@ component =
   --       pure (reply H.Done)
 
   initialState :: Input -> State
-  initialState input = { qs: input
+  initialState input = { qs: ""
                        , chord: Nothing
                        , hover: Nothing
                        , chords: []
@@ -132,4 +147,5 @@ component =
   
   -- This component receives an Input from the parent component
   receiver :: Input -> Maybe (Query Unit)
-  receiver input = Nothing
+  receiver NoInput = Nothing
+  receiver ClearQueryString = Just (QueryStringChanged "" unit)

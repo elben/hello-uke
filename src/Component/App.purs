@@ -23,15 +23,27 @@ import Notes as N
 -- The state of the app.
 --
 -- * chord  - the active chord selected.
--- * chords - the list of chords added. Both the App component and the Fretboards component need to
---            sync this list of saved chords. Perhaps there's a way where only Fretboards needs to
---            know, but I haven't found a way. The reason is that in the render function of the App
---            component, I must pass in an Input to the Fretboards component. I also only have
---            access to the current State of App. So how do I say: the user hit "Add" for this
---            chord, please inject this into Fretboards' chords list? Other than using some
---            temporary variable in App's state? This means that when the user deletes a chord, we
---            need to update both App's and Fretboards' list of chords.
-type State = { chord :: Chord, chords :: Array Chord }
+--
+-- * chords - the list of chords added. Both the App component and the
+--   Fretboards component need to sync this list of saved chords. Perhaps there's
+--   a way where only Fretboards needs to know, but I haven't found a way. The
+--   reason is that in the render function of the App component, I must pass in an
+--   Input to the Fretboards component. I also only have access to the current
+--   State of App. So how do I say: the user hit "Add" for this chord, please
+--   inject this into Fretboards' chords list? Other than using some temporary
+--   variable in App's state? This means that when the user deletes a chord, we
+--   need to update both App's and Fretboards' list of chords.
+--
+-- * chordSelectorChanged - A "temporary" boolean. Used to tell the Search
+--   component to clear its query string whenever the user usees the
+--   ChordSelector to select a query. This prevents the weird scenario where the
+--   Search bar says something different than the selected chord.
+--
+type State =
+  { chord :: Chord
+  , chords :: Array Chord
+  , chordSelectorChanged :: Boolean
+  }
 
 -- Queries App can make.
 --
@@ -66,7 +78,7 @@ component =
   where
 
   initialState :: State
-  initialState = { chord: initialChord, chords: [] }
+  initialState = { chord: initialChord, chords: [], chordSelectorChanged: false }
 
   render :: State -> H.ParentHTML Query ChildQuery ChildSlot m
   render state =
@@ -80,6 +92,7 @@ component =
           , ClassName (if chordAlreadyAdded then "already-added" else "")
           ]
         onClickProp = if chordAlreadyAdded then [] else [ HE.onClick (HE.input_ AddChord) ]
+        searchInput = if state.chordSelectorChanged then S.ClearQueryString else S.NoInput
     in
       HH.div
         [ HP.classes [ClassName "main-component"] ]
@@ -90,7 +103,7 @@ component =
 
                 [
                 -- Render the Search component
-                  HH.slot' CP.cp4 unit S.component "" (HE.input HandleSearch)
+                  HH.slot' CP.cp4 unit S.component searchInput (HE.input HandleSearch)
                 
                 -- Render the ChordSelector component. The input is the selected
                 -- chord, which may have come from itself, or from the search
@@ -119,7 +132,7 @@ component =
   eval :: Query ~> H.ParentDSL State Query ChildQuery ChildSlot Void m
   eval = case _ of
     HandleChordSelector (CS.ChordSelected chord) next -> do
-      H.modify_ (_ { chord = chord })
+      H.modify_ (_ { chord = chord, chordSelectorChanged = true })
       pure next
     HandleChordSelector CS.NoMessage next -> do
       pure next
@@ -131,6 +144,11 @@ component =
       pure next
     HandleSearch (S.ChordSelectedMessage chord) next -> do
       H.modify_ (_ { chord = chord })
+      pure next
+    HandleSearch S.QueryStringChangedMessage next -> do
+      -- A search query was typed, so "reset" chordSelectorChanged so that we
+      -- won't clear the search query.
+      H.modify_ (_ { chordSelectorChanged = false })
       pure next
     AddChord next -> do
       -- Add the "active" chord into the list of archived chords.

@@ -256,6 +256,7 @@ component =
       H.put state'
       H.raise (toMessage ChordSelected state')
       pure next
+
     ChordSelectedQuery chord next -> do
       H.put $ State (Just chord.note) (Just chord.quality) (Just chord.interval)
       pure next

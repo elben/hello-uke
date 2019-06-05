@@ -23,6 +23,7 @@ buildChord n q i = { note: n, quality: q, interval: i }
 -- https://en.wikipedia.org/wiki/Chord_(music)#Symbols
 -- https://en.wikipedia.org/wiki/Chord_(music)#Basics
 -- https://en.wikipedia.org/wiki/Interval_(music)#Quality
+-- https://en.wikipedia.org/wiki/Chord_names_and_symbols_(popular_music)
 --
 data ChordQuality =
     Major
