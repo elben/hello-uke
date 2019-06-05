@@ -42,8 +42,9 @@ data Input =
 
 -- Messages to send to parent component.
 data Message =
-    ChordSelectedMessage Chord
-  | QueryStringChangedMessage
+    ChordSelectedMessage Chord       -- User manually chooses a chord
+  | ChordLookaheadMessage Chord      -- Auto-selection of chord as user types
+  | QueryStringChangedMessage String
 
 component :: forall m. H.Component HH.HTML Query Input Message m
 component =
@@ -104,14 +105,14 @@ component =
       let hover = if null q then Nothing else s.hover
       let s' = s {qs = q, chord = chord, hover = hover, chords = chords, hide = false}
 
-      -- TODO if we do this type-ahead change, we need to be able to rever back
-      -- to the last USER selected one (archived chord), and not a
-      -- computer-selected one
+      -- Take the first result and "select" this chord. This will make the
+      -- active fretboard change as you type.
       case A.head chords of
-        Just c -> H.raise (ChordSelectedMessage c)
+        Just c -> H.raise (ChordLookaheadMessage c)
         _ -> pure unit
+
       -- Send this message too, which is used to reset the App state's chordSelectorChanged
-      H.raise QueryStringChangedMessage
+      H.raise (QueryStringChangedMessage q)
       H.put s'
       pure next
     ChordSelected chord next -> do

@@ -11,7 +11,8 @@ import Data.Array as A
 import Data.Either.Nested (Either4)
 import Data.FoldableWithIndex (foldlWithIndex)
 import Data.Functor.Coproduct.Nested (Coproduct4)
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.String (null)
 import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.Component.ChildPath as CP
@@ -34,6 +35,11 @@ import Notes as N
 --   variable in App's state? This means that when the user deletes a chord, we
 --   need to update both App's and Fretboards' list of chords.
 --
+-- * lookaheadChord - the chord that was triggered by the look-ahead Search
+--   query functionality. If there's a non-empty query string, we'll show the
+--   lookahead chord. Otherwise, show the manually user-selected chord, in the
+--   `chord` attribute.
+--
 -- * chordSelectorChanged - A "temporary" boolean. Used to tell the Search
 --   component to clear its query string whenever the user usees the
 --   ChordSelector to select a query. This prevents the weird scenario where the
@@ -42,6 +48,7 @@ import Notes as N
 type State =
   { chord :: Chord
   , chords :: Array Chord
+  , lookaheadChord :: Maybe Chord
   , chordSelectorChanged :: Boolean
   }
 
@@ -78,7 +85,12 @@ component =
   where
 
   initialState :: State
-  initialState = { chord: initialChord, chords: [], chordSelectorChanged: false }
+  initialState =
+    { chord: initialChord
+    , chords: []
+    , lookaheadChord: Nothing
+    , chordSelectorChanged: false
+    }
 
   render :: State -> H.ParentHTML Query ChildQuery ChildSlot m
   render state =
@@ -118,10 +130,11 @@ component =
                     [ HH.text (if chordAlreadyAdded then "Already Added" else "Add") ]
                 ]
 
-              -- Render the current fretboard.
+              -- Render the current fretboard. Use the lookahead chord if it
+              -- exists; otherwise the user-selected chord.
               , HH.div
                   [ HP.classes [ ClassName "fretboard-active" ] ]
-                  [ HH.slot' CP.cp2 unit FB.component { chord: state.chord, displayActions: false } (HE.input HandleFretboard) ]
+                  [ HH.slot' CP.cp2 unit FB.component { chord: fromMaybe state.chord state.lookaheadChord, displayActions: false } (HE.input HandleFretboard) ]
             ]
 
         -- Render all the fretboards. Passes in the list of chords to render as input to the
@@ -143,12 +156,22 @@ component =
       H.modify_ (\s -> s { chords = foldlWithIndex (\i acc c -> if fbId == i then acc else A.snoc acc c) [] s.chords } )
       pure next
     HandleSearch (S.ChordSelectedMessage chord) next -> do
-      H.modify_ (_ { chord = chord })
+      -- Chord selected. Clear the lookahead chord so that we display the actual
+      -- chord.
+      H.modify_ (_ { chord = chord, lookaheadChord = Nothing })
       pure next
-    HandleSearch S.QueryStringChangedMessage next -> do
+    HandleSearch (S.ChordLookaheadMessage chord) next -> do
+      H.modify_ (_ { lookaheadChord = Just chord })
+      pure next
+    HandleSearch (S.QueryStringChangedMessage qs) next -> do
+      s <- H.get
+
+      -- If the query string was changed to empty, then clear the lookahead chord.
+      let lookaheadChord = if null qs then Nothing else s.lookaheadChord
+
       -- A search query was typed, so "reset" chordSelectorChanged so that we
       -- won't clear the search query.
-      H.modify_ (_ { chordSelectorChanged = false })
+      H.modify_ (_ { lookaheadChord = lookaheadChord, chordSelectorChanged = false })
       pure next
     AddChord next -> do
       -- Add the "active" chord into the list of archived chords.
