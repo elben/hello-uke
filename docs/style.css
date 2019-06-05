@@ -10,19 +10,20 @@ body {
 }
 
 h1 {
-  font-size: 3em;
+  font-size: 2em;
   margin-top: 0;
   margin-bottom: 0;
 }
 
 h2 {
-  font-size: 1.5em;
+  font-size: 1.2em;
   font-weight: normal;
   margin-top: 0;
   margin-bottom: 0.5em;
 }
 
 h3 {
+  font-size: 1.2em;
   margin-bottom: 0.5em;
 }
 
@@ -379,15 +380,23 @@ a:hover {
 }
 
 @media (max-width: 600px) {
+
   h1 {
-    font-size: 2em;
+    font-size: 1.5em;
   }
 
   h2 {
     font-size: 1em;
   }
+
   .top-component {
     flex-direction: column;
+  }
+
+  .selection {
+    min-width: 50px;
+    height: 35px;
+    line-height: 35px;
   }
 
   .fretboard-active {
@@ -407,7 +416,6 @@ a:hover {
      */
     padding-top: 0;
   }
-
   .fretboard {
     margin-left: auto;
     margin-right: auto;
