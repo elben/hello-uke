@@ -74,7 +74,6 @@ quality :: Parser String (Array ChordQuality)
 quality =
       (try (string "major" <|> string "maj") >>= \_ -> pure [Major])
   <|> (try (string "minor" <|> string "min") >>= \_ -> pure [Minor])
-  <|> (try (string "M") >>= \_ -> pure [Major, Minor])
   <|> (try (string "m") >>= \_ -> pure [Minor, Major])
   <|> (try (string "sus") >>= \_ -> pure [Suspended])
 

@@ -2,9 +2,10 @@ module Component.Search where
 
 import Prelude
 
-import Chords (Chord, humanChord, humanChordMod)
+import Chords (Chord, humanChord)
 import Data.Array as A
-import Data.Maybe (Maybe(..), isNothing)
+import Data.FunctorWithIndex (mapWithIndex)
+import Data.Maybe (Maybe(..), maybe)
 import Data.String (null)
 import Halogen (ClassName(..))
 import Halogen as H
@@ -12,18 +13,16 @@ import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.Query.EventSource as ES
-import Notes (humanNote)
 import Parser (findChords)
 import Web.HTML (window) as DOM
 import Web.HTML.Window (document) as DOM
-import Web.UIEvent.KeyboardEvent (key)
+import Web.UIEvent.KeyboardEvent as KE
 
 type State = { qs :: String          -- Query string
              , chord :: Maybe Chord  -- Selected chord
-             , hover :: Maybe Chord  -- Chord user is hovering over
+             , chordIdx :: Int       -- For keyboard up/down, the current index being selected
              , chords :: Array Chord -- Selectable chords
              , hide :: Boolean       -- Hide results
-             , focus :: Boolean      -- Search is focused
              }
 
 data Query a =
@@ -31,9 +30,7 @@ data Query a =
     QueryStringChanged String a
   | ChordSelected Chord a
   | HideResults a
-  -- TODO add keyboard support for [enter] and up/down
-  -- TODO change selected chord as i type
-  -- | KeyboardShortcut String a
+  | KeyboardAction String a
   -- | HandleKey KeyboardEvent (H.SubscribeStatus -> a)
 
 data Input =
@@ -68,25 +65,23 @@ component =
           , HP.autocomplete false
           , HP.spellcheck false
           , HP.value state.qs
-          -- "HP.input_ InputSearch" was removed because Safari doesn't follow
-          -- our CSS for some reason. Even DuckDuckGo doesn't use type="search", so.
           , HE.onValueInput (HE.input QueryStringChanged)
-          , HE.onValueChange (HE.input QueryStringChanged)
           , HE.onFocusIn (HE.input_ (QueryStringChanged state.qs))
           -- , HE.onFocusOut (HE.input_ HideResults)
 
           -- https://github.com/slamdata/purescript-halogen/blob/master/examples/keyboard-input/src/Main.purs
-          -- , HE.onKeyUp (HE.input (\e -> KeyboardShortcut (key e)))
+          , HE.onKeyDown (HE.input (\e -> KeyboardAction (KE.key e)))
           ]
         , HH.div
             [ HP.classes (append resultClasses [ ClassName "search-results" ]) ]
-            (map
-              (\c ->
-                HH.div
-                  [ HP.classes [ ClassName "search-result" ]
-                  , HE.onClick (HE.input_ (ChordSelected c))
-                  ]
-                  [ HH.text (humanChord c) ]
+            (mapWithIndex
+              (\idx c ->
+                let classes = if idx == state.chordIdx then [ ClassName "selected" ] else []
+                in HH.div
+                     [ HP.classes (append classes [ ClassName "search-result" ])
+                     , HE.onClick (HE.input_ (ChordSelected c))
+                     ]
+                     [ HH.text (humanChord c) ]
               )
               state.chords)
         ]
@@ -102,8 +97,7 @@ component =
       -- If something was typed, unmark the previously selected chord.
       s <- H.get
       let chord = if null q then Nothing else s.chord
-      let hover = if null q then Nothing else s.hover
-      let s' = s {qs = q, chord = chord, hover = hover, chords = chords, hide = false}
+      let s' = s {qs = q, chord = chord, chords = chords, hide = false}
 
       -- Take the first result and "select" this chord. This will make the
       -- active fretboard change as you type.
@@ -116,15 +110,55 @@ component =
       H.put s'
       pure next
     ChordSelected chord next -> do
-      H.modify_ (_ {qs = humanChord chord, chord = Just chord, hover = Just chord, chords = []})
+      H.modify_ (_ {qs = humanChord chord, chord = Just chord, chords = []})
       H.raise (ChordSelectedMessage chord)
       pure next
     HideResults next -> do
       H.modify_ (_ {hide = true})
       pure next
-  --   KeyboardShortcut s -> do
-  --     let focus = s == "s" || s == "/"
-  --     H.modify_ (_ {focus = focus})
+    KeyboardAction a next -> do
+      s <- H.get
+
+      let action = a == "Enter" || a == "ArrowDown" || a == "ArrowUp"
+      let enter = a == "Enter"
+
+      let idx = if a == "ArrowDown"
+                  then min (s.chordIdx + 1) ((A.length s.chords) - 1)
+                  else if a == "ArrowUp"
+                    then max (s.chordIdx - 1) 0
+                    else s.chordIdx
+
+      -- Maybe Chord
+      let chord = A.index s.chords idx
+
+      -- On [Enter], erase results since we've selected a chord.
+      let chords = if enter then [] else s.chords
+
+      -- On an action, set the query string to the chord's human string.
+      let qs = if action then maybe s.qs humanChord chord else s.qs
+
+      -- On [Enter], send an actual chord selected msg. Otherwise, just send a
+      -- lookahead chord msg.
+      let msgType = if enter then ChordSelectedMessage else ChordLookaheadMessage
+
+      -- Send the msg, if we can find a chord.
+      maybe (pure unit) (H.raise <<< msgType) chord
+
+      -- TODO prevent cursor from moving from up/down arrows
+      -- https://stackoverflow.com/questions/22383952/detect-or-disable-cursor-movement-in-input-field
+      -- https://stackoverflow.com/questions/1080532/prevent-default-behavior-in-text-input-while-pressing-arrow-up
+      -- https://github.com/slamdata/purescript-halogen/issues/426
+
+      -- Reset index if [Enter], but do it here, once all processing is done
+      -- using the current idx.
+      let s' = s { qs = qs
+                 , chordIdx = if enter then 0 else idx
+                 , chord = chord
+                 , chords = chords
+                 }
+      H.put s'
+
+      pure next
   --   HandleKey ev reply -> do
   --     evalKey (HandleKey ev reply)
 
@@ -132,7 +166,7 @@ component =
   -- evalKey (HandleKey ev reply)
   --   | KE.key ev == "Enter" = do
   --       -- s <- H.get
-  --       -- H.modify_ (_ {qs = humanChord (trace "HandleKey enter" \_ -> chord), chord = Just chord, hover = Just chord, chords = []})
+  --       -- H.modify_ (_ {qs = humanChord (trace "HandleKey enter" \_ -> chord), chord = Just chord, chords = []})
   --       pure (reply H.Done)
   --   | KE.key ev == "s" || KE.key ev == "/" = do
   --       pure (reply H.Done)
@@ -140,10 +174,9 @@ component =
   initialState :: Input -> State
   initialState input = { qs: ""
                        , chord: Nothing
-                       , hover: Nothing
+                       , chordIdx: 0
                        , chords: []
                        , hide: false
-                       , focus: true
                        }
   
   -- This component receives an Input from the parent component
