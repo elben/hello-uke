@@ -580,8 +580,26 @@ var PS = {};
           };
       };
   };
+  var min = function (dictOrd) {
+      return function (x) {
+          return function (y) {
+              var v = compare(dictOrd)(x)(y);
+              if (v instanceof Data_Ordering.LT) {
+                  return x;
+              };
+              if (v instanceof Data_Ordering.EQ) {
+                  return x;
+              };
+              if (v instanceof Data_Ordering.GT) {
+                  return y;
+              };
+              throw new Error("Failed pattern match at Data.Ord line 158, column 3 - line 161, column 12: " + [ v.constructor.name ]);
+          };
+      };
+  };
   exports["Ord"] = Ord;
   exports["compare"] = compare;
+  exports["min"] = min;
   exports["max"] = max;
   exports["ordInt"] = ordInt;
   exports["ordString"] = ordString;
@@ -3466,8 +3484,12 @@ var PS = {};
       };
   };
   var index = $foreign.indexImpl(Data_Maybe.Just.create)(Data_Maybe.Nothing.value);
+  var head = function (xs) {
+      return index(xs)(0);
+  };
   var findIndex = $foreign.findIndexImpl(Data_Maybe.Just.create)(Data_Maybe.Nothing.value);
   exports["null"] = $$null;
+  exports["head"] = head;
   exports["index"] = index;
   exports["findIndex"] = findIndex;
   exports["mapWithIndex"] = mapWithIndex;
@@ -3871,7 +3893,7 @@ var PS = {};
       if (v instanceof Dom9) {
           return "9";
       };
-      throw new Error("Failed pattern match at Chords line 87, column 1 - line 87, column 46: " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Chords line 88, column 1 - line 88, column 46: " + [ v.constructor.name ]);
   };
   var intToFinger = function (n) {
       var $27 = n < 0;
@@ -3910,7 +3932,7 @@ var PS = {};
       if (v instanceof Diminished) {
           return "dim";
       };
-      throw new Error("Failed pattern match at Chords line 43, column 1 - line 43, column 44: " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Chords line 44, column 1 - line 44, column 44: " + [ v.constructor.name ]);
   };
   var humanChordInterval = function (v) {
       if (v instanceof Triad) {
@@ -3936,7 +3958,7 @@ var PS = {};
       if (v instanceof X) {
           return -1 | 0;
       };
-      throw new Error("Failed pattern match at Chords line 121, column 1 - line 121, column 30: " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Chords line 122, column 1 - line 122, column 30: " + [ v.constructor.name ]);
   };
   var getBarre = function (v) {
       return v.value0;
@@ -3995,7 +4017,7 @@ var PS = {};
       if (v instanceof Diminished) {
           return "Dim";
       };
-      throw new Error("Failed pattern match at Chords line 34, column 1 - line 34, column 47: " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Chords line 35, column 1 - line 35, column 47: " + [ v.constructor.name ]);
   });
   var chordQualityEq = new Data_Eq.Eq(function (x) {
       return function (y) {
@@ -4060,7 +4082,7 @@ var PS = {};
           if (x instanceof Diminished && y instanceof Diminished) {
               return Data_Ordering.EQ.value;
           };
-          throw new Error("Failed pattern match at Chords line 41, column 8 - line 41, column 52: " + [ x.constructor.name, y.constructor.name ]);
+          throw new Error("Failed pattern match at Chords line 42, column 8 - line 42, column 52: " + [ x.constructor.name, y.constructor.name ]);
       };
   });
   var chordQualities = [ Major.value, Minor.value, Suspended.value ];
@@ -4140,7 +4162,7 @@ var PS = {};
           if (x instanceof Dom9 && y instanceof Dom9) {
               return Data_Ordering.EQ.value;
           };
-          throw new Error("Failed pattern match at Chords line 79, column 8 - line 79, column 54: " + [ x.constructor.name, y.constructor.name ]);
+          throw new Error("Failed pattern match at Chords line 80, column 8 - line 80, column 54: " + [ x.constructor.name, y.constructor.name ]);
       };
   });
   var ukeChords = Data_Map_Internal.fromFoldable(Data_Ord.ordInt)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(0, Data_Map_Internal.fromFoldable(chordQualityOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Major.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, fing(0)(0)(0)(3)), new Data_Tuple.Tuple(Dom7.value, fing(0)(0)(0)(1)), new Data_Tuple.Tuple(Maj7.value, fing(0)(0)(0)(2)), new Data_Tuple.Tuple(Dom9.value, fing(3)(2)(0)(3)) ])), new Data_Tuple.Tuple(Minor.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, fing(0)(3)(3)(3)), new Data_Tuple.Tuple(Dom7.value, fing(3)(3)(3)(3)), new Data_Tuple.Tuple(Maj7.value, fing(4)(3)(3)(3)), new Data_Tuple.Tuple(Dom9.value, fing(5)(3)(6)(5)) ])), new Data_Tuple.Tuple(Suspended.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Second.value, fing(0)(2)(3)(3)), new Data_Tuple.Tuple(Fourth.value, fing(0)(0)(1)(3)) ])) ])), new Data_Tuple.Tuple(1, Data_Map_Internal.fromFoldable(chordQualityOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Major.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, finb(1)(1)(1)(4)(new Barre(1, 0, 3))), new Data_Tuple.Tuple(Dom7.value, finb(1)(1)(1)(2)(new Barre(1, 0, 3))), new Data_Tuple.Tuple(Maj7.value, finb(1)(1)(1)(3)(new Barre(1, 0, 3))), new Data_Tuple.Tuple(Dom9.value, fing(4)(3)(1)(4)) ])), new Data_Tuple.Tuple(Minor.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, fini(new F(1))(new F(1))(new F(0))(X.value)(Data_Maybe.Nothing.value)), new Data_Tuple.Tuple(Dom7.value, fing(1)(1)(0)(2)), new Data_Tuple.Tuple(Maj7.value, fing(1)(1)(0)(3)), new Data_Tuple.Tuple(Dom9.value, fing(4)(3)(0)(4)) ])), new Data_Tuple.Tuple(Suspended.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Second.value, fing(1)(3)(4)(4)), new Data_Tuple.Tuple(Fourth.value, fing(1)(1)(2)(4)) ])) ])), new Data_Tuple.Tuple(2, Data_Map_Internal.fromFoldable(chordQualityOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Major.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, fing(2)(2)(2)(0)), new Data_Tuple.Tuple(Dom7.value, finb(2)(2)(2)(3)(new Barre(2, 0, 3))), new Data_Tuple.Tuple(Maj7.value, finb(2)(2)(2)(4)(new Barre(2, 0, 3))), new Data_Tuple.Tuple(Dom9.value, fing(5)(4)(2)(5)) ])), new Data_Tuple.Tuple(Minor.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, fing(2)(2)(1)(0)), new Data_Tuple.Tuple(Dom7.value, fing(2)(2)(1)(3)), new Data_Tuple.Tuple(Maj7.value, fing(2)(2)(1)(4)), new Data_Tuple.Tuple(Dom9.value, fing(2)(0)(0)(5)) ])), new Data_Tuple.Tuple(Suspended.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Second.value, fing(2)(2)(0)(0)), new Data_Tuple.Tuple(Fourth.value, fing(0)(2)(3)(0)) ])) ])), new Data_Tuple.Tuple(3, Data_Map_Internal.fromFoldable(chordQualityOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Major.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, fing(3)(3)(3)(1)), new Data_Tuple.Tuple(Dom7.value, finb(3)(3)(3)(4)(new Barre(3, 0, 3))), new Data_Tuple.Tuple(Maj7.value, finb(3)(3)(3)(5)(new Barre(3, 0, 3))), new Data_Tuple.Tuple(Dom9.value, fing(0)(3)(1)(4)) ])), new Data_Tuple.Tuple(Minor.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, fing(3)(3)(2)(1)), new Data_Tuple.Tuple(Dom7.value, fing(3)(3)(2)(4)), new Data_Tuple.Tuple(Maj7.value, fing(3)(3)(2)(5)), new Data_Tuple.Tuple(Dom9.value, fing(3)(3)(1)(4)) ])), new Data_Tuple.Tuple(Suspended.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Second.value, finb(3)(3)(1)(1)(new Barre(1, 2, 3))), new Data_Tuple.Tuple(Fourth.value, finb(1)(3)(4)(1)(new Barre(1, 0, 3))) ])) ])), new Data_Tuple.Tuple(4, Data_Map_Internal.fromFoldable(chordQualityOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Major.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, fing(1)(4)(0)(2)), new Data_Tuple.Tuple(Dom7.value, fing(1)(2)(0)(2)), new Data_Tuple.Tuple(Maj7.value, fing(1)(3)(0)(2)), new Data_Tuple.Tuple(Dom9.value, fing(7)(6)(4)(7)) ])), new Data_Tuple.Tuple(Minor.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, fing(0)(4)(3)(2)), new Data_Tuple.Tuple(Dom7.value, fing(0)(2)(0)(2)), new Data_Tuple.Tuple(Maj7.value, fing(0)(3)(0)(2)), new Data_Tuple.Tuple(Dom9.value, fing(0)(6)(0)(5)) ])), new Data_Tuple.Tuple(Suspended.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Second.value, finb(4)(4)(2)(2)(new Barre(2, 2, 3))), new Data_Tuple.Tuple(Fourth.value, fing(4)(4)(0)(0)) ])) ])), new Data_Tuple.Tuple(5, Data_Map_Internal.fromFoldable(chordQualityOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Major.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, fing(2)(0)(1)(0)), new Data_Tuple.Tuple(Dom7.value, fing(2)(3)(1)(3)), new Data_Tuple.Tuple(Maj7.value, fing(2)(4)(1)(3)), new Data_Tuple.Tuple(Dom9.value, fing(0)(3)(1)(0)) ])), new Data_Tuple.Tuple(Minor.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, fing(1)(0)(1)(3)), new Data_Tuple.Tuple(Dom7.value, finb(1)(3)(1)(3)(new Barre(1, 0, 3))), new Data_Tuple.Tuple(Maj7.value, finb(1)(4)(1)(3)(new Barre(1, 0, 3))), new Data_Tuple.Tuple(Dom9.value, fing(0)(5)(4)(6)) ])), new Data_Tuple.Tuple(Suspended.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Second.value, fing(0)(0)(1)(3)), new Data_Tuple.Tuple(Fourth.value, fing(3)(0)(1)(1)) ])) ])), new Data_Tuple.Tuple(6, Data_Map_Internal.fromFoldable(chordQualityOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Major.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, finb(3)(1)(2)(1)(new Barre(1, 1, 3))), new Data_Tuple.Tuple(Dom7.value, fing(3)(4)(2)(4)), new Data_Tuple.Tuple(Maj7.value, fing(3)(5)(2)(4)), new Data_Tuple.Tuple(Dom9.value, finb(1)(4)(2)(1)(new Barre(1, 0, 3))) ])), new Data_Tuple.Tuple(Minor.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, fing(2)(1)(2)(0)), new Data_Tuple.Tuple(Dom7.value, fing(2)(4)(2)(4)), new Data_Tuple.Tuple(Maj7.value, finb(2)(5)(2)(4)(new Barre(2, 0, 3))), new Data_Tuple.Tuple(Dom9.value, fing(1)(4)(2)(4)) ])), new Data_Tuple.Tuple(Suspended.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Second.value, finb(1)(1)(2)(4)(new Barre(1, 0, 3))), new Data_Tuple.Tuple(Fourth.value, fing(4)(1)(2)(2)) ])) ])), new Data_Tuple.Tuple(7, Data_Map_Internal.fromFoldable(chordQualityOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Major.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, fing(0)(2)(3)(2)), new Data_Tuple.Tuple(Dom7.value, fing(0)(2)(1)(2)), new Data_Tuple.Tuple(Maj7.value, fing(0)(2)(2)(2)), new Data_Tuple.Tuple(Dom9.value, fing(0)(2)(1)(0)) ])), new Data_Tuple.Tuple(Minor.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, fing(0)(2)(3)(1)), new Data_Tuple.Tuple(Dom7.value, finb(0)(2)(1)(1)(new Barre(1, 2, 3))), new Data_Tuple.Tuple(Maj7.value, fing(0)(2)(2)(1)), new Data_Tuple.Tuple(Dom9.value, fing(0)(5)(5)(1)) ])), new Data_Tuple.Tuple(Suspended.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Second.value, fing(0)(2)(3)(0)), new Data_Tuple.Tuple(Fourth.value, fing(0)(2)(3)(3)) ])) ])), new Data_Tuple.Tuple(8, Data_Map_Internal.fromFoldable(chordQualityOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Major.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, finb(5)(3)(4)(3)(new Barre(3, 1, 3))), new Data_Tuple.Tuple(Dom7.value, fing(1)(3)(2)(3)), new Data_Tuple.Tuple(Maj7.value, finb(1)(3)(3)(3)(new Barre(1, 0, 3))), new Data_Tuple.Tuple(Dom9.value, fing(1)(0)(2)(1)) ])), new Data_Tuple.Tuple(Minor.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, fing(4)(3)(4)(2)), new Data_Tuple.Tuple(Dom7.value, fing(1)(3)(2)(2)), new Data_Tuple.Tuple(Maj7.value, fing(0)(3)(4)(2)), new Data_Tuple.Tuple(Dom9.value, finb(1)(3)(2)(1)(new Barre(1, 0, 3))) ])), new Data_Tuple.Tuple(Suspended.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Second.value, finb(1)(3)(4)(1)(new Barre(1, 0, 3))), new Data_Tuple.Tuple(Fourth.value, fing(1)(3)(4)(4)) ])) ])), new Data_Tuple.Tuple(9, Data_Map_Internal.fromFoldable(chordQualityOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Major.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, fing(2)(1)(0)(0)), new Data_Tuple.Tuple(Dom7.value, fing(0)(1)(0)(0)), new Data_Tuple.Tuple(Maj7.value, fing(1)(1)(0)(0)), new Data_Tuple.Tuple(Dom9.value, fing(2)(1)(3)(2)) ])), new Data_Tuple.Tuple(Minor.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, fing(2)(0)(0)(0)), new Data_Tuple.Tuple(Dom7.value, fing(0)(0)(0)(0)), new Data_Tuple.Tuple(Maj7.value, fing(1)(0)(0)(0)), new Data_Tuple.Tuple(Dom9.value, fing(2)(0)(3)(2)) ])), new Data_Tuple.Tuple(Suspended.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Second.value, finb(2)(4)(5)(2)(new Barre(2, 0, 3))), new Data_Tuple.Tuple(Fourth.value, fing(2)(2)(0)(0)) ])) ])), new Data_Tuple.Tuple(10, Data_Map_Internal.fromFoldable(chordQualityOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Major.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, finb(3)(2)(1)(1)(new Barre(1, 2, 3))), new Data_Tuple.Tuple(Dom7.value, finb(1)(2)(1)(1)(new Barre(1, 0, 3))), new Data_Tuple.Tuple(Maj7.value, fing(3)(2)(1)(0)), new Data_Tuple.Tuple(Dom9.value, fing(3)(2)(4)(3)) ])), new Data_Tuple.Tuple(Minor.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, finb(3)(1)(1)(1)(new Barre(1, 1, 3))), new Data_Tuple.Tuple(Dom7.value, finb(1)(1)(1)(1)(new Barre(1, 0, 3))), new Data_Tuple.Tuple(Maj7.value, fing(3)(1)(1)(0)), new Data_Tuple.Tuple(Maj7.value, finb(2)(1)(1)(1)(new Barre(1, 1, 3))), new Data_Tuple.Tuple(Dom9.value, fing(3)(1)(4)(3)) ])), new Data_Tuple.Tuple(Suspended.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Second.value, finb(3)(0)(1)(1)(new Barre(1, 2, 3))), new Data_Tuple.Tuple(Fourth.value, finb(3)(3)(1)(1)(new Barre(1, 2, 3))) ])) ])), new Data_Tuple.Tuple(11, Data_Map_Internal.fromFoldable(chordQualityOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Major.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, finb(4)(3)(2)(2)(new Barre(2, 2, 3))), new Data_Tuple.Tuple(Dom7.value, finb(2)(3)(2)(2)(new Barre(2, 0, 3))), new Data_Tuple.Tuple(Maj7.value, fing(4)(3)(2)(1)), new Data_Tuple.Tuple(Dom9.value, fing(4)(3)(5)(4)) ])), new Data_Tuple.Tuple(Minor.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Triad.value, finb(4)(2)(2)(2)(new Barre(2, 1, 3))), new Data_Tuple.Tuple(Dom7.value, finb(2)(2)(2)(2)(new Barre(2, 0, 3))), new Data_Tuple.Tuple(Maj7.value, finb(3)(2)(2)(2)(new Barre(2, 1, 3))), new Data_Tuple.Tuple(Dom9.value, fing(4)(2)(5)(4)) ])), new Data_Tuple.Tuple(Suspended.value, Data_Map_Internal.fromFoldable(chordIntervalOrd)(Data_Foldable.foldableArray)([ new Data_Tuple.Tuple(Second.value, fini(X.value)(new F(1))(new F(2))(new F(2))(Data_Maybe.Nothing.value)), new Data_Tuple.Tuple(Fourth.value, finb(4)(4)(2)(2)(new Barre(2, 2, 3))) ])) ])) ]);
@@ -5387,6 +5409,12 @@ var PS = {};
   exports._currentTarget = function (e) {
     return e.currentTarget;
   };
+
+  exports.preventDefault = function (e) {
+    return function () {
+      return e.preventDefault();
+    };
+  };
 })(PS["Web.Event.Event"] = PS["Web.Event.Event"] || {});
 (function(exports) {
     "use strict";
@@ -5537,6 +5565,7 @@ var PS = {};
       return Data_Nullable.toMaybe($foreign._currentTarget($6));
   };
   exports["currentTarget"] = currentTarget;
+  exports["preventDefault"] = $foreign.preventDefault;
 })(PS["Web.Event.Event"] = PS["Web.Event.Event"] || {});
 (function(exports) {
   // Generated by purs version 0.12.0
@@ -9194,6 +9223,13 @@ var PS = {};
   }, function () {
       return bindHalogenM;
   });
+  var monadEffectHalogenM = function (dictMonadEffect) {
+      return new Effect_Class.MonadEffect(function () {
+          return monadHalogenM;
+      }, function (eff) {
+          return HalogenM(Control_Monad_Free.liftF(Lift.create(Effect_Class.liftEffect(dictMonadEffect)(eff))));
+      });
+  };
   var monadStateHalogenM = new Control_Monad_State_Class.MonadState(function () {
       return monadHalogenM;
   }, function ($180) {
@@ -9217,6 +9253,7 @@ var PS = {};
   exports["applicativeHalogenM"] = applicativeHalogenM;
   exports["bindHalogenM"] = bindHalogenM;
   exports["monadHalogenM"] = monadHalogenM;
+  exports["monadEffectHalogenM"] = monadEffectHalogenM;
   exports["monadStateHalogenM"] = monadStateHalogenM;
 })(PS["Halogen.Query.HalogenM"] = PS["Halogen.Query.HalogenM"] || {});
 (function(exports) {
@@ -10081,8 +10118,6 @@ var PS = {};
   var Web_Event_Event = PS["Web.Event.Event"];
   var input = "input";
   var domcontentloaded = "DOMContentLoaded";
-  var change = "change";
-  exports["change"] = change;
   exports["domcontentloaded"] = domcontentloaded;
   exports["input"] = input;
 })(PS["Web.HTML.Event.EventTypes"] = PS["Web.HTML.Event.EventTypes"] || {});
@@ -10093,6 +10128,41 @@ var PS = {};
   var focusin = "focusin";
   exports["focusin"] = focusin;
 })(PS["Web.UIEvent.FocusEvent.EventTypes"] = PS["Web.UIEvent.FocusEvent.EventTypes"] || {});
+(function(exports) {
+    "use strict";
+
+  exports.key = function (e) {
+    return e.key;
+  };
+})(PS["Web.UIEvent.KeyboardEvent"] = PS["Web.UIEvent.KeyboardEvent"] || {});
+(function(exports) {
+  // Generated by purs version 0.12.0
+  "use strict";
+  var $foreign = PS["Web.UIEvent.KeyboardEvent"];
+  var Control_Semigroupoid = PS["Control.Semigroupoid"];
+  var Data_Bounded = PS["Data.Bounded"];
+  var Data_Enum = PS["Data.Enum"];
+  var Data_Eq = PS["Data.Eq"];
+  var Data_Maybe = PS["Data.Maybe"];
+  var Data_Ord = PS["Data.Ord"];
+  var Data_Ordering = PS["Data.Ordering"];
+  var Effect = PS["Effect"];
+  var Prelude = PS["Prelude"];
+  var Unsafe_Coerce = PS["Unsafe.Coerce"];
+  var Web_Event_Event = PS["Web.Event.Event"];
+  var Web_Internal_FFI = PS["Web.Internal.FFI"];
+  var Web_UIEvent_UIEvent = PS["Web.UIEvent.UIEvent"];
+  var toEvent = Unsafe_Coerce.unsafeCoerce;
+  exports["toEvent"] = toEvent;
+  exports["key"] = $foreign.key;
+})(PS["Web.UIEvent.KeyboardEvent"] = PS["Web.UIEvent.KeyboardEvent"] || {});
+(function(exports) {
+  // Generated by purs version 0.12.0
+  "use strict";
+  var Web_Event_Event = PS["Web.Event.Event"];
+  var keydown = "keydown";
+  exports["keydown"] = keydown;
+})(PS["Web.UIEvent.KeyboardEvent.EventTypes"] = PS["Web.UIEvent.KeyboardEvent.EventTypes"] || {});
 (function(exports) {
   // Generated by purs version 0.12.0
   "use strict";
@@ -10136,6 +10206,7 @@ var PS = {};
   var Web_UIEvent_WheelEvent = PS["Web.UIEvent.WheelEvent"];
   var Web_UIEvent_WheelEvent_EventTypes = PS["Web.UIEvent.WheelEvent.EventTypes"];
   var mouseHandler = Unsafe_Coerce.unsafeCoerce;
+  var keyHandler = Unsafe_Coerce.unsafeCoerce;
   var input_ = function (f) {
       return function (v) {
           return Data_Maybe.Just.create(Halogen_Query.action(f));
@@ -10153,6 +10224,9 @@ var PS = {};
   };                                                       
   var onClick = function ($2) {
       return handler(Web_UIEvent_MouseEvent_EventTypes.click)(mouseHandler($2));
+  };                                                         
+  var onKeyDown = function ($4) {
+      return handler(Web_UIEvent_KeyboardEvent_EventTypes.keydown)(keyHandler($4));
   };
   var focusHandler = Unsafe_Coerce.unsafeCoerce;
   var onFocusIn = function ($22) {
@@ -10171,19 +10245,19 @@ var PS = {};
               };
           };
       };
-  };                                                                                                                    
-  var onValueChange = addForeignPropHandler(Web_HTML_Event_EventTypes.change)("value")(Foreign.readString);
+  };                                                                                                       
   var onValueInput = addForeignPropHandler(Web_HTML_Event_EventTypes.input)("value")(Foreign.readString);
   exports["input"] = input;
   exports["input_"] = input_;
   exports["handler"] = handler;
   exports["onClick"] = onClick;
+  exports["onKeyDown"] = onKeyDown;
   exports["onFocusIn"] = onFocusIn;
-  exports["onValueChange"] = onValueChange;
   exports["onValueInput"] = onValueInput;
 })(PS["Halogen.HTML.Events"] = PS["Halogen.HTML.Events"] || {});
 (function(exports) {
-    "use strict";
+  // Generated by purs version 0.12.0
+  "use strict";
   var Chords = PS["Chords"];
   var Control_Applicative = PS["Control.Applicative"];
   var Control_Bind = PS["Control.Bind"];
@@ -10210,8 +10284,6 @@ var PS = {};
   var Halogen_Query_HalogenM = PS["Halogen.Query.HalogenM"];
   var Notes = PS["Notes"];
   var Prelude = PS["Prelude"];                 
-
-  // Carry Notes, not Pos. So that users can deleniate between A# and Bb.
   var State = (function () {
       function State(value0, value1, value2) {
           this.value0 = value0;
@@ -10373,9 +10445,6 @@ var PS = {};
       };
       return Chords.Triad.value;
   };
-
-  // For a specific item in the state, figure out if we can use the *existing* selection
-  // based off the list of available options, or use the given default value.
   var considerStateSelection = function (dictEq) {
       return function (get) {
           return function (getSelection) {
@@ -10513,7 +10582,7 @@ var PS = {};
                   return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(v.value1);
               });
           };
-          throw new Error("Failed pattern match at Component.ChordSelector line 215, column 10 - line 261, column 12: " + [ v.constructor.name ]);
+          throw new Error("Failed pattern match at Component.ChordSelector line 215, column 10 - line 262, column 12: " + [ v.constructor.name ]);
       };
       return Halogen_Component.component(Halogen_HTML_Core.bifunctorHTML)({
           initialState: initialState,
@@ -11734,16 +11803,14 @@ var PS = {};
   var Text_Parsing_Parser_Combinators = PS["Text.Parsing.Parser.Combinators"];
   var Text_Parsing_Parser_String = PS["Text.Parsing.Parser.String"];                 
   var sharp = function (v) {
-      return Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Control_Alt.alt(Text_Parsing_Parser.altParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser_String.string(Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity)("#"))(Text_Parsing_Parser_String.string(Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity)("\u266f")))(function (v1) {
+      return Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Control_Alt.alt(Text_Parsing_Parser.altParserT(Data_Identity.monadIdentity))(Control_Alt.alt(Text_Parsing_Parser.altParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser_String.string(Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity)("#"))(Text_Parsing_Parser_String.string(Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity)("\u266f")))(Text_Parsing_Parser_String.string(Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity)("s")))(function (v1) {
           return Control_Applicative.pure(Text_Parsing_Parser.applicativeParserT(Data_Identity.monadIdentity))(Notes.Sharp.value);
       });
   };
-  var quality = Control_Alt.alt(Text_Parsing_Parser.altParserT(Data_Identity.monadIdentity))(Control_Alt.alt(Text_Parsing_Parser.altParserT(Data_Identity.monadIdentity))(Control_Alt.alt(Text_Parsing_Parser.altParserT(Data_Identity.monadIdentity))(Control_Alt.alt(Text_Parsing_Parser.altParserT(Data_Identity.monadIdentity))(Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser_Combinators["try"](Data_Identity.monadIdentity)(Control_Alt.alt(Text_Parsing_Parser.altParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser_String.string(Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity)("major"))(Text_Parsing_Parser_String.string(Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity)("maj"))))(function (v) {
+  var quality = Control_Alt.alt(Text_Parsing_Parser.altParserT(Data_Identity.monadIdentity))(Control_Alt.alt(Text_Parsing_Parser.altParserT(Data_Identity.monadIdentity))(Control_Alt.alt(Text_Parsing_Parser.altParserT(Data_Identity.monadIdentity))(Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser_Combinators["try"](Data_Identity.monadIdentity)(Control_Alt.alt(Text_Parsing_Parser.altParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser_String.string(Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity)("major"))(Text_Parsing_Parser_String.string(Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity)("maj"))))(function (v) {
       return Control_Applicative.pure(Text_Parsing_Parser.applicativeParserT(Data_Identity.monadIdentity))([ Chords.Major.value ]);
   }))(Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser_Combinators["try"](Data_Identity.monadIdentity)(Control_Alt.alt(Text_Parsing_Parser.altParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser_String.string(Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity)("minor"))(Text_Parsing_Parser_String.string(Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity)("min"))))(function (v) {
       return Control_Applicative.pure(Text_Parsing_Parser.applicativeParserT(Data_Identity.monadIdentity))([ Chords.Minor.value ]);
-  })))(Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser_Combinators["try"](Data_Identity.monadIdentity)(Text_Parsing_Parser_String.string(Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity)("M")))(function (v) {
-      return Control_Applicative.pure(Text_Parsing_Parser.applicativeParserT(Data_Identity.monadIdentity))([ Chords.Major.value, Chords.Minor.value ]);
   })))(Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser_Combinators["try"](Data_Identity.monadIdentity)(Text_Parsing_Parser_String.string(Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity)("m")))(function (v) {
       return Control_Applicative.pure(Text_Parsing_Parser.applicativeParserT(Data_Identity.monadIdentity))([ Chords.Minor.value, Chords.Major.value ]);
   })))(Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser_Combinators["try"](Data_Identity.monadIdentity)(Text_Parsing_Parser_String.string(Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity)("sus")))(function (v) {
@@ -11777,8 +11844,8 @@ var PS = {};
                                   return function (q) {
                                       return Data_Foldable.foldl(Data_Foldable.foldableArray)(function (acc$prime$prime) {
                                           return function (i) {
-                                              var $21 = Chords.ukeChordExists(v4.value2)(q)(i);
-                                              if ($21) {
+                                              var $20 = Chords.ukeChordExists(v4.value2)(q)(i);
+                                              if ($20) {
                                                   return Data_Array.snoc(acc$prime$prime)({
                                                       note: v4,
                                                       quality: q,
@@ -12029,18 +12096,26 @@ var PS = {};
   exports["window"] = $foreign.window;
 })(PS["Web.HTML"] = PS["Web.HTML"] || {});
 (function(exports) {
-  // Generated by purs version 0.12.0
-  "use strict";
+    "use strict";
   var Chords = PS["Chords"];
   var Control_Applicative = PS["Control.Applicative"];
   var Control_Bind = PS["Control.Bind"];
   var Control_Monad_State_Class = PS["Control.Monad.State.Class"];
+  var Control_Semigroupoid = PS["Control.Semigroupoid"];
   var Data_Array = PS["Data.Array"];
-  var Data_Functor = PS["Data.Functor"];
+  var Data_Eq = PS["Data.Eq"];
+  var Data_Function = PS["Data.Function"];
+  var Data_FunctorWithIndex = PS["Data.FunctorWithIndex"];
+  var Data_HeytingAlgebra = PS["Data.HeytingAlgebra"];
   var Data_Maybe = PS["Data.Maybe"];
+  var Data_Ord = PS["Data.Ord"];
+  var Data_Ring = PS["Data.Ring"];
   var Data_Semigroup = PS["Data.Semigroup"];
+  var Data_Semiring = PS["Data.Semiring"];
   var Data_String = PS["Data.String"];
   var Data_String_Common = PS["Data.String.Common"];
+  var Data_Unit = PS["Data.Unit"];
+  var Effect_Class = PS["Effect.Class"];
   var Halogen = PS["Halogen"];
   var Halogen_Component = PS["Halogen.Component"];
   var Halogen_HTML = PS["Halogen.HTML"];
@@ -12050,9 +12125,9 @@ var PS = {};
   var Halogen_HTML_Properties = PS["Halogen.HTML.Properties"];
   var Halogen_Query_EventSource = PS["Halogen.Query.EventSource"];
   var Halogen_Query_HalogenM = PS["Halogen.Query.HalogenM"];
-  var Notes = PS["Notes"];
   var Parser = PS["Parser"];
   var Prelude = PS["Prelude"];
+  var Web_Event_Event = PS["Web.Event.Event"];
   var Web_HTML = PS["Web.HTML"];
   var Web_HTML_Window = PS["Web.HTML.Window"];
   var Web_UIEvent_KeyboardEvent = PS["Web.UIEvent.KeyboardEvent"];                 
@@ -12089,6 +12164,21 @@ var PS = {};
       };
       return HideResults;
   })();
+  var KeyboardAction = (function () {
+      function KeyboardAction(value0, value1) {
+          this.value0 = value0;
+          this.value1 = value1;
+      };
+      KeyboardAction.create = function (value0) {
+          return function (value1) {
+              return new KeyboardAction(value0, value1);
+          };
+      };
+      return KeyboardAction;
+  })();
+
+  // No-op to differentiate between ClearQueryString (could also use Maybe)
+  // Messages to send to parent component.
   var ChordSelectedMessage = (function () {
       function ChordSelectedMessage(value0) {
           this.value0 = value0;
@@ -12098,7 +12188,51 @@ var PS = {};
       };
       return ChordSelectedMessage;
   })();
-  var component = (function () {
+
+  // No-op to differentiate between ClearQueryString (could also use Maybe)
+  // Messages to send to parent component.
+  var ChordLookaheadMessage = (function () {
+      function ChordLookaheadMessage(value0) {
+          this.value0 = value0;
+      };
+      ChordLookaheadMessage.create = function (value0) {
+          return new ChordLookaheadMessage(value0);
+      };
+      return ChordLookaheadMessage;
+  })();
+
+  // No-op to differentiate between ClearQueryString (could also use Maybe)
+  // Messages to send to parent component.
+  var QueryStringChangedMessage = (function () {
+      function QueryStringChangedMessage(value0) {
+          this.value0 = value0;
+      };
+      QueryStringChangedMessage.create = function (value0) {
+          return new QueryStringChangedMessage(value0);
+      };
+      return QueryStringChangedMessage;
+  })();
+
+  // | HandleKey KeyboardEvent (H.SubscribeStatus -> a)
+  var ClearQueryString = (function () {
+      function ClearQueryString() {
+
+      };
+      ClearQueryString.value = new ClearQueryString();
+      return ClearQueryString;
+  })();
+
+  // | HandleKey KeyboardEvent (H.SubscribeStatus -> a)
+  var NoInput = (function () {
+      function NoInput() {
+
+      };
+      NoInput.value = new NoInput();
+      return NoInput;
+  })();
+
+  // MonadEffect m evidence needed to use liftEffect.
+  var component = function (dictMonadEffect) {
       var render = function (state) {
           var resultClasses = (function () {
               if (state.hide) {
@@ -12106,21 +12240,48 @@ var PS = {};
               };
               return [  ];
           })();
-          return Halogen_HTML_Elements.div([ Halogen_HTML_Properties.classes([ "search" ]) ])([ Halogen_HTML_Elements.input([ Halogen_HTML_Properties.placeholder("Search for chords (e.g. Cm7)"), Halogen_HTML_Properties.autocomplete(false), Halogen_HTML_Properties.spellcheck(false), Halogen_HTML_Properties.value(state.qs), Halogen_HTML_Events.onValueInput(Halogen_HTML_Events.input(QueryStringChanged.create)), Halogen_HTML_Events.onValueChange(Halogen_HTML_Events.input(QueryStringChanged.create)), Halogen_HTML_Events.onFocusIn(Halogen_HTML_Events.input_(QueryStringChanged.create(state.qs))) ]), Halogen_HTML_Elements.div([ Halogen_HTML_Properties.classes(Data_Semigroup.append(Data_Semigroup.semigroupArray)(resultClasses)([ "search-results" ])) ])(Data_Functor.map(Data_Functor.functorArray)(function (c) {
-              return Halogen_HTML_Elements.div([ Halogen_HTML_Properties.classes([ "search-result" ]), Halogen_HTML_Events.onClick(Halogen_HTML_Events.input_(ChordSelected.create(c))) ])([ Halogen_HTML_Core.text(Chords.humanChord(c)) ]);
+          return Halogen_HTML_Elements.div([ Halogen_HTML_Properties.classes([ "search" ]) ])([ Halogen_HTML_Elements.input([ Halogen_HTML_Properties.placeholder("Search for chords (e.g. Cm7)"), Halogen_HTML_Properties.autocomplete(false), Halogen_HTML_Properties.spellcheck(false), Halogen_HTML_Properties.value(state.qs), Halogen_HTML_Events.onValueInput(Halogen_HTML_Events.input(QueryStringChanged.create)), Halogen_HTML_Events.onFocusIn(Halogen_HTML_Events.input_(QueryStringChanged.create(state.qs))), Halogen_HTML_Events.onKeyDown(Halogen_HTML_Events.input(KeyboardAction.create)) ]), Halogen_HTML_Elements.div([ Halogen_HTML_Properties.classes(Data_Semigroup.append(Data_Semigroup.semigroupArray)(resultClasses)([ "search-results" ])) ])(Data_FunctorWithIndex.mapWithIndex(Data_FunctorWithIndex.functorWithIndexArray)(function (idx) {
+              return function (c) {
+                  var classes = (function () {
+                      var $10 = idx === state.chordIdx;
+                      if ($10) {
+                          return [ "selected" ];
+                      };
+                      return [  ];
+                  })();
+                  return Halogen_HTML_Elements.div([ Halogen_HTML_Properties.classes(Data_Semigroup.append(Data_Semigroup.semigroupArray)(classes)([ "search-result" ])), Halogen_HTML_Events.onClick(Halogen_HTML_Events.input_(ChordSelected.create(c))) ])([ Halogen_HTML_Core.text(Chords.humanChord(c)) ]);
+              };
           })(state.chords)) ]);
       };
-      var receiver = function (input) {
-          return Data_Maybe.Nothing.value;
+    
+      // This component receives an Input from the parent component
+  var receiver = function (v) {
+          if (v instanceof NoInput) {
+              return Data_Maybe.Nothing.value;
+          };
+          if (v instanceof ClearQueryString) {
+              return new Data_Maybe.Just(new QueryStringChanged("", Data_Unit.unit));
+          };
+          throw new Error("Failed pattern match at Component.Search line 191, column 3 - line 191, column 42: " + [ v.constructor.name ]);
       };
-      var initialState = function (input) {
+    
+      //   HandleKey ev reply -> do
+      //     evalKey (HandleKey ev reply)
+      // -- See https://github.com/slamdata/purescript-halogen/blob/v4.0.0/examples/keyboard-input/src/Main.purs
+      // evalKey (HandleKey ev reply)
+      //   | KE.key ev == "Enter" = do
+      //       -- s <- H.get
+      //       -- H.modify_ (_ {qs = humanChord (trace "HandleKey enter" \_ -> chord), chord = Just chord, chords = []})
+      //       pure (reply H.Done)
+      //   | KE.key ev == "s" || KE.key ev == "/" = do
+      //       pure (reply H.Done)
+  var initialState = function (input) {
           return {
-              qs: input,
+              qs: "",
               chord: Data_Maybe.Nothing.value,
-              hover: Data_Maybe.Nothing.value,
+              chordIdx: 0,
               chords: [  ],
-              hide: false,
-              focus: true
+              hide: false
           };
       };
       var $$eval = function (query) {
@@ -12128,51 +12289,52 @@ var PS = {};
               var chords = Parser.findChords(5)(query.value0);
               return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.get(Halogen_Query_HalogenM.monadStateHalogenM))(function (v) {
                   var chord = (function () {
-                      var $7 = Data_String_Common["null"](query.value0);
-                      if ($7) {
+                      var $14 = Data_String_Common["null"](query.value0);
+                      if ($14) {
                           return Data_Maybe.Nothing.value;
                       };
                       return v.chord;
                   })();
-                  var hover = (function () {
-                      var $8 = Data_String_Common["null"](query.value0);
-                      if ($8) {
-                          return Data_Maybe.Nothing.value;
-                      };
-                      return v.hover;
-                  })();
                   var s$prime = (function () {
-                      var $9 = {};
-                      for (var $10 in v) {
-                          if ({}.hasOwnProperty.call(v, $10)) {
-                              $9[$10] = v[$10];
+                      var $15 = {};
+                      for (var $16 in v) {
+                          if ({}.hasOwnProperty.call(v, $16)) {
+                              $15[$16] = v[$16];
                           };
                       };
-                      $9.qs = query.value0;
-                      $9.chord = chord;
-                      $9.hover = hover;
-                      $9.chords = chords;
-                      $9.hide = false;
-                      return $9;
+                      $15.qs = query.value0;
+                      $15.chord = chord;
+                      $15.chords = chords;
+                      $15.hide = false;
+                      return $15;
                   })();
-                  return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.put(Halogen_Query_HalogenM.monadStateHalogenM)(s$prime))(function () {
-                      return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(query.value1);
+                  return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)((function () {
+                      var v1 = Data_Array.head(chords);
+                      if (v1 instanceof Data_Maybe.Just) {
+                          return Halogen_Query_HalogenM.raise(new ChordLookaheadMessage(v1.value0));
+                      };
+                      return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(Data_Unit.unit);
+                  })())(function () {
+                      return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Halogen_Query_HalogenM.raise(new QueryStringChangedMessage(query.value0)))(function () {
+                          return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.put(Halogen_Query_HalogenM.monadStateHalogenM)(s$prime))(function () {
+                              return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(query.value1);
+                          });
+                      });
                   });
               });
           };
           if (query instanceof ChordSelected) {
               return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v) {
-                  var $14 = {};
-                  for (var $15 in v) {
-                      if ({}.hasOwnProperty.call(v, $15)) {
-                          $14[$15] = v[$15];
+                  var $22 = {};
+                  for (var $23 in v) {
+                      if ({}.hasOwnProperty.call(v, $23)) {
+                          $22[$23] = v[$23];
                       };
                   };
-                  $14.qs = Chords.humanChord(query.value0);
-                  $14.chord = new Data_Maybe.Just(query.value0);
-                  $14.hover = new Data_Maybe.Just(query.value0);
-                  $14.chords = [  ];
-                  return $14;
+                  $22.qs = Chords.humanChord(query.value0);
+                  $22.chord = new Data_Maybe.Just(query.value0);
+                  $22.chords = [  ];
+                  return $22;
               }))(function () {
                   return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Halogen_Query_HalogenM.raise(new ChordSelectedMessage(query.value0)))(function () {
                       return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(query.value1);
@@ -12181,19 +12343,84 @@ var PS = {};
           };
           if (query instanceof HideResults) {
               return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v) {
-                  var $19 = {};
-                  for (var $20 in v) {
-                      if ({}.hasOwnProperty.call(v, $20)) {
-                          $19[$20] = v[$20];
+                  var $27 = {};
+                  for (var $28 in v) {
+                      if ({}.hasOwnProperty.call(v, $28)) {
+                          $27[$28] = v[$28];
                       };
                   };
-                  $19.hide = true;
-                  return $19;
+                  $27.hide = true;
+                  return $27;
               }))(function () {
                   return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(query.value0);
               });
           };
-          throw new Error("Failed pattern match at Component.Search line 87, column 16 - line 108, column 16: " + [ query.constructor.name ]);
+          if (query instanceof KeyboardAction) {
+              var key = Web_UIEvent_KeyboardEvent.key(query.value0);
+              return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.get(Halogen_Query_HalogenM.monadStateHalogenM))(function (v) {
+                  var arrow = key === "ArrowDown" || key === "ArrowUp";
+                  var enter = key === "Enter";
+                  var idx = (function () {
+                      var $32 = key === "ArrowDown";
+                      if ($32) {
+                          return Data_Ord.min(Data_Ord.ordInt)(v.chordIdx + 1 | 0)(Data_Array.length(v.chords) - 1 | 0);
+                      };
+                      var $33 = key === "ArrowUp";
+                      if ($33) {
+                          return Data_Ord.max(Data_Ord.ordInt)(v.chordIdx - 1 | 0)(0);
+                      };
+                      return v.chordIdx;
+                  })();
+                  var chord = Data_Array.index(v.chords)(idx);
+                  var chords = (function () {
+                      if (enter) {
+                          return [  ];
+                      };
+                      return v.chords;
+                  })();
+                  var qs = (function () {
+                      var $35 = arrow || enter;
+                      if ($35) {
+                          return Data_Maybe.maybe(v.qs)(Chords.humanChord)(chord);
+                      };
+                      return v.qs;
+                  })();
+                  var msgType = (function () {
+                      if (enter) {
+                          return ChordSelectedMessage.create;
+                      };
+                      return ChordLookaheadMessage.create;
+                  })();
+                  return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Data_Maybe.maybe(Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(Data_Unit.unit))(function ($43) {
+                      return Halogen_Query_HalogenM.raise(msgType($43));
+                  })(chord))(function () {
+                      return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Control_Applicative.when(Halogen_Query_HalogenM.applicativeHalogenM)(arrow)(Effect_Class.liftEffect(Halogen_Query_HalogenM.monadEffectHalogenM(dictMonadEffect))(Web_Event_Event.preventDefault(Web_UIEvent_KeyboardEvent.toEvent(query.value0)))))(function () {
+                          var s$prime = (function () {
+                              var $38 = {};
+                              for (var $39 in v) {
+                                  if ({}.hasOwnProperty.call(v, $39)) {
+                                      $38[$39] = v[$39];
+                                  };
+                              };
+                              $38.qs = qs;
+                              $38.chordIdx = (function () {
+                                  if (enter) {
+                                      return 0;
+                                  };
+                                  return idx;
+                              })();
+                              $38.chord = chord;
+                              $38.chords = chords;
+                              return $38;
+                          })();
+                          return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.put(Halogen_Query_HalogenM.monadStateHalogenM)(s$prime))(function () {
+                              return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(query.value1);
+                          });
+                      });
+                  });
+              });
+          };
+          throw new Error("Failed pattern match at Component.Search line 93, column 16 - line 169, column 16: " + [ query.constructor.name ]);
       };
       return Halogen_Component.component(Halogen_HTML_Core.bifunctorHTML)({
           initialState: initialState,
@@ -12201,11 +12428,16 @@ var PS = {};
           "eval": $$eval,
           receiver: receiver
       });
-  })();
+  };
   exports["QueryStringChanged"] = QueryStringChanged;
   exports["ChordSelected"] = ChordSelected;
   exports["HideResults"] = HideResults;
+  exports["KeyboardAction"] = KeyboardAction;
+  exports["ClearQueryString"] = ClearQueryString;
+  exports["NoInput"] = NoInput;
   exports["ChordSelectedMessage"] = ChordSelectedMessage;
+  exports["ChordLookaheadMessage"] = ChordLookaheadMessage;
+  exports["QueryStringChangedMessage"] = QueryStringChangedMessage;
   exports["component"] = component;
 })(PS["Component.Search"] = PS["Component.Search"] || {});
 (function(exports) {
@@ -12229,8 +12461,11 @@ var PS = {};
   var Data_Maybe = PS["Data.Maybe"];
   var Data_Ord = PS["Data.Ord"];
   var Data_Semigroup = PS["Data.Semigroup"];
+  var Data_String = PS["Data.String"];
+  var Data_String_Common = PS["Data.String.Common"];
   var Data_Symbol = PS["Data.Symbol"];
   var Data_Unit = PS["Data.Unit"];
+  var Effect_Class = PS["Effect.Class"];
   var Halogen = PS["Halogen"];
   var Halogen_Component = PS["Halogen.Component"];
   var Halogen_Component_ChildPath = PS["Halogen.Component.ChildPath"];
@@ -12304,8 +12539,14 @@ var PS = {};
       quality: Chords.Major.value,
       interval: Chords.Triad.value
   };
-  var component = (function () {
+  var component = function (dictMonadEffect) {
       var render = function (state) {
+          var searchInput = (function () {
+              if (state.chordSelectorChanged) {
+                  return Component_Search.ClearQueryString.value;
+              };
+              return Component_Search.NoInput.value;
+          })();
           var chordAlreadyAdded = Data_Maybe.maybe(false)(Data_Function["const"](true))(Data_Array.findIndex(Data_Eq.eq(Data_Eq.eqRec()(Data_Eq.eqRowCons(Data_Eq.eqRowCons(Data_Eq.eqRowCons(Data_Eq.eqRowNil)()(new Data_Symbol.IsSymbol(function () {
               return "quality";
           }))(Chords.chordQualityEq))()(new Data_Symbol.IsSymbol(function () {
@@ -12330,31 +12571,34 @@ var PS = {};
               };
               return "";
           })() ];
-          return Halogen_HTML_Elements.div([ Halogen_HTML_Properties.classes([ "main-component" ]) ])([ Halogen_HTML_Elements.div([ Halogen_HTML_Properties.classes([ "top-component" ]) ])([ Halogen_HTML_Elements.div([ Halogen_HTML_Properties.classes([ "chord-selector-section" ]) ])([ Halogen_HTML["slot'"](Halogen_Component_ChildPath.cp4)(Data_Unit.unit)(Component_Search.component)("")(Halogen_HTML_Events.input(HandleSearch.create)), Halogen_HTML["slot'"](Halogen_Component_ChildPath.cp1)(Data_Unit.unit)(Component_ChordSelector.component)(new Component_ChordSelector.ChordSelectedInput(state.chord))(Halogen_HTML_Events.input(HandleChordSelector.create)), Halogen_HTML_Elements.div(Data_Semigroup.append(Data_Semigroup.semigroupArray)([ Halogen_HTML_Properties.classes(addBtnClasses) ])(onClickProp))([ Halogen_HTML_Core.text((function () {
+          return Halogen_HTML_Elements.div([ Halogen_HTML_Properties.classes([ "main-component" ]) ])([ Halogen_HTML_Elements.div([ Halogen_HTML_Properties.classes([ "top-component" ]) ])([ Halogen_HTML_Elements.div([ Halogen_HTML_Properties.classes([ "chord-selector-section" ]) ])([ Halogen_HTML["slot'"](Halogen_Component_ChildPath.cp4)(Data_Unit.unit)(Component_Search.component(dictMonadEffect))(searchInput)(Halogen_HTML_Events.input(HandleSearch.create)), Halogen_HTML["slot'"](Halogen_Component_ChildPath.cp1)(Data_Unit.unit)(Component_ChordSelector.component)(new Component_ChordSelector.ChordSelectedInput(state.chord))(Halogen_HTML_Events.input(HandleChordSelector.create)), Halogen_HTML_Elements.div(Data_Semigroup.append(Data_Semigroup.semigroupArray)([ Halogen_HTML_Properties.classes(addBtnClasses) ])(onClickProp))([ Halogen_HTML_Core.text((function () {
               if (chordAlreadyAdded) {
                   return "Already Added";
               };
               return "Add";
           })()) ]) ]), Halogen_HTML_Elements.div([ Halogen_HTML_Properties.classes([ "fretboard-active" ]) ])([ Halogen_HTML["slot'"](Halogen_Component_ChildPath.cp2)(Data_Unit.unit)(Component_Fretboard.component)({
-              chord: state.chord,
+              chord: Data_Maybe.fromMaybe(state.chord)(state.lookaheadChord),
               displayActions: false
           })(Halogen_HTML_Events.input(HandleFretboard.create)) ]) ]), Halogen_HTML["slot'"](Halogen_Component_ChildPath.cp3)(Data_Unit.unit)(Component_Fretboards.component)(new Component_Fretboards.FretboardChords(state.chords))(Halogen_HTML_Events.input(HandleFretboards.create)) ]);
       };
       var initialState = {
           chord: initialChord,
-          chords: [  ]
+          chords: [  ],
+          lookaheadChord: Data_Maybe.Nothing.value,
+          chordSelectorChanged: false
       };
       var $$eval = function (v) {
           if (v instanceof HandleChordSelector && v.value0 instanceof Component_ChordSelector.ChordSelected) {
               return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v1) {
-                  var $10 = {};
-                  for (var $11 in v1) {
-                      if ({}.hasOwnProperty.call(v1, $11)) {
-                          $10[$11] = v1[$11];
+                  var $15 = {};
+                  for (var $16 in v1) {
+                      if ({}.hasOwnProperty.call(v1, $16)) {
+                          $15[$16] = v1[$16];
                       };
                   };
-                  $10.chord = v.value0.value0;
-                  return $10;
+                  $15.chord = v.value0.value0;
+                  $15.chordSelectorChanged = true;
+                  return $15;
               }))(function () {
                   return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(v.value1);
               });
@@ -12367,57 +12611,96 @@ var PS = {};
           };
           if (v instanceof HandleFretboards) {
               return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (s) {
-                  var $21 = {};
-                  for (var $22 in s) {
-                      if ({}.hasOwnProperty.call(s, $22)) {
-                          $21[$22] = s[$22];
+                  var $26 = {};
+                  for (var $27 in s) {
+                      if ({}.hasOwnProperty.call(s, $27)) {
+                          $26[$27] = s[$27];
                       };
                   };
-                  $21.chords = Data_FoldableWithIndex.foldlWithIndex(Data_FoldableWithIndex.foldableWithIndexArray)(function (i) {
+                  $26.chords = Data_FoldableWithIndex.foldlWithIndex(Data_FoldableWithIndex.foldableWithIndexArray)(function (i) {
                       return function (acc) {
                           return function (c) {
-                              var $20 = v.value0.value0 === i;
-                              if ($20) {
+                              var $25 = v.value0.value0 === i;
+                              if ($25) {
                                   return acc;
                               };
                               return Data_Array.snoc(acc)(c);
                           };
                       };
                   })([  ])(s.chords);
-                  return $21;
+                  return $26;
               }))(function () {
                   return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(v.value1);
               });
           };
-          if (v instanceof HandleSearch) {
+          if (v instanceof HandleSearch && v.value0 instanceof Component_Search.ChordSelectedMessage) {
               return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v1) {
-                  var $27 = {};
-                  for (var $28 in v1) {
-                      if ({}.hasOwnProperty.call(v1, $28)) {
-                          $27[$28] = v1[$28];
+                  var $32 = {};
+                  for (var $33 in v1) {
+                      if ({}.hasOwnProperty.call(v1, $33)) {
+                          $32[$33] = v1[$33];
                       };
                   };
-                  $27.chord = v.value0.value0;
-                  return $27;
+                  $32.chord = v.value0.value0;
+                  $32.lookaheadChord = Data_Maybe.Nothing.value;
+                  return $32;
               }))(function () {
                   return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(v.value1);
+              });
+          };
+          if (v instanceof HandleSearch && v.value0 instanceof Component_Search.ChordLookaheadMessage) {
+              return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v1) {
+                  var $38 = {};
+                  for (var $39 in v1) {
+                      if ({}.hasOwnProperty.call(v1, $39)) {
+                          $38[$39] = v1[$39];
+                      };
+                  };
+                  $38.lookaheadChord = new Data_Maybe.Just(v.value0.value0);
+                  return $38;
+              }))(function () {
+                  return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(v.value1);
+              });
+          };
+          if (v instanceof HandleSearch && v.value0 instanceof Component_Search.QueryStringChangedMessage) {
+              return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.get(Halogen_Query_HalogenM.monadStateHalogenM))(function (v1) {
+                  var lookaheadChord = (function () {
+                      var $45 = Data_String_Common["null"](v.value0.value0);
+                      if ($45) {
+                          return Data_Maybe.Nothing.value;
+                      };
+                      return v1.lookaheadChord;
+                  })();
+                  return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v2) {
+                      var $46 = {};
+                      for (var $47 in v2) {
+                          if ({}.hasOwnProperty.call(v2, $47)) {
+                              $46[$47] = v2[$47];
+                          };
+                      };
+                      $46.lookaheadChord = lookaheadChord;
+                      $46.chordSelectorChanged = false;
+                      return $46;
+                  }))(function () {
+                      return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(v.value1);
+                  });
               });
           };
           if (v instanceof AddChord) {
               return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (st) {
-                  var $33 = {};
-                  for (var $34 in st) {
-                      if ({}.hasOwnProperty.call(st, $34)) {
-                          $33[$34] = st[$34];
+                  var $52 = {};
+                  for (var $53 in st) {
+                      if ({}.hasOwnProperty.call(st, $53)) {
+                          $52[$53] = st[$53];
                       };
                   };
-                  $33.chords = Data_Array.snoc(st.chords)(st.chord);
-                  return $33;
+                  $52.chords = Data_Array.snoc(st.chords)(st.chord);
+                  return $52;
               }))(function () {
                   return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(v.value0);
               });
           };
-          throw new Error("Failed pattern match at Component.App line 120, column 10 - line 138, column 12: " + [ v.constructor.name ]);
+          throw new Error("Failed pattern match at Component.App line 148, column 10 - line 181, column 12: " + [ v.constructor.name ]);
       };
       return Halogen_Component.parentComponent(Data_Either.ordEither(Data_Ord.ordUnit)(Data_Either.ordEither(Data_Ord.ordUnit)(Data_Either.ordEither(Data_Ord.ordUnit)(Data_Either.ordEither(Data_Ord.ordUnit)(Data_Ord.ordVoid)))))({
           initialState: Data_Function["const"](initialState),
@@ -12425,7 +12708,7 @@ var PS = {};
           "eval": $$eval,
           receiver: Data_Function["const"](Data_Maybe.Nothing.value)
       });
-  })();
+  };
   exports["HandleChordSelector"] = HandleChordSelector;
   exports["HandleFretboard"] = HandleFretboard;
   exports["HandleFretboards"] = HandleFretboards;
@@ -13629,7 +13912,7 @@ var PS = {};
       });
   });
   var main = Halogen_Aff_Util.runHalogenAff(Control_Bind.bind(Effect_Aff.bindAff)(awaitRoot)(function (v) {
-      return Halogen_VDom_Driver.runUI(Component_App.component)(Data_Unit.unit)(v);
+      return Halogen_VDom_Driver.runUI(Component_App.component(Effect_Aff.monadEffectAff))(Data_Unit.unit)(v);
   }));
   exports["main"] = main;
   exports["awaitRoot"] = awaitRoot;
