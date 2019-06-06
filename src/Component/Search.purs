@@ -7,6 +7,7 @@ import Data.Array as A
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Maybe (Maybe(..), maybe)
 import Data.String (null)
+import Effect.Class (class MonadEffect)
 import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.HTML as HH
@@ -14,6 +15,7 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.Query.EventSource as ES
 import Parser (findChords)
+import Web.Event.Event as Event
 import Web.HTML (window) as DOM
 import Web.HTML.Window (document) as DOM
 import Web.UIEvent.KeyboardEvent as KE
@@ -30,7 +32,7 @@ data Query a =
     QueryStringChanged String a
   | ChordSelected Chord a
   | HideResults a
-  | KeyboardAction String a
+  | KeyboardAction KE.KeyboardEvent a
   -- | HandleKey KeyboardEvent (H.SubscribeStatus -> a)
 
 data Input =
@@ -43,7 +45,8 @@ data Message =
   | ChordLookaheadMessage Chord      -- Auto-selection of chord as user types
   | QueryStringChangedMessage String
 
-component :: forall m. H.Component HH.HTML Query Input Message m
+-- MonadEffect m evidence needed to use liftEffect.
+component :: forall m. MonadEffect m => H.Component HH.HTML Query Input Message m
 component =
   H.component
     { initialState
@@ -70,7 +73,7 @@ component =
           -- , HE.onFocusOut (HE.input_ HideResults)
 
           -- https://github.com/slamdata/purescript-halogen/blob/master/examples/keyboard-input/src/Main.purs
-          , HE.onKeyDown (HE.input (\e -> KeyboardAction (KE.key e)))
+          , HE.onKeyDown (HE.input KeyboardAction)
           ]
         , HH.div
             [ HP.classes (append resultClasses [ ClassName "search-results" ]) ]
@@ -116,15 +119,17 @@ component =
     HideResults next -> do
       H.modify_ (_ {hide = true})
       pure next
-    KeyboardAction a next -> do
+    KeyboardAction ke next -> do
+      let key = KE.key ke
+
       s <- H.get
 
-      let action = a == "Enter" || a == "ArrowDown" || a == "ArrowUp"
-      let enter = a == "Enter"
+      let arrow = key == "ArrowDown" || key == "ArrowUp"
+      let enter = key == "Enter"
 
-      let idx = if a == "ArrowDown"
+      let idx = if key == "ArrowDown"
                   then min (s.chordIdx + 1) ((A.length s.chords) - 1)
-                  else if a == "ArrowUp"
+                  else if key == "ArrowUp"
                     then max (s.chordIdx - 1) 0
                     else s.chordIdx
 
@@ -135,7 +140,7 @@ component =
       let chords = if enter then [] else s.chords
 
       -- On an action, set the query string to the chord's human string.
-      let qs = if action then maybe s.qs humanChord chord else s.qs
+      let qs = if arrow || enter then maybe s.qs humanChord chord else s.qs
 
       -- On [Enter], send an actual chord selected msg. Otherwise, just send a
       -- lookahead chord msg.
@@ -144,10 +149,13 @@ component =
       -- Send the msg, if we can find a chord.
       maybe (pure unit) (H.raise <<< msgType) chord
 
-      -- TODO prevent cursor from moving from up/down arrows
-      -- https://stackoverflow.com/questions/22383952/detect-or-disable-cursor-movement-in-input-field
+      -- Prevent up/down arrow keys from actually moving the cursor in the
+      -- <input>. Lift the `Effect Unit` to type of this function. This line
+      -- where is why we need evidence of `MonadEffect m` in this component, and
+      -- in App.
       -- https://stackoverflow.com/questions/1080532/prevent-default-behavior-in-text-input-while-pressing-arrow-up
       -- https://github.com/slamdata/purescript-halogen/issues/426
+      when (arrow) $ H.liftEffect (Event.preventDefault (KE.toEvent ke))
 
       -- Reset index if [Enter], but do it here, once all processing is done
       -- using the current idx.

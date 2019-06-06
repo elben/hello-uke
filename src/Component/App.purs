@@ -13,6 +13,7 @@ import Data.FoldableWithIndex (foldlWithIndex)
 import Data.Functor.Coproduct.Nested (Coproduct4)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.String (null)
+import Effect.Class (class MonadEffect)
 import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.Component.ChildPath as CP
@@ -74,7 +75,8 @@ type ChildSlot = Either4 Unit Unit Unit Unit
 initialChord :: Chord
 initialChord = { note: N.c, quality: Major, interval: Triad }
 
-component :: forall m. H.Component HH.HTML Query Unit Void m
+-- MonadEffect m evidence needed to use liftEffect (in Search component).
+component :: forall m. MonadEffect m=> H.Component HH.HTML Query Unit Void m
 component =
   H.parentComponent
     { initialState: const initialState
