@@ -74,14 +74,14 @@ a:hover {
   display: flex;
   flex-direction: row;
 
-  line-height: 45px;
-  width: 200px;
-  height: 45px;
-  /* transform: translate3d(-11%, 0, 0); */
-  background: #eee;
-  color: #333;
-  border-radius: 15px;
-  border: 2px solid #333;
+  width: 180px;
+  height: 65px;
+  line-height: 35px;
+  background: #FED96F;
+  color: #9D691A;
+  border-radius: 10px;
+  border: 3px solid #333;
+  border-bottom: 30px solid #333;
 }
 
 .chord-meta-item {
@@ -124,7 +124,7 @@ a:hover {
 .string {
   width: 50px;
   float: left;
-  padding-left: 25px;
+  padding-left: 15px;
 }
 
 .fret {
@@ -137,25 +137,32 @@ a:hover {
 
 /* Open strings */
 .fret:first-child {
-  background-color: #999;
-  height: 54px;
-  border-bottom: 12px solid #333;
-}
-
-.string:last-child .fret:first-child {
-  background-color: inherit;
+  background-color: transparent;
+  height: 30px;
+  margin-top: -30px;
+  border-radius: 0;
+  border-left: none;
+  border-bottom: none;
 }
 
 /* Open strings */
 .string .fret:first-child .circle {
-  background-color: #eee;
-  border: 2px solid #333;
-  color: #333;
-  transform: translate3d(-50%, 10%, 0);
+  background-color: #333;
+  color: #eee;
 
   /* Use content-box sizing so that visually it looks the same size as the other circles,
    * which don't have borders. */
   box-sizing: content-box;
+
+  height: 30px;
+  background-color: transparent;
+  border: none;
+  transform: translate3d(-50%, 0, 0);
+}
+
+/* Open strings */
+.string:last-child .fret:first-child {
+  height: 30px;
 }
 
 /* When a string shouldn't be played */
@@ -166,11 +173,6 @@ a:hover {
 .string:last-child .fret {
   border-bottom: none;
   height: 50px;
-}
-
-/* Open strings */
-.string:last-child .fret:first-child {
-  height: 54px;
 }
 
 .circle {
